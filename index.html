@@ -68,11 +68,11 @@
       <div id="editor" hidden>
         <h2 id="ed-title"></h2>
         <div id="ed-style">
-          <h3>Material</h3>
+          <h3>Produkt: <span id="mat-info"></span></h3>
           <div id="mats" class="row"></div>
           <h3>Farbe: <span id="color-name"></span></h3>
           <div id="colors" class="swatches"></div>
-          <div class="field"><label class="lbl" for="scale">Mustergröße</label><input id="scale" type="range" min="4" max="48" step="1"></div>
+          <div class="field"><label class="lbl" for="scale">Mustergröße</label><input id="scale" type="range" min="3" max="60" step="1"></div>
           <div class="field"><label class="lbl" for="shade">Licht und Schatten vom Foto</label><input id="shade" type="range" min="0" max="100" step="1"></div>
         </div>
         <div class="row">
@@ -80,11 +80,12 @@
           <button id="del" class="btn danger" type="button">Fläche löschen</button>
         </div>
       </div>
-      <p class="note">Farben sind Näherungen und ersetzen kein Farbmuster. Dein Foto bleibt auf deinem Gerät und wird nirgends hochgeladen.</p>
+      <p class="note">Produkte, Formate und Farbnummern stammen aus öffentlichen PREFA Unterlagen (Farbsortiment 2026). Hausprobe ist ein unabhängiges Projekt und kein Angebot von PREFA. Die Farbtöne sind Bildschirm-Näherungen nach RAL und ersetzen kein Farbmuster. Dein Foto bleibt auf deinem Gerät.</p>
     </section>
   </main>
 </div>
 
+<script src="data.js"></script>
 <script src="detect.js"></script>
 <script src="app.js"></script>
 </body>
