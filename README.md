@@ -1,23 +1,34 @@
 # Hausprobe
 
-Neues Dach oder neue Fassade am eigenen Hausfoto ausprobieren. Unabhängiger Prototyp, ohne Bezug zu einem Hersteller.
+Neues Dach oder neue Fassade am eigenen Hausfoto ausprobieren. Unabhängiges Projekt, ohne Bezug zu einem Hersteller.
 
-## Stand
+## Funktionen
 
-Eine einzelne statische Seite (`index.html`), ohne Build-Schritt und ohne Server. Das Foto bleibt im Browser.
-
-- Foto wählen oder mit dem gezeichneten Beispielhaus starten
-- Dach- und Fassadenflächen durch Antippen der Ecken markieren, Fenster und Türen aussparen
+- Foto wählen (am Handy auch direkt aus der Kamera) oder mit dem gezeichneten Beispielhaus starten
+- Flächen automatisch erkennen: Dach oder Wand antippen, die App sucht die zusammenhängende Fläche und schlägt Fenster als Aussparungen vor
+- Ecken von Hand setzen und nachträglich verschieben
 - Material (Stehfalz, Rauten, Dachplatten, Schindeln, Sidings, Paneele, glatt) und Farbe wählen
 - Muster wird perspektivisch auf die Fläche gelegt, Licht und Schatten kommen aus dem Foto
-- Vorher/Nachher-Vergleich mit Trennlinie
+- Vorher/Nachher-Vergleich, Bild speichern und teilen
+- Stand wird im Browser zwischengespeichert, die App lässt sich am Handy installieren
+
+Das Foto bleibt im Browser und wird nirgends hochgeladen.
+
+## Aufbau
+
+Statische Seite ohne Build-Schritt.
+
+- `index.html`, `styles.css`: Oberfläche
+- `app.js`: Zeichnen, Bedienung, Speichern
+- `detect.js`: Flächenerkennung (Farbähnlichkeit ab dem angetippten Punkt, ohne KI-Modell)
+- `sw.js`, `manifest.webmanifest`: Installation und Offline-Betrieb
 
 ## Starten
 
-`index.html` im Browser öffnen.
+`python3 -m http.server` im Ordner starten und die angezeigte Adresse öffnen.
 
-## Nächste Schritte
+## Offen
 
-- Automatische Erkennung von Dach und Fassade
+- Erkennung mit einem KI-Modell statt über Farbähnlichkeit
 - Fotorealistisches Rendering
-- Ergebnis speichern und teilen, Angebotsanfrage
+- Angebotsanfrage mit Empfänger
