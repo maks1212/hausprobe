@@ -40,33 +40,33 @@ function quadFor(s,P){
 }
 function prod(s){return DATA.byId[s.mat]||DATA.products[0];}
 function hex(code){var c=DATA.colors[code];return c?c.hex:"#888888";}
-/* Startwert für die Musterdichte: angenommene Flächenbreite geteilt durchs Rastermaß des Produkts. */
-function defScale(pr,kind){
-  var ref=pr.pat==="hline"?5500:(kind==="dach"?11000:9000);
-  return Math.max(3,Math.min(60,Math.round(ref/pr.cell)));
+/* Echte Maße der Fläche in Metern, in Richtung des Musters (Breite quer, Höhe von oben nach unten).
+   Die Breite gibt der Nutzer an oder sie ist geschätzt; fehlt die Höhe, folgt sie aus dem Seitenverhältnis im Foto. */
+function realSize(s){
+  var P=px(s),q=quadFor({rot:0},P),w0=(dist(q[0],q[1])+dist(q[3],q[2]))/2,h0=(dist(q[0],q[3])+dist(q[1],q[2]))/2;
+  var Wm=s.wm||9,Hm=s.hm||Wm*h0/Math.max(1,w0);
+  return (s.rot||0)%2?{W:Hm,H:Wm}:{W:Wm,H:Hm};
 }
-function patternLines(pr,n,ratio){
-  var L=[],i,j,m,c,u,v;
+/* Anzahl der Elemente in Breite (n) und Höhe (m) aus den echten Maßen und dem Format des Produkts. */
+function counts(pr,Wmm,Hmm){
+  var cw=pr.pat==="raute"?pr.w*Math.SQRT2:pr.w,ch=pr.pat==="raute"?cw:(pr.h||pr.w);
+  return {n:Math.min(400,Math.max(.5,Wmm/cw)),m:Math.min(400,Math.max(.5,Hmm/ch))};
+}
+function patternLines(pr,Wmm,Hmm){
+  var L=[],k=counts(pr,Wmm,Hmm),n=k.n,m=k.m,i,j,c,u,v0,v1;
   if(pr.pat==="seam"){for(i=1;i<n;i++)L.push([i/n,0,i/n,1]);}
-  else if(pr.pat==="hline"){
-    var mix=pr.mix||[1],sum=0;mix.forEach(function(x){sum+=x;});var unit=mix.length/(sum*n);v=0;
-    for(j=0;j<400;j++){v+=mix[j%mix.length]*unit;if(v>=.999)break;L.push([0,v,1,v]);}
-  }else if(pr.pat==="offset"){
-    m=Math.max(1,Math.round(n*ratio*pr.w/pr.h));
+  else if(pr.pat==="offset"){
     for(j=0;j<m;j++){
-      if(j)L.push([0,j/m,1,j/m]);
+      v0=j/m;v1=Math.min(1,(j+1)/m);if(j)L.push([0,v0,1,v0]);
       var sh=(j*(pr.shift||.5))%1;
-      for(i=0;i<=n;i++){u=(i+sh)/n;if(u>0&&u<1)L.push([u,j/m,u,(j+1)/m]);}
+      for(i=0;i<=n;i++){u=(i+sh)/n;if(u>0&&u<1)L.push([u,v0,u,v1]);}
     }
   }else if(pr.pat==="raute"){
-    m=Math.max(1,Math.round(n*ratio));
-    for(c=1;c<n+m;c++)L.push([(c-Math.min(c,m))/n,Math.min(c,m)/m,Math.min(c,n)/n,(c-Math.min(c,n))/m]);
-    for(c=-(m-1);c<n;c++){var a=Math.max(c,0),b=Math.min(n,m+c);L.push([a/n,(a-c)/m,b/n,(b-c)/m]);}
+    for(c=1;c<n+m;c++)L.push([Math.max(0,c-m)/n,Math.min(c,m)/m,Math.min(c,n)/n,Math.max(0,c-n)/m]);
+    for(c=-Math.ceil(m)+1;c<n;c++){if(c<=-m)continue;L.push([Math.max(c,0)/n,Math.max(-c,0)/m,Math.min(n,m+c)/n,Math.min(m,n-c)/m]);}
   }
   return L;
 }
-/* Erkannte Flächen haben eine Maske: das Material wird vollflächig gemalt und dann auf die Maske beschnitten.
-   Die vier Ecken bestimmen bei ihnen nur die Perspektive des Musters. */
 function paint(c,s){
   var m=MASKS[s.id];
   if(!m){paintInner(c,s,false);return;}
@@ -98,7 +98,7 @@ function stucco(){
 }
 /* Plastische Wirkung der einzelnen Elemente: jede Bahn, Platte oder Raute bekommt oben Licht, unten Schatten
    und einen leicht eigenen Farbton, wie bei echtem Blech mit Überdeckung. */
-function relief(c,pr,n,ratio,map){
+function relief(c,pr,Wmm,Hmm,map){
   function poly(pts){c.beginPath();pts.forEach(function(p,i){var X=map(p[0],p[1]);i?c.lineTo(X[0],X[1]):c.moveTo(X[0],X[1]);});c.closePath();}
   function rnd(i,j){var h=Math.sin(i*127.1+j*311.7)*43758.5453;return h-Math.floor(h);}
   function grad(p0,p1,stops){var A=map(p0[0],p0[1]),B=map(p1[0],p1[1]),g=c.createLinearGradient(A[0],A[1],B[0],B[1]);stops.forEach(function(s){g.addColorStop(s[0],s[1]);});return g;}
@@ -106,18 +106,17 @@ function relief(c,pr,n,ratio,map){
   /* Siding: glatte Bahn mit leichtem Lichtverlauf und einer schmalen, dunklen Schattenfuge am unteren Rand. */
   var BOARD=[[0,"rgba(255,255,255,.08)"],[.22,"rgba(255,255,255,0)"],[.78,"rgba(0,0,0,.02)"],[.9,"rgba(0,0,0,.1)"],[.925,"rgba(0,0,0,.5)"],[1,"rgba(0,0,0,.62)"]];
   function tone(t,k){return t<.5?"rgba(0,0,0,"+((.5-t)*k)+")":"rgba(255,255,255,"+((t-.5)*k)+")";}
-  var i,j,m,u0,u1,v0,v1,t;
+  var k=counts(pr,Wmm,Hmm),n=k.n,m=k.m,i,j,u0,u1,v0,v1;
   if(pr.pat==="hline"){
-    var mix=pr.mix||[1],sum=0;mix.forEach(function(x){sum+=x;});var unit=mix.length/(sum*n);v0=0;
-    for(j=0;j<400&&v0<1;j++){
-      v1=Math.min(1,v0+mix[j%mix.length]*unit);
+    var mix=pr.mix||[pr.w];v0=0;
+    for(j=0;j<600&&v0<1;j++){
+      v1=Math.min(1,v0+mix[j%mix.length]/Hmm);
       poly([[0,v0],[1,v0],[1,v1],[0,v1]]);c.fillStyle=grad([.5,v0],[.5,v1],BOARD);c.fill();
       c.fillStyle=tone(rnd(j,7),.025);c.fill();v0=v1;
     }
   }else if(pr.pat==="offset"){
-    m=Math.max(1,Math.round(n*ratio*pr.w/pr.h));
     for(j=0;j<m;j++){
-      v0=j/m;v1=(j+1)/m;
+      v0=j/m;v1=Math.min(1,(j+1)/m);
       poly([[0,v0],[1,v0],[1,v1],[0,v1]]);c.fillStyle=grad([.5,v0],[.5,v1],LAP);c.fill();
       if(n*m>5000)continue;
       var sh=(j*(pr.shift||.5))%1;
@@ -127,10 +126,9 @@ function relief(c,pr,n,ratio,map){
       }
     }
   }else if(pr.pat==="raute"){
-    m=Math.max(1,Math.round(n*ratio));
     if((n+m)*(n+m)>7000)return;
     var a,b2,cx,cy;
-    for(a=0;a<n+m;a++)for(b2=-m;b2<n;b2++){
+    for(a=0;a<n+m;a++)for(b2=-Math.ceil(m);b2<n;b2++){
       cx=(a+b2+1)/2;cy=(a-b2)/2;
       if(cx<-.5||cx>n+.5||cy<-.5||cy>m+.5)continue;
       poly([[(cx-.5)/n,cy/m],[cx/n,(cy-.5)/m],[(cx+.5)/n,cy/m],[cx/n,(cy+.5)/m]]);
@@ -139,7 +137,7 @@ function relief(c,pr,n,ratio,map){
     }
   }else if(pr.pat==="seam"){
     for(i=0;i<n;i++){
-      u0=i/n;u1=(i+1)/n;poly([[u0,0],[u1,0],[u1,1],[u0,1]]);
+      u0=i/n;u1=Math.min(1,(i+1)/n);poly([[u0,0],[u1,0],[u1,1],[u0,1]]);
       c.fillStyle=grad([u0,.5],[u1,.5],[[0,"rgba(0,0,0,.2)"],[.1,"rgba(0,0,0,0)"],[.88,"rgba(255,255,255,0)"],[1,"rgba(255,255,255,.1)"]]);c.fill();
       c.fillStyle=tone(rnd(i,3),.025);c.fill();
     }
@@ -161,9 +159,9 @@ function paintInner(c,s,masked){
   c.save();if(!masked){trace(c,P);c.clip();}
   c.fillStyle=hex(s.color);c.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);
   var wq=(dist(q[0],q[1])+dist(q[3],q[2]))/2,hq=(dist(q[0],q[3])+dist(q[1],q[2]))/2;
-  var pr=prod(s),ratio=hq/Math.max(1,wq);
-  relief(c,pr,s.scale,ratio,map);
-  var lines=pr.pat==="hline"?[]:patternLines(pr,s.scale,ratio);
+  var pr=prod(s),real=realSize(s),Wmm=real.W*1000,Hmm=real.H*1000;
+  relief(c,pr,Wmm,Hmm,map);
+  var lines=pr.pat==="hline"?[]:patternLines(pr,Wmm,Hmm);
   if(lines.length){
     var path=new Path2D();
     lines.forEach(function(l){var A=map(l[0],l[1]),B=map(l[2],l[3]);path.moveTo(A[0],A[1]);path.lineTo(B[0],B[1]);});
@@ -229,8 +227,7 @@ function current(){return surfaces.filter(function(s){return s.id===sel;})[0]||n
 function addSurface(kind,pts,o){
   var n=surfaces.filter(function(s){return s.kind===kind;}).length+1;
   var s={id:nextId++,kind:kind,name:KIND[kind]+" "+n,pts:pts,rot:0,shade:.9,
-    mat:kind==="dach"?"prefalz":"siding",color:"02",scale:0};
-  if(kind!=="cut")s.scale=defScale(prod(s),kind);
+    mat:kind==="dach"?"prefalz":"siding",color:"02",wm:kind==="dach"?10:9,hm:null,est:true};
   if(o)for(var key in o)s[key]=o[key];
   surfaces.push(s);return s;
 }
@@ -274,6 +271,12 @@ function finishDraw(){
     var s=addSurface(d.kind,c.quad,{mb:c.mb});
     var fine=c.canvas;try{if(REF)fine=REF.refine(c.canvas,src);}catch(e){}
     MASKS[s.id]=fine;try{s.maskUrl=fine.toDataURL("image/png");}catch(e){}
+    /* Maßstab schätzen: Fenster in der Fläche sind samt Rahmen meist rund 1,15 m breit. */
+    var holes=(fine._holes||[]).filter(function(h){var a=h.w*W/(h.h*H);return a>.45&&a<2.2;}).map(function(h){return h.w*W;}).sort(function(a,b){return a-b;});
+    if(holes.length){
+      var P=px(s),q=quadFor({rot:0},P),wpx=(dist(q[0],q[1])+dist(q[3],q[2]))/2,est=wpx/holes[holes.length>>1]*1.15;
+      if(est>=2&&est<=40){s.wm=Math.round(est*2)/2;s.est="fenster";}
+    }
     sel=s.id;
   }else{
     if(d.pts.length<3)return;
@@ -297,6 +300,18 @@ function drawHint(){
 function summary(){return surfaces.filter(function(s){return s.kind!=="cut";}).map(function(s){return s.name+": "+matName(s)+", "+colName(s.color);}).join("\n");}
 function exportBlob(cb){renderAfter();after.toBlob(cb,"image/jpeg",.92);}
 
+/* Zeigt, was die Maße ergeben, damit sich die Proportion am Haus nachprüfen lässt. */
+function sizeInfo(s){
+  var pr=prod(s),r=realSize(s),k=counts(pr,r.W*1000,r.H*1000),f=function(v){return v.toFixed(1).replace(".",",");},t;
+  var size=f(r.W)+" × "+f(r.H)+" m";
+  if(pr.pat==="seam")t=size+" ergibt "+Math.round(k.n)+" Bahnen nebeneinander.";
+  else if(pr.pat==="hline")t=size+" ergibt rund "+Math.round(r.H*1000/((pr.mix?pr.mix.reduce(function(a,b){return a+b;},0)/pr.mix.length:pr.w)))+" Bahnen übereinander.";
+  else if(pr.pat==="offset")t=size+" ergibt rund "+Math.round(k.n)+" × "+Math.round(k.m)+" Elemente.";
+  else t=size+" ergibt rund "+Math.round(k.n)+" Rauten in der Breite.";
+  if(s.est==="fenster")t="Breite aus der Fenstergröße geschätzt, bitte prüfen. "+t;
+  else if(s.est)t="Breite geschätzt. Trag das echte Maß der markierten Fläche ein, dann stimmt die Größe der Elemente. "+t;
+  $("size-info").textContent=t;
+}
 function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e;}
 function matName(s){return prod(s).name;}
 function colName(code){var c=DATA.colors[code];return c?code+" "+c.name:"";}
@@ -336,7 +351,7 @@ function ui(){
   var pr=prod(s),pal=DATA.palettes[pr.pal];
   DATA.products.filter(function(m){return m.kind===s.kind;}).forEach(function(m){
     var b=el("button","btn",m.name);b.type="button";b.setAttribute("aria-pressed",m.id===s.mat);
-    b.onclick=function(){s.mat=m.id;s.scale=defScale(m,s.kind);if(DATA.palettes[m.pal].indexOf(s.color)<0)s.color=DATA.palettes[m.pal][0];ui();refresh();};
+    b.onclick=function(){s.mat=m.id;if(DATA.palettes[m.pal].indexOf(s.color)<0)s.color=DATA.palettes[m.pal][0];ui();refresh();};
     mats.appendChild(b);
   });
   $("mat-info").textContent=pr.info;
@@ -348,7 +363,10 @@ function ui(){
   });
   var cur=DATA.colors[s.color];
   $("color-name").textContent=colName(s.color)+(cur?" · ähnlich RAL "+cur.ral:"");
-  $("scale").value=63-s.scale;$("shade").value=Math.round(s.shade*100);
+  if(document.activeElement!==$("wm"))$("wm").value=s.wm;
+  if(document.activeElement!==$("hm"))$("hm").value=s.hm||"";
+  sizeInfo(s);
+  $("shade").value=Math.round(s.shade*100);
 }
 
 function pos(e){var r=cv.getBoundingClientRect();return {x:Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),y:Math.min(1,Math.max(0,(e.clientY-r.top)/r.height)),r:r};}
@@ -412,7 +430,9 @@ $("share").onclick=function(){exportBlob(function(b){
   if(!b)return;var f=new File([b],"hausprobe.jpg",{type:"image/jpeg"});
   navigator.share({files:[f],title:"Hausprobe",text:summary()}).catch(function(){});
 });};
-$("scale").oninput=function(){var s=current();if(s){s.scale=63-(+this.value);refresh();}};
+function num(el){var v=parseFloat(String(el.value).replace(",","."));return v>=1&&v<=80?v:null;}
+$("wm").oninput=function(){var s=current(),v=num(this);if(s&&v){s.wm=v;s.est=false;sizeInfo(s);refresh();}};
+$("hm").oninput=function(){var s=current();if(!s)return;s.hm=num(this);sizeInfo(s);refresh();};
 $("shade").oninput=function(){var s=current();if(s){s.shade=this.value/100;refresh();}};
 $("rot").onclick=function(){var s=current();if(s){s.rot=((s.rot||0)+1)%4;refresh();}};
 $("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];delete EDGES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});sel=null;ui();refresh();};
@@ -462,14 +482,14 @@ function loadSample(){
   setImage(sampleHouse());isSample=true;surfaces=[];nextId=1;drawing=null;mode="view";split=.5;$("split").value=50;$("badge").hidden=false;
   function n(a){return a.map(function(p){return {x:p[0]/1200,y:p[1]/800};});}
   function r(x0,y0,x1,y1){return n([[x0,y0],[x1,y0],[x1,y1],[x0,y1]]);}
-  var roof=addSurface("dach",n([[300,410],[900,410],[840,230],[360,230]]));
-  addSurface("fassade",r(330,412,870,650),{color:"10"});
+  var roof=addSurface("dach",n([[300,410],[900,410],[840,230],[360,230]]),{wm:10.5,hm:5.5,est:false});
+  addSurface("fassade",r(330,412,870,650),{color:"10",wm:9.5,hm:4.2,est:false});
   addSurface("cut",r(394,454,506,566));addSurface("cut",r(694,454,806,566));addSurface("cut",r(554,494,646,650));
   sel=roof.id;renderAfter();ui();draw();
 }
 function save(){
   clearTimeout(saveT);saveT=setTimeout(function(){
-    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:4,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
+    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:5,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
   },300);
 }
 function storePhoto(c){
@@ -490,7 +510,7 @@ function restore(){
   var st=null,ph=null;
   try{st=JSON.parse(localStorage.getItem("hausprobe.state")||"null");ph=localStorage.getItem("hausprobe.photo");}catch(e){}
   loadSample();
-  if(!st||st.v!==4||!Array.isArray(st.surfaces))return;
+  if(!st||st.v!==5||!Array.isArray(st.surfaces))return;
   if(st.sample){applyState(st);return;}
   if(!ph)return;
   var img=new Image();

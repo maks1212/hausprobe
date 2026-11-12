@@ -7,6 +7,7 @@ Neues Dach oder neue Fassade am eigenen Hausfoto ausprobieren. Unabhängiges Pro
 - Foto wählen (am Handy auch direkt aus der Kamera) oder mit dem gezeichneten Beispielhaus starten
 - Flächen automatisch erkennen: Dach oder Wand antippen, ein Segmentierungsmodell im Browser findet die Fläche und lässt Fenster und Bewuchs davor frei; weitere Tipps ergänzen oder entfernen Teile
 - Ecken von Hand setzen und nachträglich verschieben
+- Maßstab: Breite (und optional Höhe) der Fläche in Metern; die Elemente werden im echten Format dazu gezeichnet. Bei erkannten Flächen wird die Breite aus der Fenstergröße vorgeschlagen
 - Produkt und Farbe aus dem PREFA Sortiment wählen (8 Dach- und 8 Fassadenprodukte, Farben je Produktgruppe)
 - Material mit Struktur: Fugen mit Schattenwurf, Relief und Tonunterschiede je Element, Stucco-Körnung; Licht und Schatten kommen aus dem Foto
 - Vorher/Nachher-Vergleich, Bild speichern und teilen

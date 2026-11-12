@@ -62,3 +62,7 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:32px}
 .field{display:flex;flex-direction:column;gap:2px}
 .note{margin:0;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
 #autobar .seg{flex:1 1 200px}
+.dims{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dims .field{min-width:0}
+.num{font:inherit;min-height:44px;width:100%;padding:0 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.sizeinfo{margin:0;font-size:13px;color:var(--muted)}

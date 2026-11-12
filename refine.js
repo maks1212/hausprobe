@@ -134,11 +134,16 @@ function straighten(mask,src){
       px=px<0?0:px>=w?w-1:px|0;py=py<0?0:py>=h?h-1:py|0;s+=G[py*w+px];}
     return s/K;
   }
-  var paths=[],segs=[];
+  var paths=[],segs=[],holes=[];
   trace(B,w,h).forEach(function(pts){
     var n=pts.length,area=0,k;
     for(k=0;k<n;k++){var q=pts[(k+1)%n];area+=pts[k][0]*q[1]-q[0]*pts[k][1];}
     if(Math.abs(area)/2<minArea)return;
+    if(area<0){
+      /* Loch in der Fläche (meist ein Fenster): Größe merken, daraus lässt sich der Maßstab schätzen. */
+      var hx0=w,hy0=h,hx1=0,hy1=0;pts.forEach(function(p){if(p[0]<hx0)hx0=p[0];if(p[0]>hx1)hx1=p[0];if(p[1]<hy0)hy0=p[1];if(p[1]>hy1)hy1=p[1];});
+      if(Math.abs(area)/2>=.55*(hx1-hx0)*(hy1-hy0))holes.push({w:(hx1-hx0)/w,h:(hy1-hy0)/h});
+    }
     var idx=corners(pts,tol),m=idx.length;
     if(m<3)return;
     var E=[];
@@ -200,7 +205,7 @@ function straighten(mask,src){
     });
     paths.push(path.map(function(p){return [p[0]/w,p[1]/h];}));
   });
-  return {paths:paths,segs:segs};
+  return {paths:paths,segs:segs,holes:holes};
 }
 
 /* Erkannte Fläche verfeinern. An geraden Kanten gilt die scharf gezeichnete Linie, überall sonst die weiche Verfeinerung. */
@@ -210,6 +215,7 @@ function refine(mask,src){
   var oc=canvasOf(fw,fh),og=oc.getContext("2d");og.imageSmoothingEnabled=true;og.drawImage(soft,0,0,fw,fh);
   /* Umrisse aus der weich verfeinerten Fläche: sie liegt farblich genauer an Rahmen und Leisten als die Rohmaske. */
   var st=null;try{st=straighten(soft,src);}catch(e){}
+  if(st)oc._holes=st.holes;
   if(!st||!st.segs.length)return oc;
   var band=Math.max(5,Math.max(fw,fh)*.012);
   var wc=canvasOf(fw,fh),wg=wc.getContext("2d");wg.lineCap="round";wg.lineWidth=band*2;wg.strokeStyle="#000";
