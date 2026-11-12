@@ -23,80 +23,88 @@
     <div class="row">
       <input id="file" class="sr" type="file" accept="image/*">
       <label class="btn primary" for="file">Foto wählen</label>
-      <button id="btn-sample" class="btn" type="button">Beispielhaus</button>
+      <button id="btn-sample" class="btn" type="button">Beispiel</button>
     </div>
   </header>
 
   <main class="work">
     <section class="stage-col" aria-label="Foto">
-      <div class="seg" role="group" aria-label="Ansicht">
-        <button id="mode-view" type="button" aria-pressed="true">Vergleichen</button>
-        <button id="mode-edit" type="button" aria-pressed="false">Flächen bearbeiten</button>
-      </div>
       <div class="stage">
         <canvas id="cv" width="1200" height="800"></canvas>
-        <span id="l-before" class="pill">Vorher</span>
-        <span id="l-after" class="pill">Nachher</span>
+        <span id="l-state" class="pill">Nachher</span>
         <span id="badge" class="pill">Beispielhaus (Zeichnung)</span>
-      </div>
-      <input id="split" type="range" min="0" max="100" value="50" aria-label="Vorher und Nachher vergleichen">
-      <div id="actions" class="row">
-        <button id="save" class="btn primary" type="button">Bild speichern</button>
-        <button id="share" class="btn" type="button" hidden>Teilen</button>
-      </div>
-      <div id="methods" class="seg" role="group" aria-label="Fläche markieren" hidden>
-        <button id="m-auto" type="button" aria-pressed="true">Automatisch</button>
-        <button id="m-manual" type="button" aria-pressed="false">Ecken setzen</button>
-      </div>
-      <div id="autobar" class="row" hidden>
-        <div class="seg" role="group" aria-label="Was ein Tipp bewirkt">
-          <button id="pt-add" type="button" aria-pressed="true">Hinzufügen</button>
-          <button id="pt-sub" type="button" aria-pressed="false">Wegnehmen</button>
+        <div id="busy" class="busy" role="status" hidden>
+          <span id="busy-text"></span>
+          <div class="bar"><i id="busy-bar"></i></div>
         </div>
-        <button id="sz-less" class="btn" type="button">Kleiner</button>
-        <button id="sz-more" class="btn" type="button">Größer</button>
-      </div>
-      <div id="drawbar" class="row" hidden>
-        <button id="d-done" class="btn primary" type="button">Fläche fertig</button>
-        <button id="d-undo" class="btn" type="button">Punkt zurück</button>
-        <button id="d-cancel" class="btn" type="button">Abbrechen</button>
       </div>
       <p id="hint" class="hint" aria-live="polite"></p>
     </section>
 
-    <section class="panel" aria-label="Flächen und Material">
-      <h2>Flächen</h2>
-      <div id="chips" class="row"></div>
-      <div class="row">
-        <button id="add-dach" class="btn" type="button">+ Dach</button>
-        <button id="add-fassade" class="btn" type="button">+ Fassade</button>
-        <button id="add-cut" class="btn" type="button">+ Fenster/Tür aussparen</button>
-      </div>
-      <div id="editor" hidden>
-        <h2 id="ed-title"></h2>
-        <div id="ed-style">
-          <h3>Produkt: <span id="mat-info"></span></h3>
-          <div id="mats" class="row"></div>
-          <h3>Farbe: <span id="color-name"></span></h3>
-          <div id="colors" class="swatches"></div>
-          <h3>Abmessungen der markierten Fläche</h3>
-          <div class="dims">
-            <div class="field"><label class="lbl" for="wm">Breite in m</label><input id="wm" class="num" type="number" inputmode="decimal" min="1" max="80" step="0.1"></div>
-            <div class="field"><label class="lbl" for="hm">Höhe in m</label><input id="hm" class="num" type="number" inputmode="decimal" min="1" max="80" step="0.1" placeholder="aus dem Foto"></div>
+    <section class="panel" aria-label="Bedienung">
+      <div id="p-draw" class="stack" hidden>
+        <div id="methods" class="seg" role="group" aria-label="Fläche markieren">
+          <button id="m-auto" type="button" aria-pressed="true">Automatisch</button>
+          <button id="m-manual" type="button" aria-pressed="false">Ecken setzen</button>
+        </div>
+        <div id="autobar" class="row" hidden>
+          <div class="seg" role="group" aria-label="Was ein Tipp bewirkt">
+            <button id="pt-add" type="button" aria-pressed="true">Hinzufügen</button>
+            <button id="pt-sub" type="button" aria-pressed="false">Wegnehmen</button>
           </div>
-          <p id="size-info" class="sizeinfo" aria-live="polite"></p>
-          <div class="field"><label class="lbl" for="shade">Licht und Schatten vom Foto</label><input id="shade" type="range" min="0" max="100" step="1"></div>
+          <button id="sz-less" class="btn" type="button">Kleiner</button>
+          <button id="sz-more" class="btn" type="button">Größer</button>
         </div>
         <div class="row">
-          <button id="rot" class="btn" type="button">Muster drehen</button>
-          <button id="del" class="btn danger" type="button">Fläche löschen</button>
+          <button id="d-cancel" class="btn" type="button">Abbrechen</button>
+          <button id="d-undo" class="btn" type="button">Zurück</button>
+          <button id="d-done" class="btn primary grow" type="button">Übernehmen</button>
         </div>
       </div>
-      <p class="note">Produkte, Formate und Farbnummern stammen aus öffentlichen PREFA Unterlagen (Farbsortiment 2026). Hausprobe ist ein unabhängiges Projekt und kein Angebot von PREFA. Die Farbtöne sind Bildschirm-Näherungen nach RAL und ersetzen kein Farbmuster. Dein Foto bleibt auf deinem Gerät.</p>
+
+      <div id="p-main" class="stack">
+        <div class="scroller" aria-label="Flächen">
+          <span id="chips"></span>
+          <button id="add-fassade" class="btn add" type="button">+ Fassade</button>
+          <button id="add-dach" class="btn add" type="button">+ Dach</button>
+          <button id="add-cut" class="btn add" type="button">+ Aussparung</button>
+        </div>
+
+        <div id="editor" class="stack" hidden>
+          <div id="ed-style" class="stack">
+            <h3>Produkt: <span id="mat-info"></span></h3>
+            <div id="mats" class="scroller"></div>
+            <h3>Farbe: <span id="color-name"></span></h3>
+            <div id="colors" class="scroller"></div>
+            <div class="dims">
+              <div class="field"><label class="lbl" for="wm">Breite der Fläche in m</label><input id="wm" class="num" type="number" inputmode="decimal" min="1" max="80" step="0.1"></div>
+              <div class="field"><label class="lbl" for="hm">Höhe in m</label><input id="hm" class="num" type="number" inputmode="decimal" min="1" max="80" step="0.1" placeholder="aus dem Foto"></div>
+            </div>
+            <p id="size-info" class="sizeinfo" aria-live="polite"></p>
+            <details id="more">
+              <summary>Feinheiten</summary>
+              <div class="stack">
+                <div class="field"><label class="lbl" for="shade">Licht und Schatten vom Foto</label><input id="shade" type="range" min="0" max="100" step="1"></div>
+                <div class="row">
+                  <button id="rot" class="btn" type="button">Muster drehen</button>
+                  <button id="adjust" class="btn" type="button" aria-pressed="false">Ecken anpassen</button>
+                </div>
+              </div>
+            </details>
+          </div>
+          <div class="row"><button id="del" class="btn danger" type="button">Fläche löschen</button></div>
+        </div>
+
+        <div class="row actions">
+          <button id="toggle-before" class="btn" type="button" aria-pressed="false">Vorher ansehen</button>
+          <button id="save" class="btn primary grow" type="button">Bild speichern</button>
+          <button id="share" class="btn" type="button" hidden>Teilen</button>
+        </div>
+        <p class="note">Produkte, Formate und Farbnummern stammen aus öffentlichen PREFA Unterlagen (Farbsortiment 2026). Hausprobe ist ein unabhängiges Projekt und kein Angebot von PREFA. Die Farbtöne sind Bildschirm-Näherungen nach RAL und ersetzen kein Farbmuster. Dein Foto bleibt auf deinem Gerät.</p>
+      </div>
     </section>
   </main>
 </div>
-
 <script src="data.js"></script>
 <script src="vendor/ort/ort.wasm.min.js"></script>
 <script src="segment.js"></script>

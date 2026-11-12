@@ -10,7 +10,8 @@ Neues Dach oder neue Fassade am eigenen Hausfoto ausprobieren. Unabhängiges Pro
 - Maßstab: Breite (und optional Höhe) der Fläche in Metern; die Elemente werden im echten Format dazu gezeichnet. Bei erkannten Flächen wird die Breite aus der Fenstergröße vorgeschlagen
 - Produkt und Farbe aus dem PREFA Sortiment wählen (8 Dach- und 8 Fassadenprodukte, Farben je Produktgruppe)
 - Material mit Struktur: Fugen mit Schattenwurf, Relief und Tonunterschiede je Element, Stucco-Körnung; Licht und Schatten kommen aus dem Foto
-- Vorher/Nachher-Vergleich, Bild speichern und teilen
+- Vorher/Nachher per Knopf, Bild speichern und teilen
+- Bedienung für Handy und Desktop: das Foto bleibt beim Scrollen sichtbar, Produkte und Farben in Wischzeilen, Foto auch per Ziehen oder Einfügen
 - Stand wird im Browser zwischengespeichert, die App lässt sich am Handy installieren
 
 Das Foto bleibt im Browser und wird nirgends hochgeladen.
