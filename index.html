@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
 
 </head>
@@ -48,7 +48,14 @@
         <button id="m-auto" type="button" aria-pressed="true">Automatisch</button>
         <button id="m-manual" type="button" aria-pressed="false">Ecken setzen</button>
       </div>
-      <div id="tolwrap" class="field" hidden><label class="lbl" for="tol">Fläche kleiner oder größer</label><input id="tol" type="range" min="10" max="70" step="1" value="30"></div>
+      <div id="autobar" class="row" hidden>
+        <div class="seg" role="group" aria-label="Was ein Tipp bewirkt">
+          <button id="pt-add" type="button" aria-pressed="true">Hinzufügen</button>
+          <button id="pt-sub" type="button" aria-pressed="false">Wegnehmen</button>
+        </div>
+        <button id="sz-less" class="btn" type="button">Kleiner</button>
+        <button id="sz-more" class="btn" type="button">Größer</button>
+      </div>
       <div id="drawbar" class="row" hidden>
         <button id="d-done" class="btn primary" type="button">Fläche fertig</button>
         <button id="d-undo" class="btn" type="button">Punkt zurück</button>
@@ -86,7 +93,8 @@
 </div>
 
 <script src="data.js"></script>
-<script src="detect.js"></script>
+<script src="vendor/ort/ort.wasm.min.js"></script>
+<script src="segment.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

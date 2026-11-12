@@ -5,7 +5,7 @@ Neues Dach oder neue Fassade am eigenen Hausfoto ausprobieren. Unabhängiges Pro
 ## Funktionen
 
 - Foto wählen (am Handy auch direkt aus der Kamera) oder mit dem gezeichneten Beispielhaus starten
-- Flächen automatisch erkennen: Dach oder Wand antippen, die App sucht die zusammenhängende Fläche und schlägt Fenster als Aussparungen vor
+- Flächen automatisch erkennen: Dach oder Wand antippen, ein Segmentierungsmodell im Browser findet die Fläche und lässt Fenster und Bewuchs davor frei; weitere Tipps ergänzen oder entfernen Teile
 - Ecken von Hand setzen und nachträglich verschieben
 - Produkt und Farbe aus dem PREFA Sortiment wählen (8 Dach- und 8 Fassadenprodukte, Farben je Produktgruppe)
 - Muster wird perspektivisch auf die Fläche gelegt, Licht und Schatten kommen aus dem Foto
@@ -21,15 +21,16 @@ Statische Seite ohne Build-Schritt.
 - `index.html`, `styles.css`: Oberfläche
 - `app.js`: Zeichnen, Bedienung, Speichern
 - `data.js`: Stammdaten (Produkte, Formate, Farbnummern mit RAL-Näherung) aus öffentlichen PREFA Unterlagen; die hex-Werte sind eigene Bildschirm-Näherungen
-- `detect.js`: Flächenerkennung (Farbähnlichkeit ab dem angetippten Punkt, ohne KI-Modell)
+- `segment.js`: Flächenerkennung mit EfficientSAM ViT-Tiny über onnxruntime-web (läuft im Browser, einmalig rund 52 MB Download)
+- `models/`, `vendor/ort/`: Modell und Laufzeit, Herkunft und Lizenzen in `models/README.md`
+- `vercel.json`: Header für Cross-Origin-Isolation, damit das Modell mehrere Threads nutzen kann
 - `sw.js`, `manifest.webmanifest`: Installation und Offline-Betrieb
 
 ## Starten
 
-`python3 -m http.server` im Ordner starten und die angezeigte Adresse öffnen.
+`python3 -m http.server` im Ordner starten und die angezeigte Adresse öffnen. Die Erkennung läuft so mit einem Thread.
 
 ## Offen
 
-- Erkennung mit einem KI-Modell statt über Farbähnlichkeit
 - Fotorealistisches Rendering
 - Angebotsanfrage mit Empfänger

@@ -1,12 +1,13 @@
 (function(){
 "use strict";
-var DATA=window.HausData;
+var DATA=window.HausData,SEG=window.HausSeg;
 var KIND={dach:"Dach",fassade:"Fassade",cut:"Aussparung"};
 var $=function(id){return document.getElementById(id);};
 var cv=$("cv"),ctx=cv.getContext("2d");
 var W=1200,H=800,src=null,gray=null,after=document.createElement("canvas");
 var tmp=document.createElement("canvas"),probe=document.createElement("canvas");probe.width=probe.height=12;
-var surfaces=[],sel=null,mode="view",split=.5,drawing=null,drag=null,dragSplit=false,nextId=1,pending=false,error="",small=null,isSample=true,saveT=0;
+var surfaces=[],sel=null,mode="view",split=.5,drawing=null,drag=null,dragSplit=false,nextId=1,pending=false,error="",isSample=true,saveT=0;
+var MASKS={},layer=document.createElement("canvas");
 
 function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;return c;}
 function px(s){return s.pts.map(function(p){return [p.x*W,p.y*H];});}
@@ -20,8 +21,7 @@ function setImage(c){
   var im=g.getImageData(0,0,W,H),d=im.data;
   for(var i=0;i<d.length;i+=4){var l=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)|0;d[i]=d[i+1]=d[i+2]=l;}
   g.putImageData(im,0,0);
-  var sc=Math.min(1,256/Math.max(W,H)),sw=Math.max(8,Math.round(W*sc)),sh=Math.max(8,Math.round(H*sc)),sm=mk(sw,sh),sx=sm.getContext("2d");
-  sx.drawImage(src,0,0,sw,sh);small={data:sx.getImageData(0,0,sw,sh).data,w:sw,h:sh};
+  MASKS={};
 }
 
 /* Unit square to quad. Straight lines stay straight, so patterns are drawn as vector lines in perspective. */
@@ -70,9 +70,21 @@ function patternLines(pr,n,ratio){
   }
   return L;
 }
+/* Erkannte Flächen haben eine Maske: das Material wird vollflächig gemalt und dann auf die Maske beschnitten.
+   Die vier Ecken bestimmen bei ihnen nur die Perspektive des Musters. */
 function paint(c,s){
+  var m=MASKS[s.id];
+  if(!m){paintInner(c,s,false);return;}
+  if(layer.width!==W||layer.height!==H){layer.width=W;layer.height=H;}
+  var lc=layer.getContext("2d");lc.globalCompositeOperation="source-over";lc.globalAlpha=1;lc.clearRect(0,0,W,H);
+  paintInner(lc,s,true);
+  lc.globalCompositeOperation="destination-in";lc.imageSmoothingEnabled=true;lc.drawImage(m,0,0,W,H);lc.globalCompositeOperation="source-over";
+  c.drawImage(layer,0,0);
+}
+function paintInner(c,s,masked){
   var P=px(s),q=quadFor(s,P),map=homography(q),b=bbox(P);
-  c.save();trace(c,P);c.clip();
+  if(masked)b=s.mb?[s.mb[0]*W,s.mb[1]*H,s.mb[2]*W,s.mb[3]*H]:[0,0,W,H];
+  c.save();if(!masked){trace(c,P);c.clip();}
   c.fillStyle=hex(s.color);c.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);
   var t=[(q[0][0]+q[1][0])/2,(q[0][1]+q[1][1])/2],e=[(q[3][0]+q[2][0])/2,(q[3][1]+q[2][1])/2];
   var gr=c.createLinearGradient(t[0],t[1],e[0],e[1]);gr.addColorStop(0,"rgba(255,255,255,.10)");gr.addColorStop(1,"rgba(0,0,0,.12)");
@@ -99,7 +111,7 @@ function paint(c,s){
     c.globalCompositeOperation="source-over";c.globalAlpha=1;
   }
   c.restore();
-  trace(c,P);c.lineWidth=Math.max(1,W/900);c.strokeStyle="rgba(0,0,0,.35)";c.stroke();
+  if(!masked){trace(c,P);c.lineWidth=Math.max(1,W/900);c.strokeStyle="rgba(0,0,0,.35)";c.stroke();}
 }
 function renderAfter(){
   var a=after.getContext("2d");a.globalCompositeOperation="source-over";a.globalAlpha=1;a.drawImage(src,0,0);
@@ -125,15 +137,17 @@ function draw(){
     ctx.lineWidth=(on?2.5:1.5)*k;ctx.strokeStyle=on?"#5ff0d6":"#fff";ctx.setLineDash(on?[]:[6*k,5*k]);ctx.stroke();ctx.setLineDash([]);
     if(on)P.forEach(function(p){dotAt(p,k,"#5ff0d6");});
   });
-  if(drawing){
+  if(drawing&&drawing.auto){
+    var cand=drawing.cands[drawing.pick];
+    if(cand){ctx.globalAlpha=.5;ctx.drawImage(cand.canvas,0,0,W,H);ctx.globalAlpha=1;}
+    drawing.taps.forEach(function(t){
+      ctx.beginPath();ctx.arc(t.x*W,t.y*H,7*k,0,7);ctx.fillStyle=t.add?"#fff":"#e5533d";ctx.fill();ctx.lineWidth=2*k;ctx.strokeStyle="#10181a";ctx.stroke();
+    });
+  }else if(drawing){
     var D=drawing.pts.map(function(p){return [p.x*W,p.y*H];});
-    if(D.length>1){ctx.beginPath();D.forEach(function(p,i){i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);});if(drawing.auto)ctx.closePath();
-      ctx.lineWidth=4*k;ctx.strokeStyle="rgba(0,0,0,.6)";ctx.stroke();ctx.lineWidth=2.5*k;ctx.strokeStyle="#ffd84d";ctx.stroke();
-      if(drawing.auto){ctx.fillStyle="rgba(255,216,77,.22)";ctx.fill();}}
-    (drawing.holes||[]).forEach(function(hp){trace(ctx,hp.map(function(p){return [p.x*W,p.y*H];}));
-      ctx.lineWidth=2*k;ctx.strokeStyle="#fff";ctx.setLineDash([5*k,4*k]);ctx.stroke();ctx.setLineDash([]);});
+    if(D.length>1){ctx.beginPath();D.forEach(function(p,i){i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);});
+      ctx.lineWidth=4*k;ctx.strokeStyle="rgba(0,0,0,.6)";ctx.stroke();ctx.lineWidth=2.5*k;ctx.strokeStyle="#ffd84d";ctx.stroke();}
     D.forEach(function(p){dotAt(p,k,"#ffd84d");});
-    if(drawing.seed){ctx.beginPath();ctx.arc(drawing.seed.x*W,drawing.seed.y*H,4*k,0,7);ctx.fillStyle="#fff";ctx.fill();ctx.lineWidth=1.5*k;ctx.strokeStyle="#10181a";ctx.stroke();}
   }
 }
 function dotAt(p,k,col){ctx.beginPath();ctx.arc(p[0],p[1],8*k,0,7);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=2*k;ctx.strokeStyle="#10181a";ctx.stroke();}
@@ -148,26 +162,64 @@ function addSurface(kind,pts,o){
   if(o)for(var key in o)s[key]=o[key];
   surfaces.push(s);return s;
 }
-function startDraw(kind){mode="edit";drawing={kind:kind,pts:[],auto:kind!=="cut",seed:null,tol:30,holes:[],miss:false};sel=null;error="";ui();draw();}
-function setMethod(auto){if(!drawing)return;drawing.auto=auto;drawing.pts=[];drawing.holes=[];drawing.seed=null;drawing.miss=false;ui();draw();}
+function startDraw(kind){
+  mode="edit";sel=null;error="";
+  drawing={kind:kind,pts:[],auto:kind!=="cut"&&!!SEG&&!SEG.blocked(),taps:[],sub:false,cands:[],pick:0,picked:false,busy:false,miss:false,ticket:0};
+  if(drawing.auto)SEG.prepare(src);
+  ui();draw();
+}
+function setMethod(auto){
+  if(!drawing)return;
+  drawing.auto=auto&&!!SEG;drawing.pts=[];drawing.taps=[];drawing.cands=[];drawing.miss=false;drawing.busy=false;drawing.picked=false;drawing.ticket++;
+  if(drawing.auto){SEG.reset();SEG.prepare(src);}
+  ui();draw();
+}
+function autoFailed(d){
+  if(drawing!==d)return;
+  d.auto=false;d.busy=false;d.taps=[];d.cands=[];d.pts=[];
+  error="Die automatische Erkennung läuft auf diesem Gerät gerade nicht. Setze die Ecken selbst oder tippe noch einmal auf „Automatisch“.";
+  ui();error="";draw();
+}
 function runDetect(){
-  var d=drawing;if(!d||!d.seed)return;
-  var r=window.HausDetect?window.HausDetect.detect(small,d.seed.x,d.seed.y,d.tol):null;
-  d.pts=r?r.pts:[];d.holes=r?r.holes:[];d.miss=!r;ui();draw();
+  var d=drawing;if(!d||!d.auto)return;
+  var ticket=++d.ticket;
+  if(!d.taps.length){d.cands=[];d.busy=false;d.miss=false;d.picked=false;ui();draw();return;}
+  d.busy=true;ui();draw();
+  SEG.masks(d.taps.slice()).then(function(c){
+    if(drawing!==d||d.ticket!==ticket)return;
+    d.busy=false;d.cands=c;d.miss=!c.length;
+    if(!d.picked||d.pick>=c.length){
+      /* Standard: die kleinste Fläche, die kein Detail ist (also das Bauteil, nicht das ganze Haus). */
+      d.pick=0;for(var i=0;i<c.length;i++)if(c[i].share>=.015){d.pick=i;break;}
+    }
+    ui();draw();
+  }).catch(function(){autoFailed(d);});
 }
 function finishDraw(){
-  if(!drawing||drawing.pts.length<3)return;
-  var holes=drawing.holes||[];
-  sel=addSurface(drawing.kind,drawing.pts).id;holes.forEach(function(h){addSurface("cut",h);});drawing=null;ui();refresh();
+  var d=drawing;if(!d)return;
+  if(d.auto){
+    var c=d.cands[d.pick];if(!c||d.busy)return;
+    var s=addSurface(d.kind,c.quad,{mb:c.mb});
+    MASKS[s.id]=c.canvas;try{s.maskUrl=c.canvas.toDataURL("image/png");}catch(e){}
+    sel=s.id;
+  }else{
+    if(d.pts.length<3)return;
+    sel=addSurface(d.kind,d.pts).id;
+  }
+  drawing=null;ui();refresh();
 }
 function drawHint(){
-  var d=drawing,what=d.kind==="dach"?"Dachfläche":"Wandfläche";
+  var d=drawing,what=d.kind==="dach"?"Dachfläche":"Wandfläche",st=SEG?SEG.state:{};
   if(d.kind==="cut")return "Tippe die Ecken von Fenster oder Tür an. Dort bleibt das Originalfoto sichtbar.";
   if(!d.auto)return d.kind==="dach"?"Tippe die Ecken der Dachfläche der Reihe nach an: zuerst entlang der Traufe, dann am First. Vier Ecken ergeben die beste Perspektive."
     :"Tippe die Ecken der Wandfläche der Reihe nach an. Fenster und Türen sparst du danach aus.";
-  if(!d.seed)return "Tippe mitten auf die "+what+". Die App sucht die zusammenhängende Fläche in dieser Farbe.";
-  if(d.miss)return "Hier wurde keine Fläche gefunden. Tippe auf eine andere Stelle oder setze die Ecken selbst.";
-  return "Passt der Umriss? Der Regler macht die Fläche kleiner oder größer, ein Tipp an anderer Stelle sucht neu. Ecken kannst du nach dem Bestätigen verschieben.";
+  var wait=st.phase==="laden"?"Die Erkennung wird geladen (einmalig rund 41 MB): "+st.progress+" %. "
+    :st.phase==="analyse"?"Das Foto wird analysiert, das dauert einmal pro Foto einige Sekunden. ":"";
+  if(!d.taps.length)return wait+"Tippe mitten auf die "+what+".";
+  if(wait)return wait+"Dein Tipp wird danach ausgewertet.";
+  if(d.busy)return "Die Fläche wird gesucht.";
+  if(d.miss)return "Hier wurde keine Fläche gefunden. Tippe auf eine andere Stelle.";
+  return "Passt die gelbe Fläche? Weitere Tipps ergänzen Teile, mit „Wegnehmen“ entfernst du Teile. „Kleiner“ und „Größer“ wechseln zwischen Bauteil und ganzem Haus.";
 }
 function summary(){return surfaces.filter(function(s){return s.kind!=="cut";}).map(function(s){return s.name+": "+matName(s)+", "+colName(s.color);}).join("\n");}
 function exportBlob(cb){renderAfter();after.toBlob(cb,"image/jpeg",.92);}
@@ -179,16 +231,22 @@ function ui(){
   $("mode-view").setAttribute("aria-pressed",mode==="view");$("mode-edit").setAttribute("aria-pressed",mode==="edit");
   cv.className=mode==="edit"?"edit":"";
   $("l-before").hidden=$("l-after").hidden=$("split").hidden=mode!=="view";
-  $("drawbar").hidden=!drawing;$("d-done").disabled=!drawing||drawing.pts.length<3;$("d-undo").disabled=!drawing||!drawing.pts.length;
-  $("methods").hidden=!drawing||drawing.kind==="cut";$("tolwrap").hidden=!(drawing&&drawing.auto&&drawing.seed);$("actions").hidden=mode!=="view";
-  if(drawing){$("m-auto").setAttribute("aria-pressed",!!drawing.auto);$("m-manual").setAttribute("aria-pressed",!drawing.auto);$("tol").value=drawing.tol;$("d-undo").hidden=!!drawing.auto;}
+  $("drawbar").hidden=!drawing;var D=drawing,A=D&&D.auto;
+  $("d-done").disabled=!D||(A?!D.cands[D.pick]||D.busy:D.pts.length<3);
+  $("d-undo").disabled=!D||!(A?D.taps.length:D.pts.length);
+  $("methods").hidden=!D||D.kind==="cut";$("autobar").hidden=!(A&&D.taps.length);$("actions").hidden=mode!=="view";
+  if(D){
+    $("m-auto").setAttribute("aria-pressed",!!A);$("m-manual").setAttribute("aria-pressed",!A);
+    $("pt-add").setAttribute("aria-pressed",!D.sub);$("pt-sub").setAttribute("aria-pressed",!!D.sub);
+    $("sz-less").disabled=D.busy||D.pick<=0;$("sz-more").disabled=D.busy||D.pick>=D.cands.length-1;
+  }
   save();
   var h;
   if(error)h=error;
   else if(drawing)h=drawHint();
   else if(!surfaces.length)h="Noch keine Fläche markiert. Starte mit + Dach oder + Fassade.";
   else if(mode==="view")h="Zieh die Trennlinie über das Bild: links das Original, rechts der neue Look.";
-  else h="Tippe eine Fläche an, um sie auszuwählen. Die Eckpunkte der ausgewählten Fläche kannst du verschieben.";
+  else h="Tippe eine Fläche an, um sie auszuwählen. Die Eckpunkte kannst du verschieben; bei erkannten Flächen richten sie das Muster aus.";
   $("hint").textContent=h;
 
   var chips=$("chips");chips.textContent="";
@@ -229,7 +287,7 @@ cv.addEventListener("pointerdown",function(e){
   if(mode==="view"){dragSplit=true;split=p.x;$("split").value=Math.round(split*100);cv.setPointerCapture(e.pointerId);draw();return;}
   e.preventDefault();
   if(drawing){
-    if(drawing.auto){drawing.seed={x:p.x,y:p.y};runDetect();return;}
+    if(drawing.auto){drawing.taps.push({x:p.x,y:p.y,add:!drawing.sub});runDetect();return;}
     if(drawing.pts.length>=3&&near(p,drawing.pts[0],p.r,20)){finishDraw();return;}
     drawing.pts.push({x:p.x,y:p.y});ui();draw();return;
   }
@@ -253,11 +311,23 @@ $("add-dach").onclick=function(){startDraw("dach");};
 $("add-fassade").onclick=function(){startDraw("fassade");};
 $("add-cut").onclick=function(){startDraw("cut");};
 $("d-done").onclick=finishDraw;
-$("d-undo").onclick=function(){if(drawing){drawing.pts.pop();ui();draw();}};
+$("d-undo").onclick=function(){
+  if(!drawing)return;
+  if(drawing.auto){drawing.taps.pop();runDetect();}else{drawing.pts.pop();ui();draw();}
+};
+$("pt-add").onclick=function(){if(drawing){drawing.sub=false;ui();}};
+$("pt-sub").onclick=function(){if(drawing){drawing.sub=true;ui();}};
+function step(n){var d=drawing;if(!d||!d.cands.length)return;d.pick=Math.max(0,Math.min(d.cands.length-1,d.pick+n));d.picked=true;ui();draw();}
+$("sz-less").onclick=function(){step(-1);};
+$("sz-more").onclick=function(){step(1);};
+if(SEG)SEG.onChange(function(st){
+  var d=drawing;if(!d||!d.auto)return;
+  if(st.phase==="fehler"){autoFailed(d);return;}
+  ui();
+});
 $("d-cancel").onclick=function(){drawing=null;ui();draw();};
 $("m-auto").onclick=function(){setMethod(true);};
 $("m-manual").onclick=function(){setMethod(false);};
-$("tol").oninput=function(){if(drawing){drawing.tol=+this.value;runDetect();}};
 $("save").onclick=function(){exportBlob(function(b){
   if(!b)return;var a=document.createElement("a"),u=URL.createObjectURL(b);a.href=u;a.download="hausprobe.jpg";
   document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);
@@ -272,7 +342,7 @@ $("share").onclick=function(){exportBlob(function(b){
 $("scale").oninput=function(){var s=current();if(s){s.scale=63-(+this.value);refresh();}};
 $("shade").oninput=function(){var s=current();if(s){s.shade=this.value/100;refresh();}};
 $("rot").onclick=function(){var s=current();if(s){s.rot=((s.rot||0)+1)%4;refresh();}};
-$("del").onclick=function(){surfaces=surfaces.filter(function(s){return s.id!==sel;});sel=null;ui();refresh();};
+$("del").onclick=function(){delete MASKS[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});sel=null;ui();refresh();};
 $("btn-sample").onclick=function(){try{localStorage.removeItem("hausprobe.photo");}catch(e){}loadSample();};
 $("file").onchange=function(){
   var f=this.files&&this.files[0];if(!f)return;this.value="";
@@ -326,7 +396,7 @@ function loadSample(){
 }
 function save(){
   clearTimeout(saveT);saveT=setTimeout(function(){
-    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:2,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
+    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:3,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
   },300);
 }
 function storePhoto(c){
@@ -336,12 +406,18 @@ function storePhoto(c){
 function applyState(st){
   surfaces=st.surfaces;nextId=st.nextId||surfaces.length+1;sel=surfaces.length?surfaces[0].id:null;
   drawing=null;mode="view";renderAfter();ui();draw();
+  surfaces.forEach(function(s){
+    if(!s.maskUrl)return;
+    var img=new Image();
+    img.onload=function(){var c=mk(img.naturalWidth,img.naturalHeight);c.getContext("2d").drawImage(img,0,0);MASKS[s.id]=c;refresh();};
+    img.src=s.maskUrl;
+  });
 }
 function restore(){
   var st=null,ph=null;
   try{st=JSON.parse(localStorage.getItem("hausprobe.state")||"null");ph=localStorage.getItem("hausprobe.photo");}catch(e){}
   loadSample();
-  if(!st||st.v!==2||!Array.isArray(st.surfaces))return;
+  if(!st||st.v!==3||!Array.isArray(st.surfaces))return;
   if(st.sample){applyState(st);return;}
   if(!ph)return;
   var img=new Image();
