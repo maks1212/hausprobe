@@ -22,7 +22,7 @@ Statische Seite ohne Build-Schritt.
 - `app.js`: Zeichnen, Bedienung, Speichern
 - `data.js`: Stammdaten (Produkte, Formate, Farbnummern mit RAL-Näherung) aus öffentlichen PREFA Unterlagen; die hex-Werte sind eigene Bildschirm-Näherungen
 - `segment.js`: Flächenerkennung mit EfficientSAM ViT-Tiny über onnxruntime-web (läuft im Browser, einmalig rund 52 MB Download)
-- `refine.js`: Kanten der erkannten Fläche am Foto verfeinern (Guided Filter), Licht und Schatten aus dem Foto ableiten
+- `refine.js`: Kanten der erkannten Fläche verfeinern (Guided Filter für weiche Ränder; gerade Bauteilkanten wie Fensterrahmen werden als Linien bestimmt und scharf gezeichnet), Licht und Schatten aus dem Foto ableiten
 - `models/`, `vendor/ort/`: Modell und Laufzeit, Herkunft und Lizenzen in `models/README.md`
 - `vercel.json`: Header für Cross-Origin-Isolation, damit das Modell mehrere Threads nutzen kann
 - `sw.js`, `manifest.webmanifest`: Installation und Offline-Betrieb
