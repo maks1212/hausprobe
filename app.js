@@ -318,6 +318,29 @@ function runDetect(){
     ui();draw();
   }).catch(function(){autoFailed(d);});
 }
+/* Alle Fenster der Fassade automatisch suchen. Ersetzt die bisherige Liste nur, wenn etwas gefunden wurde. */
+var scanning=null;
+function findWindows(s){
+  if(!SEG||SEG.blocked()||scanning)return;
+  var wall=MASKS[s.id];
+  if(!wall){wall=mk(Math.max(8,Math.round(W/4)),Math.max(8,Math.round(H/4)));var g=wall.getContext("2d");
+    g.beginPath();s.pts.forEach(function(p,i){i?g.lineTo(p.x*wall.width,p.y*wall.height):g.moveTo(p.x*wall.width,p.y*wall.height);});g.closePath();g.fill();}
+  var image=src;scanning={id:s.id,pct:0};SEG.prepare(src);uiStatus();
+  SEG.scan(wall,function(i,n){if(scanning){scanning.pct=Math.round(i/n*100);uiStatus();}},window.__scanDbg,!MASKS[s.id]).then(function(boxes){
+    scanning=null;
+    if(image!==src||surfaces.indexOf(s)<0){uiStatus();return;}
+    if(boxes.length){
+      s.wins=boxes;
+      /* Maßstab: ohne bessere Angabe gilt ein Fenster (ohne Zierrahmen) als rund 1,0 m breit. */
+      if(s.est===true){
+        var ws=boxes.map(function(b){return (b.x1-b.x0)*W;}).sort(function(a,b){return a-b;}),q=quadFor({rot:0},px(s));
+        var est=((dist(q[0],q[1])+dist(q[3],q[2]))/2)/ws[ws.length>>1];
+        if(est>=2&&est<=40){s.wm=Math.round(est*2)/2;s.est="fenster";}
+      }
+    }else if(!s.wins.length){error="Es wurden keine Fenster gefunden. Mit „+ Fenster markieren“ fügst du sie von Hand hinzu.";}
+    ui();error="";refresh();
+  }).catch(function(){scanning=null;uiStatus();});
+}
 function winFits(d,b){
   var t=surfaces.filter(function(x){return x.id===d.target;})[0];if(!t)return true;
   var k=ppm(t),wm=(b[2]-b[0])*W/k,hm=(b[3]-b[1])*H/k;return wm>=.25&&wm<=3.5&&hm>=.25&&hm<=3.2;
@@ -343,12 +366,13 @@ function finishDraw(){
       var P=px(s),q=quadFor({rot:0},P),wpx=(dist(q[0],q[1])+dist(q[3],q[2]))/2,est=wpx/holes[holes.length>>1]*1.15;
       if(est>=2&&est<=40){s.wm=Math.round(est*2)/2;s.est="fenster";}
     }
-    /* Ganz von Wand umschlossene Öffnungen in Fenstergröße bekommen eine Verkleidung. */
+    /* Vorläufig: ganz von Wand umschlossene Öffnungen. Die gründliche Suche läuft gleich danach im Hintergrund. */
     if(s.kind==="fassade"){
       var k=ppm(s);
       s.wins=(fine._holes||[]).filter(function(h){
         var wm=h.w*W/k,hm=h.h*H/k,ar=h.w*W/(h.h*H);return ar>.25&&ar<4&&wm>.3&&wm<4&&hm>.3&&hm<3.5;
       }).map(function(h){return {x0:h.x,y0:h.y,x1:h.x+h.w,y1:h.y+h.h};});
+      findWindows(s);
     }
     sel=s.id;
   }else{
@@ -396,6 +420,7 @@ function winUi(s,pal){
   $("ed-win").hidden=s.kind!=="fassade";if(s.kind!=="fassade")return;
   if(!s.trim)s.trim={style:"schlank",sill:true,color:null};if(!s.wins)s.wins=[];
   var t=s.trim,n=s.wins.length;
+  $("scan-win").disabled=!!scanning;
   $("win-info").textContent=n?n+(n===1?" Fenster":" Fenster")+" verkleidet":"noch keines markiert";
   Array.prototype.forEach.call(document.querySelectorAll("#win-style button"),function(b){b.setAttribute("aria-pressed",b.dataset.style===t.style);});
   $("win-sill").checked=!!t.sill;
@@ -448,6 +473,7 @@ function uiStatus(){
   if(st.phase==="laden"){t="Erkennung wird geladen, einmalig rund 50 MB";pct=st.progress;}
   else if(st.phase==="analyse")t="Foto wird analysiert";
   else if(D&&D.busy)t="Fläche wird gesucht";
+  else if(scanning){t="Fenster werden gesucht";pct=scanning.pct;}
   $("busy").hidden=!t;$("busy-text").textContent=t+(pct>=0?": "+pct+" %":"");
   $("busy-bar").style.width=pct>=0?pct+"%":"";$("busy-bar").className=pct>=0?"":"run";
   $("save").disabled=$("share").disabled=!surfaces.length;
@@ -642,6 +668,7 @@ Array.prototype.forEach.call(document.querySelectorAll("#win-style button"),func
   b.onclick=function(){var s=current();if(s&&s.trim){s.trim.style=b.dataset.style;ui();refresh();}};
 });
 $("win-sill").onchange=function(){var s=current();if(s&&s.trim){s.trim.sill=this.checked;refresh();}};
+$("scan-win").onclick=function(){var s=current();if(s&&s.kind==="fassade")findWindows(s);};
 $("add-win").onclick=function(){var s=current();if(s&&s.kind==="fassade")startDraw("fenster");};
 $("rot").onclick=function(){var s=current();if(s){s.rot=((s.rot||0)+1)%4;sizeInfo(s);refresh();}};
 $("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];delete EDGES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});

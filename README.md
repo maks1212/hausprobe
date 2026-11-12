@@ -7,7 +7,7 @@ Neues Dach oder neue Fassade am eigenen Hausfoto ausprobieren. Unabhängiges Pro
 - Foto wählen (am Handy auch direkt aus der Kamera) oder mit dem gezeichneten Beispielhaus starten
 - Flächen automatisch erkennen: Dach oder Wand antippen, ein Segmentierungsmodell im Browser findet die Fläche und lässt Fenster und Bewuchs davor frei; weitere Tipps ergänzen oder entfernen Teile
 - Ecken von Hand setzen und nachträglich verschieben
-- Fensterverkleidung wie bei PREFA (Laibung und Sturz aus Ergänzungsband, Fensterbank mit Tropfkante): ganz von Wand umschlossene Fenster werden erkannt, weitere per Tipp markiert; Rahmenbreite schlank, Rahmen oder breit, Farbe wie Fassade oder eigene
+- Fensterverkleidung wie bei PREFA (Laibung und Sturz aus Ergänzungsband, Fensterbank mit Tropfkante): Fenster werden nach dem Markieren der Fassade automatisch gesucht (Probe-Tipps im Wandbereich, behalten werden rechteckige Flächen in Fenstergröße mit Kontrast und ohne Bewuchsfarbe), weitere per Tipp markiert; Rahmenbreite schlank, Rahmen oder breit, Farbe wie Fassade oder eigene
 - Zoom (zwei Finger, Mausrad, Doppeltipp, Knöpfe) und Vorher/Nachher-Regler im Bild
 - Maßstab: Breite (und optional Höhe) der Fläche in Metern; die Elemente werden im echten Format dazu gezeichnet. Bei erkannten Flächen wird die Breite aus der Fenstergröße vorgeschlagen
 - Produkt und Farbe aus dem PREFA Sortiment wählen (8 Dach- und 8 Fassadenprodukte, Farben je Produktgruppe)
