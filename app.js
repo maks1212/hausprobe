@@ -1,7 +1,7 @@
 (function(){
 "use strict";
 var DATA=window.HausData,SEG=window.HausSeg,REF=window.HausRefine;
-var KIND={dach:"Dach",fassade:"Fassade",cut:"Aussparung"};
+var KIND={dach:"Dach",fassade:"Fassade",cut:"Aussparung",fenster:"Fenster"};
 var $=function(id){return document.getElementById(id);};
 var cv=$("cv"),ctx=cv.getContext("2d");
 var W=1200,H=800,src=null,after=document.createElement("canvas");
@@ -189,6 +189,53 @@ function renderAfter(){
   var a=after.getContext("2d");a.globalCompositeOperation="source-over";a.globalAlpha=1;a.drawImage(src,0,0);
   surfaces.forEach(function(s){if(s.kind!=="cut")paint(a,s);});
   surfaces.forEach(function(s){if(s.kind==="cut"){a.save();trace(a,px(s));a.clip();a.drawImage(src,0,0);a.restore();}});
+  surfaces.forEach(function(s){if(s.kind==="fassade")trims(a,s);});
+}
+/* Fensterverkleidung wie bei PREFA: Laibung und Sturz aus Ergänzungsband rund um das Fenster, unten eine
+   Fensterbank mit Tropfkante. Von vorn sieht man die Kante der Einfassung als Rahmen und die Fensterbank.
+   Maße in Metern, umgerechnet über die Breite der Fläche. */
+var TRIM={schlank:.04,rahmen:.1,breit:.17},tl=null,ta=null,tc=null;
+function ppm(s){var q=quadFor({rot:0},px(s));return ((dist(q[0],q[1])+dist(q[3],q[2]))/2)/(s.wm||9);}
+function trims(a,s){
+  var t=s.trim;if(!t||!TRIM[t.style]||!s.wins||!s.wins.length)return;
+  if(!tl||tl.width!==W||tl.height!==H){tl=mk(W,H);ta=mk(W,H);tc=mk(W,H);}
+  var g=tl.getContext("2d"),k=ppm(s),bw=Math.max(2,TRIM[t.style]*k),col=hex(t.color||s.color),lw=Math.max(1,.008*k);
+  g.globalCompositeOperation="source-over";g.globalAlpha=1;g.clearRect(0,0,W,H);
+  s.wins.forEach(function(w){
+    var x0=w.x0*W,y0=w.y0*H,x1=w.x1*W,y1=w.y1*H,ins=Math.min(.06*k,(x1-x0)*.12,(y1-y0)*.12);
+    var sill=t.sill&&!w.door,oy1=w.door||sill?y1:y1+bw;
+    var O=[x0-bw,y0-bw,x1+bw,oy1],I=[x0+ins,y0+ins,x1-ins,w.door?y1:sill?y1:y1-ins];
+    function band(){g.beginPath();g.rect(O[0],O[1],O[2]-O[0],O[3]-O[1]);g.rect(I[0],I[1],I[2]-I[0],I[3]-I[1]);}
+    /* Einfassung mit Schattenwurf auf die Fassade */
+    g.save();g.shadowColor="rgba(0,0,0,.38)";g.shadowBlur=Math.max(2,.035*k);g.shadowOffsetX=.008*k;g.shadowOffsetY=.016*k;
+    band();g.fillStyle=col;g.fill("evenodd");g.restore();
+    var gr=g.createLinearGradient(0,O[1],0,O[3]);gr.addColorStop(0,"rgba(255,255,255,.1)");gr.addColorStop(.5,"rgba(255,255,255,0)");gr.addColorStop(1,"rgba(0,0,0,.08)");
+    band();g.fillStyle=gr;g.fill("evenodd");
+    g.fillStyle=g.createPattern(stucco(),"repeat");g.globalAlpha=.35;band();g.fill("evenodd");g.globalAlpha=1;
+    /* Innen geht die Laibung in die Tiefe: dunkle Kante. Außen oben und links ein schmaler Lichtsaum. */
+    g.lineWidth=lw*1.6;g.strokeStyle="rgba(0,0,0,.5)";g.strokeRect(I[0],I[1],I[2]-I[0],I[3]-I[1]);
+    g.lineWidth=lw;g.strokeStyle="rgba(255,255,255,.22)";g.beginPath();g.moveTo(O[0],O[3]);g.lineTo(O[0],O[1]);g.lineTo(O[2],O[1]);g.stroke();
+    g.strokeStyle="rgba(0,0,0,.25)";g.beginPath();g.moveTo(O[2],O[1]);g.lineTo(O[2],O[3]);g.stroke();
+    if(sill){
+      var ov=.035*k,face=Math.max(3,.045*k),sx0=O[0]-ov,sx1=O[2]+ov,sy0=y1-Math.min(ins,face*.5);
+      g.save();g.shadowColor="rgba(0,0,0,.5)";g.shadowBlur=Math.max(3,.06*k);g.shadowOffsetY=.035*k;
+      g.fillStyle=col;g.fillRect(sx0,sy0,sx1-sx0,face);g.restore();
+      var sg=g.createLinearGradient(0,sy0,0,sy0+face);
+      sg.addColorStop(0,"rgba(255,255,255,.3)");sg.addColorStop(.18,"rgba(255,255,255,.06)");sg.addColorStop(.8,"rgba(0,0,0,.05)");sg.addColorStop(1,"rgba(0,0,0,.3)");
+      g.fillStyle=sg;g.fillRect(sx0,sy0,sx1-sx0,face);
+      g.lineWidth=lw;g.strokeStyle="rgba(0,0,0,.45)";g.beginPath();g.moveTo(sx0,sy0+face);g.lineTo(sx1,sy0+face);g.stroke();
+    }
+  });
+  /* Licht und Schatten vom Foto, dann auf Fassade und Fensteröffnungen beschränken (nicht über Bewuchs davor). */
+  var ag=ta.getContext("2d");ag.globalCompositeOperation="copy";ag.drawImage(tl,0,0);
+  var sh=s.shade>0?shadeFor(s):null;
+  if(sh){g.globalCompositeOperation="hard-light";g.globalAlpha=Math.min(1,s.shade);g.drawImage(sh,0,0,W,H);g.globalAlpha=1;
+    g.globalCompositeOperation="destination-in";g.drawImage(ta,0,0);}
+  var cg=tc.getContext("2d");cg.globalCompositeOperation="source-over";cg.clearRect(0,0,W,H);cg.fillStyle="#000";
+  if(MASKS[s.id])cg.drawImage(MASKS[s.id],0,0,W,H);else{trace(cg,px(s));cg.fill();}
+  s.wins.forEach(function(w){cg.fillRect(w.x0*W,w.y0*H,(w.x1-w.x0)*W,(w.y1-w.y0)*H);});
+  g.globalCompositeOperation="destination-in";g.drawImage(tc,0,0);g.globalCompositeOperation="source-over";
+  a.drawImage(tl,0,0);
 }
 /* Der Vorher/Nachher-Regler ist immer da, sobald es eine Fläche gibt und gerade nichts markiert wird. */
 function slider(){return !drawing&&!adjust&&surfaces.length>0;}
@@ -229,12 +276,14 @@ function addSurface(kind,pts,o){
   var n=surfaces.filter(function(s){return s.kind===kind;}).length+1;
   var s={id:nextId++,kind:kind,name:KIND[kind]+" "+n,pts:pts,rot:0,shade:.9,
     mat:kind==="dach"?"prefalz":"siding",color:"02",wm:kind==="dach"?10:9,hm:null,est:true};
+  if(kind==="fassade"){s.trim={style:"schlank",sill:true,color:null};s.wins=[];}
   if(o)for(var key in o)s[key]=o[key];
   surfaces.push(s);return s;
 }
 function startDraw(kind){
+  var target=kind==="fenster"?sel:null;
   adjust=false;sel=null;error="";
-  drawing={kind:kind,pts:[],auto:kind!=="cut"&&!!SEG&&!SEG.blocked(),taps:[],sub:false,cands:[],pick:0,picked:false,busy:false,miss:false,ticket:0};
+  drawing={target:target,kind:kind,pts:[],auto:kind!=="cut"&&!!SEG&&!SEG.blocked(),taps:[],sub:false,cands:[],pick:0,picked:false,busy:false,miss:false,ticket:0};
   if(drawing.auto)SEG.prepare(src);
   ui();draw();
 }
@@ -260,13 +309,29 @@ function runDetect(){
     d.busy=false;d.cands=c;d.miss=!c.length;
     if(!d.picked||d.pick>=c.length){
       /* Standard: die kleinste Fläche, die kein Detail ist (also das Bauteil, nicht das ganze Haus). */
-      d.pick=0;for(var i=0;i<c.length;i++)if(c[i].share>=.015){d.pick=i;break;}
+      d.pick=0;
+      if(d.kind==="fenster"){
+        /* Fenster: die größte Fläche, die noch Fenstergröße hat (Glas samt Rahmen, nicht die ganze Wand). */
+        for(var i=0;i<c.length;i++)if(winFits(d,c[i].mb))d.pick=i;
+      }else for(var i2=0;i2<c.length;i2++)if(c[i2].share>=.015){d.pick=i2;break;}
     }
     ui();draw();
   }).catch(function(){autoFailed(d);});
 }
+function winFits(d,b){
+  var t=surfaces.filter(function(x){return x.id===d.target;})[0];if(!t)return true;
+  var k=ppm(t),wm=(b[2]-b[0])*W/k,hm=(b[3]-b[1])*H/k;return wm>=.25&&wm<=3.5&&hm>=.25&&hm<=3.2;
+}
 function finishDraw(){
   var d=drawing;if(!d)return;
+  if(d.kind==="fenster"){
+    var t=surfaces.filter(function(x){return x.id===d.target;})[0],b;
+    if(d.auto){var cc=d.cands[d.pick];if(!cc||d.busy)return;b=cc.mb;}
+    else{if(d.pts.length<3)return;var bb=bbox(d.pts.map(function(p){return [p.x,p.y];}));b=bb;}
+    if(!winFits(d,b)){error="Die markierte Fläche ist für ein Fenster zu groß oder zu klein. Tippe auf „Kleiner“ oder „Größer“, oder prüf die Breite der Fassade.";uiStatus();error="";return;}
+    if(t){t.wins=t.wins||[];t.wins.push({x0:b[0],y0:b[1],x1:b[2],y1:b[3]});if(!t.trim)t.trim={style:"schlank",sill:true,color:null};}
+    sel=d.target;drawing=null;ui();refresh();return;
+  }
   if(d.auto){
     var c=d.cands[d.pick];if(!c||d.busy)return;
     var s=addSurface(d.kind,c.quad,{mb:c.mb});
@@ -278,6 +343,13 @@ function finishDraw(){
       var P=px(s),q=quadFor({rot:0},P),wpx=(dist(q[0],q[1])+dist(q[3],q[2]))/2,est=wpx/holes[holes.length>>1]*1.15;
       if(est>=2&&est<=40){s.wm=Math.round(est*2)/2;s.est="fenster";}
     }
+    /* Ganz von Wand umschlossene Öffnungen in Fenstergröße bekommen eine Verkleidung. */
+    if(s.kind==="fassade"){
+      var k=ppm(s);
+      s.wins=(fine._holes||[]).filter(function(h){
+        var wm=h.w*W/k,hm=h.h*H/k,ar=h.w*W/(h.h*H);return ar>.25&&ar<4&&wm>.3&&wm<4&&hm>.3&&hm<3.5;
+      }).map(function(h){return {x0:h.x,y0:h.y,x1:h.x+h.w,y1:h.y+h.h};});
+    }
     sel=s.id;
   }else{
     if(d.pts.length<3)return;
@@ -288,6 +360,14 @@ function finishDraw(){
 function drawHint(){
   var d=drawing,what=d.kind==="dach"?"Dachfläche":"Wandfläche",st=SEG?SEG.state:{};
   if(d.kind==="cut")return "Tippe die Ecken von Fenster oder Tür an. Dort bleibt das Originalfoto sichtbar.";
+  if(d.kind==="fenster"){
+    if(!d.auto)return "Tippe drei oder vier Ecken des Fensters an, außen am Rahmen.";
+    if(!d.taps.length)return "Tippe mitten auf das Fenster, das verkleidet werden soll.";
+    if(d.busy)return "Das Fenster wird gesucht.";
+    var cc=d.cands[d.pick];
+    if(cc&&!winFits(d,cc.mb))return "Diese Fläche hat keine Fenstergröße. Tippe auf „Kleiner“ oder „Größer“.";
+    return "Die gelbe Fläche sollte das ganze Fenster samt Rahmen umfassen. Ist sie zu klein, tippe auf „Größer“.";
+  }
   if(!d.auto)return d.kind==="dach"?"Tippe die Ecken der Dachfläche der Reihe nach an: zuerst entlang der Traufe, dann am First. Vier Ecken ergeben die beste Perspektive."
     :"Tippe die Ecken der Wandfläche der Reihe nach an. Fenster und Türen sparst du danach aus.";
   var wait=st.phase==="laden"||st.phase==="analyse"?"Die Erkennung startet gerade. ":"";
@@ -311,6 +391,31 @@ function sizeInfo(s){
   if(s.est==="fenster")t="Breite aus der Fenstergröße geschätzt, bitte prüfen. "+t;
   else if(s.est)t="Breite geschätzt. Trag das echte Maß der markierten Fläche ein, dann stimmt die Größe der Elemente. "+t;
   $("size-info").textContent=t;
+}
+function winUi(s,pal){
+  $("ed-win").hidden=s.kind!=="fassade";if(s.kind!=="fassade")return;
+  if(!s.trim)s.trim={style:"schlank",sill:true,color:null};if(!s.wins)s.wins=[];
+  var t=s.trim,n=s.wins.length;
+  $("win-info").textContent=n?n+(n===1?" Fenster":" Fenster")+" verkleidet":"noch keines markiert";
+  Array.prototype.forEach.call(document.querySelectorAll("#win-style button"),function(b){b.setAttribute("aria-pressed",b.dataset.style===t.style);});
+  $("win-sill").checked=!!t.sill;
+  var on=TRIM[t.style];$("win-opts").hidden=!on;
+  var wc=$("win-colors"),l=wc.scrollLeft;wc.textContent="";
+  var same=el("button","btn","Wie Fassade");same.type="button";same.setAttribute("aria-pressed",!t.color);
+  same.onclick=function(){t.color=null;ui();refresh();};wc.appendChild(same);
+  pal.forEach(function(code){
+    var c=DATA.colors[code],b=el("button","sw");b.type="button";b.style.background=c.hex;b.title=code+" "+c.name;
+    b.setAttribute("aria-label","Fensterfarbe "+code+" "+c.name);b.setAttribute("aria-pressed",code===t.color);
+    b.onclick=function(){t.color=code;ui();refresh();};wc.appendChild(b);
+  });
+  wc.scrollLeft=l;
+  $("win-color-name").textContent=t.color?colName(t.color):"wie Fassade";
+  var list=$("win-list");list.textContent="";
+  s.wins.forEach(function(w,i){
+    var b=el("button","btn chip-x",(w.door?"Tür ":"Fenster ")+(i+1)+"  ✕");b.type="button";
+    b.setAttribute("aria-label",(w.door?"Tür ":"Fenster ")+(i+1)+" entfernen");
+    b.onclick=function(){s.wins.splice(i,1);ui();refresh();};list.appendChild(b);
+  });
 }
 function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e;}
 function matName(s){return prod(s).name;}
@@ -378,6 +483,7 @@ function ui(){
     b.onclick=function(){s.color=code;if(split>.85)split=.5;ui();refresh();};cols.appendChild(b);
   });
   mats.scrollLeft=ml;cols.scrollLeft=cl;
+  winUi(s,pal);
   var cur=DATA.colors[s.color];
   $("color-name").textContent=colName(s.color)+(cur?" · ähnlich RAL "+cur.ral:"");
   if(document.activeElement!==$("wm"))$("wm").value=s.wm;
@@ -505,7 +611,7 @@ if(SEG)SEG.onChange(function(st){
   if(st.phase==="fehler"&&drawing&&drawing.auto){autoFailed(drawing);return;}
   uiStatus();
 });
-function cancelDraw(){drawing=null;ui();draw();}
+function cancelDraw(){if(drawing&&drawing.target)sel=drawing.target;drawing=null;ui();draw();}
 $("d-cancel").onclick=cancelDraw;
 $("m-auto").onclick=function(){setMethod(true);};
 $("m-manual").onclick=function(){setMethod(false);};
@@ -532,6 +638,11 @@ function num(el){var v=parseFloat(String(el.value).replace(",","."));return v>=1
 $("wm").oninput=function(){var s=current(),v=num(this);if(s&&v){s.wm=v;s.est=false;sizeInfo(s);refresh();}};
 $("hm").oninput=function(){var s=current();if(!s)return;s.hm=num(this);sizeInfo(s);refresh();};
 $("shade").oninput=function(){var s=current();if(s){s.shade=this.value/100;refresh();}};
+Array.prototype.forEach.call(document.querySelectorAll("#win-style button"),function(b){
+  b.onclick=function(){var s=current();if(s&&s.trim){s.trim.style=b.dataset.style;ui();refresh();}};
+});
+$("win-sill").onchange=function(){var s=current();if(s&&s.trim){s.trim.sill=this.checked;refresh();}};
+$("add-win").onclick=function(){var s=current();if(s&&s.kind==="fassade")startDraw("fenster");};
 $("rot").onclick=function(){var s=current();if(s){s.rot=((s.rot||0)+1)%4;sizeInfo(s);refresh();}};
 $("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];delete EDGES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});
   sel=surfaces.length?surfaces[surfaces.length-1].id:null;adjust=false;ui();refresh();};
@@ -596,13 +707,15 @@ function loadSample(){
   function n(a){return a.map(function(p){return {x:p[0]/1200,y:p[1]/800};});}
   function r(x0,y0,x1,y1){return n([[x0,y0],[x1,y0],[x1,y1],[x0,y1]]);}
   var roof=addSurface("dach",n([[300,410],[900,410],[840,230],[360,230]]),{wm:10.5,hm:5.5,est:false});
-  addSurface("fassade",r(330,412,870,650),{color:"10",wm:9.5,hm:4.2,est:false});
+  addSurface("fassade",r(330,412,870,650),{color:"10",wm:9.5,hm:4.2,est:false,
+    wins:[{x0:394/1200,y0:454/800,x1:506/1200,y1:566/800},{x0:694/1200,y0:454/800,x1:806/1200,y1:566/800},{x0:554/1200,y0:494/800,x1:646/1200,y1:650/800,door:true}],
+    trim:{style:"rahmen",sill:true,color:"02"}});
   addSurface("cut",r(394,454,506,566));addSurface("cut",r(694,454,806,566));addSurface("cut",r(554,494,646,650));
   sel=roof.id;renderAfter();ui();draw();
 }
 function save(){
   clearTimeout(saveT);saveT=setTimeout(function(){
-    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:5,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
+    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:6,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
   },300);
 }
 function storePhoto(c){
@@ -623,7 +736,7 @@ function restore(){
   var st=null,ph=null;
   try{st=JSON.parse(localStorage.getItem("hausprobe.state")||"null");ph=localStorage.getItem("hausprobe.photo");}catch(e){}
   loadSample();
-  if(!st||st.v!==5||!Array.isArray(st.surfaces))return;
+  if(!st||st.v!==6||!Array.isArray(st.surfaces))return;
   if(st.sample){applyState(st);return;}
   if(!ph)return;
   var img=new Image();

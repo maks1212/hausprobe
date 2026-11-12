@@ -142,7 +142,7 @@ function straighten(mask,src){
     if(area<0){
       /* Loch in der Fläche (meist ein Fenster): Größe merken, daraus lässt sich der Maßstab schätzen. */
       var hx0=w,hy0=h,hx1=0,hy1=0;pts.forEach(function(p){if(p[0]<hx0)hx0=p[0];if(p[0]>hx1)hx1=p[0];if(p[1]<hy0)hy0=p[1];if(p[1]>hy1)hy1=p[1];});
-      if(Math.abs(area)/2>=.55*(hx1-hx0)*(hy1-hy0))holes.push({w:(hx1-hx0)/w,h:(hy1-hy0)/h});
+      if(Math.abs(area)/2>=.55*(hx1-hx0)*(hy1-hy0))holes.push({x:hx0/w,y:hy0/h,w:(hx1-hx0)/w,h:(hy1-hy0)/h});
     }
     var idx=corners(pts,tol),m=idx.length;
     if(m<3)return;

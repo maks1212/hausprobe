@@ -88,6 +88,21 @@
               <div class="field"><label class="lbl" for="hm">Höhe in m</label><input id="hm" class="num" type="number" inputmode="decimal" min="1" max="80" step="0.1" placeholder="aus dem Foto"></div>
             </div>
             <p id="size-info" class="sizeinfo" aria-live="polite"></p>
+            <div id="ed-win" class="stack winbox" hidden>
+              <h3>Fenster: <span id="win-info"></span></h3>
+              <div id="win-style" class="seg" role="group" aria-label="Fensterverkleidung">
+                <button type="button" data-style="aus">Ohne</button>
+                <button type="button" data-style="schlank">Schlank</button>
+                <button type="button" data-style="rahmen">Rahmen</button>
+                <button type="button" data-style="breit">Breit</button>
+              </div>
+              <div id="win-opts" class="stack">
+                <label class="check" for="win-sill"><input id="win-sill" type="checkbox"> Fensterbank aus Aluminium</label>
+                <h3>Farbe der Verkleidung: <span id="win-color-name"></span></h3>
+                <div id="win-colors" class="scroller"></div>
+              </div>
+              <div class="scroller"><span id="win-list"></span><button id="add-win" class="btn add" type="button">+ Fenster markieren</button></div>
+            </div>
             <details id="more">
               <summary>Feinheiten</summary>
               <div class="stack">
