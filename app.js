@@ -5,7 +5,8 @@ var KIND={dach:"Dach",fassade:"Fassade",cut:"Aussparung"};
 var $=function(id){return document.getElementById(id);};
 var cv=$("cv"),ctx=cv.getContext("2d");
 var W=1200,H=800,src=null,after=document.createElement("canvas");
-var surfaces=[],sel=null,showBefore=false,adjust=false,down=null,drawing=null,drag=null,nextId=1,pending=false,error="",isSample=true,saveT=0;
+var surfaces=[],sel=null,split=.5,adjust=false,drawing=null,drag=null,nextId=1,pending=false,error="",isSample=true,saveT=0;
+var Z={z:1,tx:0,ty:0},ptrs={},gest=null,lastTap=null,view=$("view");
 var MASKS={},SHADES={},EDGES={},layer=document.createElement("canvas"),grain=null;
 
 function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;return c;}
@@ -17,6 +18,7 @@ function bbox(P){var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;P.forEach(function(p){x0=Math
 function setImage(c){
   src=c;W=c.width;H=c.height;cv.width=W;cv.height=H;after.width=W;after.height=H;
   MASKS={};SHADES={};EDGES={};
+  Z.z=1;Z.tx=0;Z.ty=0;cv.style.transform="";view.classList.remove("zoomed");
 }
 
 /* Unit square to quad. Straight lines stay straight, so patterns are drawn as vector lines in perspective. */
@@ -188,9 +190,20 @@ function renderAfter(){
   surfaces.forEach(function(s){if(s.kind!=="cut")paint(a,s);});
   surfaces.forEach(function(s){if(s.kind==="cut"){a.save();trace(a,px(s));a.clip();a.drawImage(src,0,0);a.restore();}});
 }
+/* Der Vorher/Nachher-Regler ist immer da, sobald es eine Fläche gibt und gerade nichts markiert wird. */
+function slider(){return !drawing&&!adjust&&surfaces.length>0;}
 function draw(){
-  var k=W/Math.max(1,cv.getBoundingClientRect().width),s;
-  ctx.drawImage(showBefore&&!drawing?src:after,0,0);
+  var r=cv.getBoundingClientRect(),k=W/Math.max(1,r.width),s;
+  ctx.drawImage(after,0,0);
+  if(slider()){
+    var x=split*W,vr=view.getBoundingClientRect(),cy=((vr.top+vr.height/2)-r.top)/Math.max(1,r.height)*H;
+    ctx.save();ctx.beginPath();ctx.rect(0,0,x,H);ctx.clip();ctx.drawImage(src,0,0);ctx.restore();
+    ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(x-1.5*k,0,3*k,H);
+    ctx.fillStyle="#fff";ctx.fillRect(x-.75*k,0,1.5*k,H);
+    ctx.beginPath();ctx.arc(x,cy,17*k,0,7);ctx.fillStyle="#fff";ctx.fill();ctx.lineWidth=1.5*k;ctx.strokeStyle="rgba(0,0,0,.5)";ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-5*k,cy-6*k);ctx.lineTo(x-11*k,cy);ctx.lineTo(x-5*k,cy+6*k);
+    ctx.moveTo(x+5*k,cy-6*k);ctx.lineTo(x+11*k,cy);ctx.lineTo(x+5*k,cy+6*k);ctx.strokeStyle="#1b2327";ctx.lineWidth=2.2*k;ctx.stroke();
+  }
   if(drawing&&drawing.auto){
     var cand=drawing.cands[drawing.pick];
     if(cand){ctx.globalAlpha=.5;ctx.drawImage(cand.canvas,0,0,W,H);ctx.globalAlpha=1;}
@@ -220,7 +233,7 @@ function addSurface(kind,pts,o){
   surfaces.push(s);return s;
 }
 function startDraw(kind){
-  showBefore=false;adjust=false;sel=null;error="";
+  adjust=false;sel=null;error="";
   drawing={kind:kind,pts:[],auto:kind!=="cut"&&!!SEG&&!SEG.blocked(),taps:[],sub:false,cands:[],pick:0,picked:false,busy:false,miss:false,ticket:0};
   if(drawing.auto)SEG.prepare(src);
   ui();draw();
@@ -308,16 +321,17 @@ function hintText(){
   var s=current();
   if(adjust&&s)return MASKS[s.id]?"Zieh die Eckpunkte, um das Muster auszurichten. Die Fläche selbst bleibt gleich.":"Zieh die Eckpunkte an die Ecken der Fläche.";
   if(!surfaces.length)return "Was soll neu werden? Tippe auf „+ Fassade“ oder „+ Dach“.";
-  if(showBefore)return "So sieht dein Foto ohne Änderung aus.";
-  if(isSample)return "Beispiel zum Ausprobieren. Mit „Foto wählen“ nimmst du dein eigenes Haus.";
-  return "Wähle Produkt und Farbe. Ein Tipp ins Bild wählt eine andere Fläche.";
+  if(isSample)return "Beispiel zum Ausprobieren. Zieh die Linie im Bild für Vorher und Nachher. Mit „Foto wählen“ nimmst du dein eigenes Haus.";
+  return "Zieh die Linie im Bild für Vorher und Nachher. Zoomen geht mit zwei Fingern, Mausrad oder den Knöpfen im Bild.";
 }
 /* Leichte Aktualisierung: Status, Hinweis und Knöpfe. Läuft auch bei jedem Fortschrittsschritt der Erkennung. */
 function uiStatus(){
   var D=drawing,A=D&&D.auto,st=SEG?SEG.state:{},t="",pct=-1;
   $("p-draw").hidden=!D;$("p-main").hidden=!!D;
   cv.className=D||adjust?"edit":"";
-  $("l-state").hidden=!!D||!surfaces.length;$("l-state").textContent=showBefore?"Vorher":"Nachher";
+  $("l-before").hidden=$("l-after").hidden=$("split").hidden=!slider();
+  $("split").value=Math.round(split*100);
+  $("z-in").disabled=Z.z>=6;$("z-out").disabled=$("z-fit").disabled=Z.z<=1;
   if(D){
     $("d-done").disabled=A?!D.cands[D.pick]||D.busy:D.pts.length<3;
     $("d-undo").disabled=!(A?D.taps.length:D.pts.length);
@@ -331,9 +345,7 @@ function uiStatus(){
   else if(D&&D.busy)t="Fläche wird gesucht";
   $("busy").hidden=!t;$("busy-text").textContent=t+(pct>=0?": "+pct+" %":"");
   $("busy-bar").style.width=pct>=0?pct+"%":"";$("busy-bar").className=pct>=0?"":"run";
-  $("toggle-before").disabled=$("save").disabled=$("share").disabled=!surfaces.length;
-  $("toggle-before").textContent=showBefore?"Nachher ansehen":"Vorher ansehen";
-  $("toggle-before").setAttribute("aria-pressed",showBefore);
+  $("save").disabled=$("share").disabled=!surfaces.length;
   $("adjust").setAttribute("aria-pressed",adjust);
   $("add-fassade").classList.toggle("primary",!surfaces.length);$("add-dach").classList.toggle("primary",!surfaces.length);
   $("hint").textContent=hintText();
@@ -355,7 +367,7 @@ function ui(){
   var pr=prod(s),pal=DATA.palettes[pr.pal];
   DATA.products.filter(function(m){return m.kind===s.kind;}).forEach(function(m){
     var b=el("button","btn",m.name);b.type="button";b.setAttribute("aria-pressed",m.id===s.mat);
-    b.onclick=function(){s.mat=m.id;if(DATA.palettes[m.pal].indexOf(s.color)<0)s.color=DATA.palettes[m.pal][0];showBefore=false;ui();refresh();};
+    b.onclick=function(){s.mat=m.id;if(DATA.palettes[m.pal].indexOf(s.color)<0)s.color=DATA.palettes[m.pal][0];if(split>.85)split=.5;ui();refresh();};
     mats.appendChild(b);
   });
   $("mat-info").textContent=pr.info;
@@ -363,7 +375,7 @@ function ui(){
   pal.forEach(function(code){
     var c=DATA.colors[code],b=el("button","sw");b.type="button";b.style.background=c.hex;b.title=code+" "+c.name;
     b.setAttribute("aria-label",code+" "+c.name);b.setAttribute("aria-pressed",code===s.color);
-    b.onclick=function(){s.color=code;showBefore=false;ui();refresh();};cols.appendChild(b);
+    b.onclick=function(){s.color=code;if(split>.85)split=.5;ui();refresh();};cols.appendChild(b);
   });
   mats.scrollLeft=ml;cols.scrollLeft=cl;
   var cur=DATA.colors[s.color];
@@ -378,35 +390,103 @@ function pos(e){var r=cv.getBoundingClientRect();return {x:Math.min(1,Math.max(0
 function inPoly(p,pts){var c=false;for(var i=0,j=pts.length-1;i<pts.length;j=i++){var a=pts[i],b=pts[j];
   if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)c=!c;}return c;}
 function near(p,q,r,lim){return Math.hypot((p.x-q.x)*r.width,(p.y-q.y)*r.height)<lim;}
-cv.addEventListener("pointerdown",function(e){
+/* Zoom: die Leinwand wird per CSS skaliert und verschoben, der Rahmen schneidet ab.
+   pos() rechnet über getBoundingClientRect und stimmt dadurch auch im Zoom. */
+function applyZoom(){
+  var w=cv.offsetWidth,h=cv.offsetHeight;
+  Z.z=Math.max(1,Math.min(6,Z.z));
+  if(Z.z<=1.001){Z.z=1;Z.tx=0;Z.ty=0;}
+  Z.tx=Math.min(0,Math.max(w-w*Z.z,Z.tx));Z.ty=Math.min(0,Math.max(h-h*Z.z,Z.ty));
+  cv.style.transform=Z.z===1?"":"translate("+Z.tx+"px,"+Z.ty+"px) scale("+Z.z+")";
+  view.classList.toggle("zoomed",Z.z>1);
+  $("z-in").disabled=Z.z>=6;$("z-out").disabled=$("z-fit").disabled=Z.z<=1;
+  draw();
+}
+function zoomAt(f,cx,cy){
+  var vr=view.getBoundingClientRect(),px=cx-vr.left,py=cy-vr.top,nz=Math.max(1,Math.min(6,Z.z*f));
+  f=nz/Z.z;Z.tx=px-(px-Z.tx)*f;Z.ty=py-(py-Z.ty)*f;Z.z=nz;applyZoom();
+}
+function zoomStep(f){var vr=view.getBoundingClientRect();zoomAt(f,vr.left+vr.width/2,vr.top+vr.height/2);}
+function resetZoom(){Z.z=1;Z.tx=0;Z.ty=0;applyZoom();}
+function hitSurface(p){
+  return surfaces.filter(function(x){return x.kind!=="cut";}).reverse().filter(function(x){return inPoly(p,x.pts);})[0];
+}
+function tapAt(e){
   var p=pos(e);
   if(drawing){
-    e.preventDefault();
     if(drawing.auto){drawing.taps.push({x:p.x,y:p.y,add:!drawing.sub});runDetect();return;}
     if(drawing.pts.length>=3&&near(p,drawing.pts[0],p.r,20)){finishDraw();return;}
     drawing.pts.push({x:p.x,y:p.y});ui();draw();return;
   }
-  var s=current();
-  if(adjust&&s){
-    e.preventDefault();
-    for(var i=0;i<s.pts.length;i++)if(near(p,s.pts[i],p.r,26)){drag={s:s,i:i};cv.setPointerCapture(e.pointerId);return;}
+  var now=Date.now();
+  /* Doppeltipp: hineinzoomen, im Zoom zurück aufs ganze Bild. */
+  if(lastTap&&now-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<30){
+    lastTap=null;if(Z.z>1)resetZoom();else zoomAt(2.5,e.clientX,e.clientY);return;
   }
-  down={x:e.clientX,y:e.clientY};
+  lastTap={t:now,x:e.clientX,y:e.clientY};
+  var hit=hitSurface(p);
+  if(hit&&hit.id!==sel){sel=hit.id;adjust=false;ui();draw();}
+}
+function setSplit(cx){var r=cv.getBoundingClientRect();split=Math.min(1,Math.max(0,(cx-r.left)/r.width));$("split").value=Math.round(split*100);draw();}
+/* Gesten: zwei Finger zoomen und verschieben. Ein Finger zieht den Regler, eine Ecke oder (im Zoom) das Bild.
+   Ein Tipp ohne Bewegung markiert beziehungsweise wählt eine Fläche. */
+cv.addEventListener("pointerdown",function(e){
+  if(e.pointerType==="mouse"&&e.button!==0)return;
+  ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  var ids=Object.keys(ptrs);
+  if(ids.length===2){
+    var a=ptrs[ids[0]],b=ptrs[ids[1]];
+    gest={type:"pinch",d:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),cx:(a.x+b.x)/2,cy:(a.y+b.y)/2};
+    drag=null;e.preventDefault();return;
+  }
+  if(ids.length>2)return;
+  var p=pos(e),s=current();
+  gest={type:"tap",x0:e.clientX,y0:e.clientY,lx:e.clientX,ly:e.clientY};
+  if(adjust&&s)for(var i=0;i<s.pts.length;i++)if(near(p,s.pts[i],p.r,26)){gest.type="corner";drag={s:s,i:i};e.preventDefault();return;}
+  if(slider()&&Math.abs(e.clientX-(p.r.left+split*p.r.width))<28){gest.type="split";e.preventDefault();return;}
+  if(drawing||adjust||Z.z>1)e.preventDefault();
 });
 cv.addEventListener("pointermove",function(e){
-  if(drag){var p=pos(e);drag.s.pts[drag.i]={x:p.x,y:p.y};refresh();}
-});
-/* Ein Tipp (kein Wischen) auf eine Fläche wählt sie aus; so bleibt das Scrollen über dem Bild möglich. */
-cv.addEventListener("pointerup",function(e){
-  if(drag){drag=null;return;}
-  if(down&&!drawing&&Math.hypot(e.clientX-down.x,e.clientY-down.y)<10){
-    var p=pos(e),order=surfaces.filter(function(x){return x.kind!=="cut";}).reverse();
-    var hit=order.filter(function(x){return inPoly(p,x.pts);})[0];
-    if(hit&&hit.id!==sel){sel=hit.id;adjust=false;ui();draw();}
+  if(!ptrs[e.pointerId])return;
+  ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+  var g=gest;if(!g)return;
+  if(g.type==="pinch"){
+    var ids=Object.keys(ptrs);if(ids.length<2)return;
+    var a=ptrs[ids[0]],b=ptrs[ids[1]],d=Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;
+    Z.tx+=cx-g.cx;Z.ty+=cy-g.cy;zoomAt(d/g.d,cx,cy);
+    g.d=d;g.cx=cx;g.cy=cy;return;
   }
-  down=null;
+  if(g.type==="tap"&&Math.hypot(e.clientX-g.x0,e.clientY-g.y0)>8){
+    g.type=Z.z>1?"pan":slider()?"split":"none";
+  }
+  if(g.type==="corner"){var p=pos(e);drag.s.pts[drag.i]={x:p.x,y:p.y};refresh();}
+  else if(g.type==="split")setSplit(e.clientX);
+  else if(g.type==="pan"){Z.tx+=e.clientX-g.lx;Z.ty+=e.clientY-g.ly;applyZoom();}
+  g.lx=e.clientX;g.ly=e.clientY;
 });
-cv.addEventListener("pointercancel",function(){drag=null;down=null;});
+function pointerEnd(e,cancel){
+  if(!ptrs[e.pointerId])return;
+  delete ptrs[e.pointerId];
+  var g=gest,left=Object.keys(ptrs).length;
+  if(g&&g.type==="pinch"){gest=left?{type:"none"}:null;return;}
+  if(left)return;
+  gest=null;drag=null;
+  if(!cancel&&g&&g.type==="tap")tapAt(e);
+}
+cv.addEventListener("pointerup",function(e){pointerEnd(e,false);});
+cv.addEventListener("pointercancel",function(e){pointerEnd(e,true);});
+/* Mausrad und Trackpad: Rad oder Zusammenziehen zoomt, Wischen auf dem Trackpad verschiebt im Zoom. */
+view.addEventListener("wheel",function(e){
+  var wheel=e.deltaMode!==0||(Math.abs(e.deltaY)>=50&&e.deltaX===0&&Number.isInteger(e.deltaY));
+  if(e.ctrlKey||wheel){e.preventDefault();zoomAt(Math.exp(-e.deltaY*(e.ctrlKey?.012:.0018)*(e.deltaMode===1?33:1)),e.clientX,e.clientY);}
+  else if(Z.z>1){e.preventDefault();Z.tx-=e.deltaX;Z.ty-=e.deltaY;applyZoom();}
+},{passive:false});
+["gesturestart","gesturechange"].forEach(function(t){view.addEventListener(t,function(e){e.preventDefault();});});
+$("z-in").onclick=function(){zoomStep(1.6);};
+$("z-out").onclick=function(){zoomStep(1/1.6);};
+$("z-fit").onclick=resetZoom;
+$("split").oninput=function(){split=this.value/100;draw();};
 
 $("add-dach").onclick=function(){startDraw("dach");};
 $("add-fassade").onclick=function(){startDraw("fassade");};
@@ -429,11 +509,13 @@ function cancelDraw(){drawing=null;ui();draw();}
 $("d-cancel").onclick=cancelDraw;
 $("m-auto").onclick=function(){setMethod(true);};
 $("m-manual").onclick=function(){setMethod(false);};
-$("toggle-before").onclick=function(){showBefore=!showBefore;adjust=false;uiStatus();draw();};
-$("adjust").onclick=function(){adjust=!adjust;showBefore=false;uiStatus();draw();};
+$("adjust").onclick=function(){adjust=!adjust;uiStatus();draw();};
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"){if(drawing)cancelDraw();else if(adjust){adjust=false;uiStatus();draw();}}
   else if(e.key==="Enter"&&drawing&&!$("d-done").disabled&&!/^(BUTTON|INPUT|SUMMARY)$/.test(document.activeElement.tagName))finishDraw();
+  else if(!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&!e.ctrlKey&&!e.metaKey){
+    if(e.key==="+"||e.key==="=")zoomStep(1.6);else if(e.key==="-")zoomStep(1/1.6);else if(e.key==="0")resetZoom();
+  }
 });
 $("save").onclick=function(){exportBlob(function(b){
   if(!b)return;var a=document.createElement("a"),u=URL.createObjectURL(b);a.href=u;a.download="hausprobe.jpg";
@@ -462,7 +544,7 @@ function loadFile(f){
     var sc=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));
     var c=mk(Math.max(1,Math.round(img.naturalWidth*sc)),Math.max(1,Math.round(img.naturalHeight*sc)));
     c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
-    setImage(c);isSample=false;storePhoto(c);surfaces=[];nextId=1;sel=null;drawing=null;showBefore=false;adjust=false;$("badge").hidden=true;
+    setImage(c);isSample=false;storePhoto(c);surfaces=[];nextId=1;sel=null;drawing=null;split=.5;adjust=false;$("badge").hidden=true;
     /* Die Analyse startet sofort im Hintergrund, damit der erste Tipp nicht warten muss. */
     if(SEG&&!SEG.blocked())SEG.prepare(src);
     renderAfter();ui();draw();window.scrollTo(0,0);
@@ -510,7 +592,7 @@ function sampleHouse(){
   return c;
 }
 function loadSample(){
-  setImage(sampleHouse());isSample=true;surfaces=[];nextId=1;drawing=null;showBefore=false;adjust=false;$("badge").hidden=false;
+  setImage(sampleHouse());isSample=true;surfaces=[];nextId=1;drawing=null;split=.5;adjust=false;$("badge").hidden=false;
   function n(a){return a.map(function(p){return {x:p[0]/1200,y:p[1]/800};});}
   function r(x0,y0,x1,y1){return n([[x0,y0],[x1,y0],[x1,y1],[x0,y1]]);}
   var roof=addSurface("dach",n([[300,410],[900,410],[840,230],[360,230]]),{wm:10.5,hm:5.5,est:false});
@@ -529,7 +611,7 @@ function storePhoto(c){
 }
 function applyState(st){
   surfaces=st.surfaces;nextId=st.nextId||surfaces.length+1;sel=surfaces.length?surfaces[0].id:null;
-  drawing=null;showBefore=false;adjust=false;renderAfter();ui();draw();
+  drawing=null;adjust=false;renderAfter();ui();draw();
   surfaces.forEach(function(s){
     if(!s.maskUrl)return;
     var img=new Image();
@@ -549,6 +631,6 @@ function restore(){
   img.src=ph;
 }
 restore();
-window.addEventListener("resize",draw);
+window.addEventListener("resize",applyZoom);
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(function(){});
 })();

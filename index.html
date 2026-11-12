@@ -30,14 +30,21 @@
   <main class="work">
     <section class="stage-col" aria-label="Foto">
       <div class="stage">
-        <canvas id="cv" width="1200" height="800"></canvas>
-        <span id="l-state" class="pill">Nachher</span>
+        <div id="view" class="view"><canvas id="cv" width="1200" height="800"></canvas></div>
+        <span id="l-before" class="pill" hidden>Vorher</span>
+        <span id="l-after" class="pill" hidden>Nachher</span>
+        <div class="zoombar" role="group" aria-label="Zoom">
+          <button id="z-in" class="zbtn" type="button" aria-label="Vergrößern" title="Vergrößern"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg></button>
+          <button id="z-out" class="zbtn" type="button" aria-label="Verkleinern" title="Verkleinern" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12"/></svg></button>
+          <button id="z-fit" class="zbtn" type="button" aria-label="Ganzes Bild" title="Ganzes Bild" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg></button>
+        </div>
         <span id="badge" class="pill">Beispielhaus (Zeichnung)</span>
         <div id="busy" class="busy" role="status" hidden>
           <span id="busy-text"></span>
           <div class="bar"><i id="busy-bar"></i></div>
         </div>
       </div>
+      <input id="split" class="sr" type="range" min="0" max="100" value="50" aria-label="Vorher und Nachher vergleichen" hidden>
       <p id="hint" class="hint" aria-live="polite"></p>
     </section>
 
@@ -96,7 +103,6 @@
         </div>
 
         <div class="row actions">
-          <button id="toggle-before" class="btn" type="button" aria-pressed="false">Vorher ansehen</button>
           <button id="save" class="btn primary grow" type="button">Bild speichern</button>
           <button id="share" class="btn" type="button" hidden>Teilen</button>
         </div>
