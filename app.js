@@ -6,7 +6,7 @@ var $=function(id){return document.getElementById(id);};
 var cv=$("cv"),ctx=cv.getContext("2d");
 var W=1200,H=800,src=null,after=document.createElement("canvas");
 var surfaces=[],sel=null,mode="view",split=.5,drawing=null,drag=null,dragSplit=false,nextId=1,pending=false,error="",isSample=true,saveT=0;
-var MASKS={},SHADES={},layer=document.createElement("canvas"),grain=null;
+var MASKS={},SHADES={},EDGES={},layer=document.createElement("canvas"),grain=null;
 
 function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;return c;}
 function px(s){return s.pts.map(function(p){return [p.x*W,p.y*H];});}
@@ -16,7 +16,7 @@ function bbox(P){var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;P.forEach(function(p){x0=Math
 
 function setImage(c){
   src=c;W=c.width;H=c.height;cv.width=W;cv.height=H;after.width=W;after.height=H;
-  MASKS={};SHADES={};
+  MASKS={};SHADES={};EDGES={};
 }
 
 /* Unit square to quad. Straight lines stay straight, so patterns are drawn as vector lines in perspective. */
@@ -73,7 +73,13 @@ function paint(c,s){
   if(layer.width!==W||layer.height!==H){layer.width=W;layer.height=H;}
   var lc=layer.getContext("2d");lc.globalCompositeOperation="source-over";lc.globalAlpha=1;lc.clearRect(0,0,W,H);
   paintInner(lc,s,true);
-  lc.globalCompositeOperation="destination-in";lc.imageSmoothingEnabled=true;lc.drawImage(m,0,0,W,H);lc.globalCompositeOperation="source-over";
+  lc.globalCompositeOperation="destination-in";lc.imageSmoothingEnabled=true;lc.drawImage(m,0,0,W,H);
+  /* Leichter Schattensaum am Rand der Fläche: dort, wo das Material an Rahmen, Leisten und Dachvorsprung anschließt. */
+  if(REF&&REF.edge){
+    if(!(s.id in EDGES))EDGES[s.id]=REF.edge(m);
+    if(EDGES[s.id]){lc.globalCompositeOperation="source-atop";lc.drawImage(EDGES[s.id],0,0,W,H);}
+  }
+  lc.globalCompositeOperation="source-over";
   c.drawImage(layer,0,0);
 }
 /* Geprägte Kornstruktur als kachelbare Textur: geglättetes Rauschen, schräg beleuchtet. */
@@ -85,7 +91,7 @@ function stucco(){
   for(y=0;y<n;y++)for(x=0;x<n;x++)b[y*n+x]=(at(a,x,y)*2+at(a,x-1,y)+at(a,x+1,y)+at(a,x,y-1)+at(a,x,y+1))/6;
   grain=mk(n,n);var g=grain.getContext("2d"),im=g.createImageData(n,n),d=im.data;
   for(y=0;y<n;y++)for(x=0;x<n;x++){
-    var e=at(b,x+1,y+1)-at(b,x-1,y-1),v=e>0?255:0,al=Math.min(1,Math.abs(e)*3.2)*36;
+    var e=at(b,x+1,y+1)-at(b,x-1,y-1),v=e>0?255:0,al=Math.min(1,Math.abs(e)*3.2)*13;
     i=(y*n+x)*4;d[i]=d[i+1]=d[i+2]=v;d[i+3]=al;
   }
   g.putImageData(im,0,0);return grain;
@@ -96,15 +102,17 @@ function relief(c,pr,n,ratio,map){
   function poly(pts){c.beginPath();pts.forEach(function(p,i){var X=map(p[0],p[1]);i?c.lineTo(X[0],X[1]):c.moveTo(X[0],X[1]);});c.closePath();}
   function rnd(i,j){var h=Math.sin(i*127.1+j*311.7)*43758.5453;return h-Math.floor(h);}
   function grad(p0,p1,stops){var A=map(p0[0],p0[1]),B=map(p1[0],p1[1]),g=c.createLinearGradient(A[0],A[1],B[0],B[1]);stops.forEach(function(s){g.addColorStop(s[0],s[1]);});return g;}
-  var LAP=[[0,"rgba(255,255,255,.09)"],[.3,"rgba(255,255,255,0)"],[.6,"rgba(0,0,0,0)"],[1,"rgba(0,0,0,.2)"]];
+  var LAP=[[0,"rgba(255,255,255,.07)"],[.3,"rgba(255,255,255,0)"],[.65,"rgba(0,0,0,0)"],[1,"rgba(0,0,0,.15)"]];
+  /* Siding: glatte Bahn mit leichtem Lichtverlauf und einer schmalen, dunklen Schattenfuge am unteren Rand. */
+  var BOARD=[[0,"rgba(255,255,255,.08)"],[.22,"rgba(255,255,255,0)"],[.78,"rgba(0,0,0,.02)"],[.9,"rgba(0,0,0,.1)"],[.925,"rgba(0,0,0,.5)"],[1,"rgba(0,0,0,.62)"]];
   function tone(t,k){return t<.5?"rgba(0,0,0,"+((.5-t)*k)+")":"rgba(255,255,255,"+((t-.5)*k)+")";}
   var i,j,m,u0,u1,v0,v1,t;
   if(pr.pat==="hline"){
     var mix=pr.mix||[1],sum=0;mix.forEach(function(x){sum+=x;});var unit=mix.length/(sum*n);v0=0;
     for(j=0;j<400&&v0<1;j++){
       v1=Math.min(1,v0+mix[j%mix.length]*unit);
-      poly([[0,v0],[1,v0],[1,v1],[0,v1]]);c.fillStyle=grad([.5,v0],[.5,v1],LAP);c.fill();
-      c.fillStyle=tone(rnd(j,7),.07);c.fill();v0=v1;
+      poly([[0,v0],[1,v0],[1,v1],[0,v1]]);c.fillStyle=grad([.5,v0],[.5,v1],BOARD);c.fill();
+      c.fillStyle=tone(rnd(j,7),.025);c.fill();v0=v1;
     }
   }else if(pr.pat==="offset"){
     m=Math.max(1,Math.round(n*ratio*pr.w/pr.h));
@@ -115,7 +123,7 @@ function relief(c,pr,n,ratio,map){
       var sh=(j*(pr.shift||.5))%1;
       for(i=-1;i<n;i++){
         u0=Math.max(0,(i+sh)/n);u1=Math.min(1,(i+1+sh)/n);if(u1<=u0)continue;
-        poly([[u0,v0],[u1,v0],[u1,v1],[u0,v1]]);c.fillStyle=tone(rnd(i,j),.11);c.fill();
+        poly([[u0,v0],[u1,v0],[u1,v1],[u0,v1]]);c.fillStyle=tone(rnd(i,j),.05);c.fill();
       }
     }
   }else if(pr.pat==="raute"){
@@ -127,13 +135,13 @@ function relief(c,pr,n,ratio,map){
       if(cx<-.5||cx>n+.5||cy<-.5||cy>m+.5)continue;
       poly([[(cx-.5)/n,cy/m],[cx/n,(cy-.5)/m],[(cx+.5)/n,cy/m],[cx/n,(cy+.5)/m]]);
       c.fillStyle=grad([cx/n,(cy-.5)/m],[cx/n,(cy+.5)/m],LAP);c.fill();
-      c.fillStyle=tone(rnd(a,b2),.11);c.fill();
+      c.fillStyle=tone(rnd(a,b2),.05);c.fill();
     }
   }else if(pr.pat==="seam"){
     for(i=0;i<n;i++){
       u0=i/n;u1=(i+1)/n;poly([[u0,0],[u1,0],[u1,1],[u0,1]]);
       c.fillStyle=grad([u0,.5],[u1,.5],[[0,"rgba(0,0,0,.2)"],[.1,"rgba(0,0,0,0)"],[.88,"rgba(255,255,255,0)"],[1,"rgba(255,255,255,.1)"]]);c.fill();
-      c.fillStyle=tone(rnd(i,3),.05);c.fill();
+      c.fillStyle=tone(rnd(i,3),.025);c.fill();
     }
   }
 }
@@ -155,7 +163,7 @@ function paintInner(c,s,masked){
   var wq=(dist(q[0],q[1])+dist(q[3],q[2]))/2,hq=(dist(q[0],q[3])+dist(q[1],q[2]))/2;
   var pr=prod(s),ratio=hq/Math.max(1,wq);
   relief(c,pr,s.scale,ratio,map);
-  var lines=patternLines(pr,s.scale,ratio);
+  var lines=pr.pat==="hline"?[]:patternLines(pr,s.scale,ratio);
   if(lines.length){
     var path=new Path2D();
     lines.forEach(function(l){var A=map(l[0],l[1]),B=map(l[2],l[3]);path.moveTo(A[0],A[1]);path.lineTo(B[0],B[1]);});
@@ -164,10 +172,10 @@ function paintInner(c,s,masked){
     c.save();c.translate(lw*.6,lw*1.6);c.lineWidth=lw*4.5;c.strokeStyle="rgba(0,0,0,.07)";c.stroke(path);
     c.lineWidth=lw*2.4;c.strokeStyle="rgba(0,0,0,.10)";c.stroke(path);c.restore();
     c.save();c.translate(-lw*.5,-lw*1.1);c.lineWidth=lw;c.strokeStyle="rgba(255,255,255,.16)";c.stroke(path);c.restore();
-    c.lineWidth=lw;c.strokeStyle="rgba(0,0,0,.5)";c.stroke(path);
+    c.lineWidth=lw;c.strokeStyle="rgba(0,0,0,.4)";c.stroke(path);
   }
   /* Oberflächenstruktur (Stucco-Prägung); glatte Produkte bekommen nur einen Hauch davon. */
-  c.globalAlpha=pr.smooth?.3:1;c.fillStyle=c.createPattern(stucco(),"repeat");c.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);c.globalAlpha=1;
+  c.globalAlpha=pr.smooth?.4:1;c.fillStyle=c.createPattern(stucco(),"repeat");c.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);c.globalAlpha=1;
   /* Licht und Schatten des Fotos auf das neue Material legen. */
   var sh=s.shade>0?shadeFor(s):null;
   if(sh){
@@ -407,7 +415,7 @@ $("share").onclick=function(){exportBlob(function(b){
 $("scale").oninput=function(){var s=current();if(s){s.scale=63-(+this.value);refresh();}};
 $("shade").oninput=function(){var s=current();if(s){s.shade=this.value/100;refresh();}};
 $("rot").onclick=function(){var s=current();if(s){s.rot=((s.rot||0)+1)%4;refresh();}};
-$("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});sel=null;ui();refresh();};
+$("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];delete EDGES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});sel=null;ui();refresh();};
 $("btn-sample").onclick=function(){try{localStorage.removeItem("hausprobe.photo");}catch(e){}loadSample();};
 $("file").onchange=function(){
   var f=this.files&&this.files[0];if(!f)return;this.value="";
@@ -474,7 +482,7 @@ function applyState(st){
   surfaces.forEach(function(s){
     if(!s.maskUrl)return;
     var img=new Image();
-    img.onload=function(){var c=mk(img.naturalWidth,img.naturalHeight);c.getContext("2d").drawImage(img,0,0);MASKS[s.id]=c;delete SHADES[s.id];refresh();};
+    img.onload=function(){var c=mk(img.naturalWidth,img.naturalHeight);c.getContext("2d").drawImage(img,0,0);MASKS[s.id]=c;delete SHADES[s.id];delete EDGES[s.id];refresh();};
     img.src=s.maskUrl;
   });
 }

@@ -226,29 +226,48 @@ function refine(mask,src){
 }
 
 /* Licht und Schatten: geglättete Helligkeit des Fotos innerhalb der Fläche, bezogen auf deren besonnte Stellen.
-   Ergebnis ist eine Graukarte für den Mischmodus "hard-light": 50 % Grau lässt die Farbe unverändert,
-   dunkler multipliziert (Schatten), heller hellt auf. drawMask(ctx,w,h) zeichnet die Fläche als Alpha. */
+   Ergebnis ist eine Karte für den Mischmodus "hard-light": 50 % Grau lässt die Farbe unverändert,
+   dunkler multipliziert (Schatten), heller hellt auf. drawMask(ctx,w,h) zeichnet die Fläche als Alpha.
+   Ein neues Material ist sauber: schwache Unterschiede (Verwitterung, Flecken, Fugen des alten Belags) werden
+   ausgeblendet, echte Schlagschatten bleiben in voller Stärke und bekommen den leicht bläulichen Ton von Außenschatten. */
 function shade(src,drawMask){
-  var sc=Math.min(1,360/Math.max(src.width,src.height)),w=Math.max(8,Math.round(src.width*sc)),h=Math.max(8,Math.round(src.height*sc)),N=w*h,i;
+  var sc=Math.min(1,512/Math.max(src.width,src.height)),w=Math.max(8,Math.round(src.width*sc)),h=Math.max(8,Math.round(src.height*sc)),N=w*h,i;
   var pc=canvasOf(w,h),pg=pc.getContext("2d");pg.drawImage(src,0,0,w,h);var pd=pg.getImageData(0,0,w,h).data;
   var mc=canvasOf(w,h),mg=mc.getContext("2d");drawMask(mg,w,h);var md=mg.getImageData(0,0,w,h).data;
   var L=new Float32Array(N),M=new Float32Array(N),inside=0;
   for(i=0;i<N;i++){M[i]=md[i*4+3]>127?1:0;inside+=M[i];L[i]=(.299*pd[i*4]+.587*pd[i*4+1]+.114*pd[i*4+2])*M[i];}
   if(inside<12)return null;
-  var r=Math.max(1,Math.round(Math.max(w,h)/170));
+  var r=Math.max(1,Math.round(Math.max(w,h)/200));
   var Lb=box(box(L,w,h,r,new Float32Array(N)),w,h,r,new Float32Array(N)),Mb=box(box(M,w,h,r,new Float32Array(N)),w,h,r,new Float32Array(N));
   var vals=[];
   for(i=0;i<N;i++){Lb[i]=Mb[i]>.04?Lb[i]/Mb[i]:-1;if(M[i])vals.push(Lb[i]);}
   vals.sort(function(a,b){return a-b;});
-  var ref=Math.max(8,vals[Math.floor(vals.length*.8)]);
-  var out=pg.createImageData(w,h),d=out.data,v;
+  var ref=Math.max(8,vals[Math.floor(vals.length*.75)]);
+  var out=pg.createImageData(w,h),d=out.data,v,dk,t,k;
   for(i=0;i<N;i++){
-    v=Lb[i]<0?1:Math.pow(Lb[i]/ref,.85);v=v<.08?.08:v>1.4?1.4:v;
-    v=Math.round(v*127.5);d[i*4]=d[i*4+1]=d[i*4+2]=v>255?255:v;d[i*4+3]=255;
+    v=Lb[i]<0?1:Lb[i]/ref;
+    if(v<1){dk=1-v;t=(dk-.1)/.26;t=t<0?0:t>1?1:t;k=t*t*(3-2*t);dk*=k;v=1-dk;if(v<.1)v=.1;}
+    else{v=1+(v-1)*.3;if(v>1.12)v=1.12;dk=0;}
+    d[i*4]=Math.min(255,Math.round(v*(1-.07*dk)*127.5));
+    d[i*4+1]=Math.min(255,Math.round(v*127.5));
+    d[i*4+2]=Math.min(255,Math.round(v*(1+.1*dk)*127.5));
+    d[i*4+3]=255;
   }
   pg.putImageData(out,0,0);
   return pc;
 }
 
-root.HausRefine={refine:refine,shade:shade};
+/* Schattensaum: schwarze Ebene, deren Deckkraft zum Rand der Fläche hin leicht zunimmt. */
+function edge(mask){
+  var sc=Math.min(1,420/Math.max(mask.width,mask.height)),w=Math.max(8,Math.round(mask.width*sc)),h=Math.max(8,Math.round(mask.height*sc)),N=w*h,i;
+  var c=canvasOf(w,h),g=c.getContext("2d");g.drawImage(mask,0,0,w,h);var md=g.getImageData(0,0,w,h).data;
+  var inv=new Float32Array(N);for(i=0;i<N;i++)inv[i]=1-md[i*4+3]/255;
+  var r=Math.max(2,Math.round(Math.max(w,h)*.007)),b=box(box(inv,w,h,r,new Float32Array(N)),w,h,r,new Float32Array(N));
+  var out=g.createImageData(w,h),d=out.data;
+  for(i=0;i<N;i++){d[i*4+3]=Math.round(Math.min(1,b[i]*1.5)*.34*255);}
+  g.putImageData(out,0,0);
+  return c;
+}
+
+root.HausRefine={refine:refine,shade:shade,edge:edge};
 })(typeof window!=="undefined"?window:this);
