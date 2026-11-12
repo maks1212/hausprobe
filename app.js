@@ -1,13 +1,12 @@
 (function(){
 "use strict";
-var DATA=window.HausData,SEG=window.HausSeg;
+var DATA=window.HausData,SEG=window.HausSeg,REF=window.HausRefine;
 var KIND={dach:"Dach",fassade:"Fassade",cut:"Aussparung"};
 var $=function(id){return document.getElementById(id);};
 var cv=$("cv"),ctx=cv.getContext("2d");
-var W=1200,H=800,src=null,gray=null,after=document.createElement("canvas");
-var tmp=document.createElement("canvas"),probe=document.createElement("canvas");probe.width=probe.height=12;
+var W=1200,H=800,src=null,after=document.createElement("canvas");
 var surfaces=[],sel=null,mode="view",split=.5,drawing=null,drag=null,dragSplit=false,nextId=1,pending=false,error="",isSample=true,saveT=0;
-var MASKS={},layer=document.createElement("canvas");
+var MASKS={},SHADES={},layer=document.createElement("canvas"),grain=null;
 
 function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;return c;}
 function px(s){return s.pts.map(function(p){return [p.x*W,p.y*H];});}
@@ -17,11 +16,7 @@ function bbox(P){var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;P.forEach(function(p){x0=Math
 
 function setImage(c){
   src=c;W=c.width;H=c.height;cv.width=W;cv.height=H;after.width=W;after.height=H;
-  gray=mk(W,H);var g=gray.getContext("2d");g.drawImage(src,0,0);
-  var im=g.getImageData(0,0,W,H),d=im.data;
-  for(var i=0;i<d.length;i+=4){var l=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)|0;d[i]=d[i+1]=d[i+2]=l;}
-  g.putImageData(im,0,0);
-  MASKS={};
+  MASKS={};SHADES={};
 }
 
 /* Unit square to quad. Straight lines stay straight, so patterns are drawn as vector lines in perspective. */
@@ -81,34 +76,103 @@ function paint(c,s){
   lc.globalCompositeOperation="destination-in";lc.imageSmoothingEnabled=true;lc.drawImage(m,0,0,W,H);lc.globalCompositeOperation="source-over";
   c.drawImage(layer,0,0);
 }
+/* Geprägte Kornstruktur als kachelbare Textur: geglättetes Rauschen, schräg beleuchtet. */
+function stucco(){
+  if(grain)return grain;
+  var n=192,a=new Float32Array(n*n),b=new Float32Array(n*n),i,x,y;
+  for(i=0;i<n*n;i++)a[i]=Math.random();
+  function at(arr,x,y){return arr[((y+n)%n)*n+(x+n)%n];}
+  for(y=0;y<n;y++)for(x=0;x<n;x++)b[y*n+x]=(at(a,x,y)*2+at(a,x-1,y)+at(a,x+1,y)+at(a,x,y-1)+at(a,x,y+1))/6;
+  grain=mk(n,n);var g=grain.getContext("2d"),im=g.createImageData(n,n),d=im.data;
+  for(y=0;y<n;y++)for(x=0;x<n;x++){
+    var e=at(b,x+1,y+1)-at(b,x-1,y-1),v=e>0?255:0,al=Math.min(1,Math.abs(e)*3.2)*36;
+    i=(y*n+x)*4;d[i]=d[i+1]=d[i+2]=v;d[i+3]=al;
+  }
+  g.putImageData(im,0,0);return grain;
+}
+/* Plastische Wirkung der einzelnen Elemente: jede Bahn, Platte oder Raute bekommt oben Licht, unten Schatten
+   und einen leicht eigenen Farbton, wie bei echtem Blech mit Überdeckung. */
+function relief(c,pr,n,ratio,map){
+  function poly(pts){c.beginPath();pts.forEach(function(p,i){var X=map(p[0],p[1]);i?c.lineTo(X[0],X[1]):c.moveTo(X[0],X[1]);});c.closePath();}
+  function rnd(i,j){var h=Math.sin(i*127.1+j*311.7)*43758.5453;return h-Math.floor(h);}
+  function grad(p0,p1,stops){var A=map(p0[0],p0[1]),B=map(p1[0],p1[1]),g=c.createLinearGradient(A[0],A[1],B[0],B[1]);stops.forEach(function(s){g.addColorStop(s[0],s[1]);});return g;}
+  var LAP=[[0,"rgba(255,255,255,.09)"],[.3,"rgba(255,255,255,0)"],[.6,"rgba(0,0,0,0)"],[1,"rgba(0,0,0,.2)"]];
+  function tone(t,k){return t<.5?"rgba(0,0,0,"+((.5-t)*k)+")":"rgba(255,255,255,"+((t-.5)*k)+")";}
+  var i,j,m,u0,u1,v0,v1,t;
+  if(pr.pat==="hline"){
+    var mix=pr.mix||[1],sum=0;mix.forEach(function(x){sum+=x;});var unit=mix.length/(sum*n);v0=0;
+    for(j=0;j<400&&v0<1;j++){
+      v1=Math.min(1,v0+mix[j%mix.length]*unit);
+      poly([[0,v0],[1,v0],[1,v1],[0,v1]]);c.fillStyle=grad([.5,v0],[.5,v1],LAP);c.fill();
+      c.fillStyle=tone(rnd(j,7),.07);c.fill();v0=v1;
+    }
+  }else if(pr.pat==="offset"){
+    m=Math.max(1,Math.round(n*ratio*pr.w/pr.h));
+    for(j=0;j<m;j++){
+      v0=j/m;v1=(j+1)/m;
+      poly([[0,v0],[1,v0],[1,v1],[0,v1]]);c.fillStyle=grad([.5,v0],[.5,v1],LAP);c.fill();
+      if(n*m>5000)continue;
+      var sh=(j*(pr.shift||.5))%1;
+      for(i=-1;i<n;i++){
+        u0=Math.max(0,(i+sh)/n);u1=Math.min(1,(i+1+sh)/n);if(u1<=u0)continue;
+        poly([[u0,v0],[u1,v0],[u1,v1],[u0,v1]]);c.fillStyle=tone(rnd(i,j),.11);c.fill();
+      }
+    }
+  }else if(pr.pat==="raute"){
+    m=Math.max(1,Math.round(n*ratio));
+    if((n+m)*(n+m)>7000)return;
+    var a,b2,cx,cy;
+    for(a=0;a<n+m;a++)for(b2=-m;b2<n;b2++){
+      cx=(a+b2+1)/2;cy=(a-b2)/2;
+      if(cx<-.5||cx>n+.5||cy<-.5||cy>m+.5)continue;
+      poly([[(cx-.5)/n,cy/m],[cx/n,(cy-.5)/m],[(cx+.5)/n,cy/m],[cx/n,(cy+.5)/m]]);
+      c.fillStyle=grad([cx/n,(cy-.5)/m],[cx/n,(cy+.5)/m],LAP);c.fill();
+      c.fillStyle=tone(rnd(a,b2),.11);c.fill();
+    }
+  }else if(pr.pat==="seam"){
+    for(i=0;i<n;i++){
+      u0=i/n;u1=(i+1)/n;poly([[u0,0],[u1,0],[u1,1],[u0,1]]);
+      c.fillStyle=grad([u0,.5],[u1,.5],[[0,"rgba(0,0,0,.2)"],[.1,"rgba(0,0,0,0)"],[.88,"rgba(255,255,255,0)"],[1,"rgba(255,255,255,.1)"]]);c.fill();
+      c.fillStyle=tone(rnd(i,3),.05);c.fill();
+    }
+  }
+}
+function shadeFor(s){
+  if(!REF)return null;
+  var m=MASKS[s.id],key=m?"m":JSON.stringify(s.pts),hit=SHADES[s.id];
+  if(hit&&hit.key===key)return hit.canvas;
+  var canvas=REF.shade(src,function(g,w,h){
+    if(m){g.drawImage(m,0,0,w,h);return;}
+    g.beginPath();s.pts.forEach(function(p,i){i?g.lineTo(p.x*w,p.y*h):g.moveTo(p.x*w,p.y*h);});g.closePath();g.fill();
+  });
+  SHADES[s.id]={key:key,canvas:canvas};return canvas;
+}
 function paintInner(c,s,masked){
   var P=px(s),q=quadFor(s,P),map=homography(q),b=bbox(P);
   if(masked)b=s.mb?[s.mb[0]*W,s.mb[1]*H,s.mb[2]*W,s.mb[3]*H]:[0,0,W,H];
   c.save();if(!masked){trace(c,P);c.clip();}
   c.fillStyle=hex(s.color);c.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-  var t=[(q[0][0]+q[1][0])/2,(q[0][1]+q[1][1])/2],e=[(q[3][0]+q[2][0])/2,(q[3][1]+q[2][1])/2];
-  var gr=c.createLinearGradient(t[0],t[1],e[0],e[1]);gr.addColorStop(0,"rgba(255,255,255,.10)");gr.addColorStop(1,"rgba(0,0,0,.12)");
-  c.fillStyle=gr;c.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);
   var wq=(dist(q[0],q[1])+dist(q[3],q[2]))/2,hq=(dist(q[0],q[3])+dist(q[1],q[2]))/2;
-  var lines=patternLines(prod(s),s.scale,hq/Math.max(1,wq));
+  var pr=prod(s),ratio=hq/Math.max(1,wq);
+  relief(c,pr,s.scale,ratio,map);
+  var lines=patternLines(pr,s.scale,ratio);
   if(lines.length){
     var path=new Path2D();
     lines.forEach(function(l){var A=map(l[0],l[1]),B=map(l[2],l[3]);path.moveTo(A[0],A[1]);path.lineTo(B[0],B[1]);});
-    var lw=Math.max(1,W/850);c.lineWidth=lw;
-    c.save();c.translate(lw*.9,lw*.9);c.strokeStyle="rgba(255,255,255,.20)";c.stroke(path);c.restore();
-    c.strokeStyle="rgba(0,0,0,.42)";c.stroke(path);
+    /* Fuge mit weichem Schattenwurf darunter und schmalem Lichtsaum darüber, damit die Bahnen plastisch wirken. */
+    var lw=Math.max(1,W/900);
+    c.save();c.translate(lw*.6,lw*1.6);c.lineWidth=lw*4.5;c.strokeStyle="rgba(0,0,0,.07)";c.stroke(path);
+    c.lineWidth=lw*2.4;c.strokeStyle="rgba(0,0,0,.10)";c.stroke(path);c.restore();
+    c.save();c.translate(-lw*.5,-lw*1.1);c.lineWidth=lw;c.strokeStyle="rgba(255,255,255,.16)";c.stroke(path);c.restore();
+    c.lineWidth=lw;c.strokeStyle="rgba(0,0,0,.5)";c.stroke(path);
   }
-  /* Carry the photo's own light and shadow over the new material. */
-  var bx=Math.max(0,Math.floor(b[0])),by=Math.max(0,Math.floor(b[1])),bw=Math.min(W,Math.ceil(b[2]))-bx,bh=Math.min(H,Math.ceil(b[3]))-by;
-  if(s.shade>0&&bw>2&&bh>2){
-    var pc=probe.getContext("2d");pc.drawImage(gray,bx,by,bw,bh,0,0,12,12);
-    var d=pc.getImageData(0,0,12,12).data,sum=0;for(var i=0;i<d.length;i+=4)sum+=d[i];
-    var m=sum/(d.length/4)/255;
-    tmp.width=bw;tmp.height=bh;var tc=tmp.getContext("2d");tc.drawImage(gray,bx,by,bw,bh,0,0,bw,bh);
-    if(m<.5){tc.fillStyle="rgba(255,255,255,"+((.5-m)/(1-m))+")";}else{tc.fillStyle="rgba(0,0,0,"+((m-.5)/Math.max(m,.01))+")";}
-    tc.fillRect(0,0,bw,bh);
-    c.globalCompositeOperation="hard-light";c.globalAlpha=s.shade;c.drawImage(tmp,bx,by);
-    c.globalCompositeOperation="source-over";c.globalAlpha=1;
+  /* Oberflächenstruktur (Stucco-Prägung); glatte Produkte bekommen nur einen Hauch davon. */
+  c.globalAlpha=pr.smooth?.3:1;c.fillStyle=c.createPattern(stucco(),"repeat");c.fillRect(b[0],b[1],b[2]-b[0],b[3]-b[1]);c.globalAlpha=1;
+  /* Licht und Schatten des Fotos auf das neue Material legen. */
+  var sh=s.shade>0?shadeFor(s):null;
+  if(sh){
+    c.imageSmoothingEnabled=true;c.globalCompositeOperation="hard-light";c.globalAlpha=Math.min(1,s.shade);
+    c.drawImage(sh,0,0,W,H);c.globalCompositeOperation="source-over";c.globalAlpha=1;
   }
   c.restore();
   if(!masked){trace(c,P);c.lineWidth=Math.max(1,W/900);c.strokeStyle="rgba(0,0,0,.35)";c.stroke();}
@@ -156,7 +220,7 @@ function refresh(){if(pending)return;pending=true;requestAnimationFrame(function
 function current(){return surfaces.filter(function(s){return s.id===sel;})[0]||null;}
 function addSurface(kind,pts,o){
   var n=surfaces.filter(function(s){return s.kind===kind;}).length+1;
-  var s={id:nextId++,kind:kind,name:KIND[kind]+" "+n,pts:pts,rot:0,shade:.55,
+  var s={id:nextId++,kind:kind,name:KIND[kind]+" "+n,pts:pts,rot:0,shade:.9,
     mat:kind==="dach"?"prefalz":"siding",color:"02",scale:0};
   if(kind!=="cut")s.scale=defScale(prod(s),kind);
   if(o)for(var key in o)s[key]=o[key];
@@ -200,7 +264,8 @@ function finishDraw(){
   if(d.auto){
     var c=d.cands[d.pick];if(!c||d.busy)return;
     var s=addSurface(d.kind,c.quad,{mb:c.mb});
-    MASKS[s.id]=c.canvas;try{s.maskUrl=c.canvas.toDataURL("image/png");}catch(e){}
+    var fine=c.canvas;try{if(REF)fine=REF.refine(c.canvas,src);}catch(e){}
+    MASKS[s.id]=fine;try{s.maskUrl=fine.toDataURL("image/png");}catch(e){}
     sel=s.id;
   }else{
     if(d.pts.length<3)return;
@@ -219,7 +284,7 @@ function drawHint(){
   if(wait)return wait+"Dein Tipp wird danach ausgewertet.";
   if(d.busy)return "Die Fläche wird gesucht.";
   if(d.miss)return "Hier wurde keine Fläche gefunden. Tippe auf eine andere Stelle.";
-  return "Passt die gelbe Fläche? Weitere Tipps ergänzen Teile, mit „Wegnehmen“ entfernst du Teile. „Kleiner“ und „Größer“ wechseln zwischen Bauteil und ganzem Haus.";
+  return "Passt die gelbe Fläche? Fehlt ein Teil, etwa im Schatten, tippe darauf. Mit „Wegnehmen“ entfernst du Teile, „Kleiner“ und „Größer“ wechseln zwischen Bauteil und ganzem Haus.";
 }
 function summary(){return surfaces.filter(function(s){return s.kind!=="cut";}).map(function(s){return s.name+": "+matName(s)+", "+colName(s.color);}).join("\n");}
 function exportBlob(cb){renderAfter();after.toBlob(cb,"image/jpeg",.92);}
@@ -342,7 +407,7 @@ $("share").onclick=function(){exportBlob(function(b){
 $("scale").oninput=function(){var s=current();if(s){s.scale=63-(+this.value);refresh();}};
 $("shade").oninput=function(){var s=current();if(s){s.shade=this.value/100;refresh();}};
 $("rot").onclick=function(){var s=current();if(s){s.rot=((s.rot||0)+1)%4;refresh();}};
-$("del").onclick=function(){delete MASKS[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});sel=null;ui();refresh();};
+$("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});sel=null;ui();refresh();};
 $("btn-sample").onclick=function(){try{localStorage.removeItem("hausprobe.photo");}catch(e){}loadSample();};
 $("file").onchange=function(){
   var f=this.files&&this.files[0];if(!f)return;this.value="";
@@ -396,7 +461,7 @@ function loadSample(){
 }
 function save(){
   clearTimeout(saveT);saveT=setTimeout(function(){
-    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:3,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
+    try{localStorage.setItem("hausprobe.state",JSON.stringify({v:4,sample:isSample,surfaces:surfaces,nextId:nextId}));}catch(e){}
   },300);
 }
 function storePhoto(c){
@@ -409,7 +474,7 @@ function applyState(st){
   surfaces.forEach(function(s){
     if(!s.maskUrl)return;
     var img=new Image();
-    img.onload=function(){var c=mk(img.naturalWidth,img.naturalHeight);c.getContext("2d").drawImage(img,0,0);MASKS[s.id]=c;refresh();};
+    img.onload=function(){var c=mk(img.naturalWidth,img.naturalHeight);c.getContext("2d").drawImage(img,0,0);MASKS[s.id]=c;delete SHADES[s.id];refresh();};
     img.src=s.maskUrl;
   });
 }
@@ -417,7 +482,7 @@ function restore(){
   var st=null,ph=null;
   try{st=JSON.parse(localStorage.getItem("hausprobe.state")||"null");ph=localStorage.getItem("hausprobe.photo");}catch(e){}
   loadSample();
-  if(!st||st.v!==3||!Array.isArray(st.surfaces))return;
+  if(!st||st.v!==4||!Array.isArray(st.surfaces))return;
   if(st.sample){applyState(st);return;}
   if(!ph)return;
   var img=new Image();

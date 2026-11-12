@@ -103,7 +103,7 @@ function toQuad(hull){
 async function masks(points){
   var j=job;if(!j)throw new Error("kein Foto");
   await j.promise;var s=await load(),ort=root.ort;
-  var sc=512/Math.max(j.canvas.width,j.canvas.height),mw=Math.max(8,Math.round(j.canvas.width*sc)),mh=Math.max(8,Math.round(j.canvas.height*sc));
+  var sc=Math.min(1,1024/Math.max(j.canvas.width,j.canvas.height)),mw=Math.max(8,Math.round(j.canvas.width*sc)),mh=Math.max(8,Math.round(j.canvas.height*sc));
   var n=points.length,pc=new Float32Array(n*2),pl=new Float32Array(n),i;
   for(i=0;i<n;i++){pc[i*2]=points[i].x*mw;pc[i*2+1]=points[i].y*mh;pl[i]=points[i].add?1:0;}
   var out=await s.dec.run({
@@ -122,9 +122,12 @@ async function masks(points){
       if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
       if(x===0||x===W-1||y===0||y===H-1||data[off+i-1]<=0||data[off+i+1]<=0||data[off+i-W]<=0||data[off+i+W]<=0)edge.push([x+.5,y+.5]);
     }
-    if(cnt<60)continue;
+    if(cnt<240)continue;
     g.putImageData(im,0,0);
     var hull=convexHull(edge),q=hull.length>=4?toQuad(hull):null;
+    /* Nur wenn die Fläche ihr Viereck gut ausfüllt, ist es eine echte Vierecksfläche (z. B. eine Dachseite).
+       Sonst (Giebel, verdeckte Wand) ist das gerade Rechteck die bessere Ausgangslage für das Muster. */
+    if(q){var qa=0,t;for(t=0;t<4;t++){var nx=q[(t+1)%4];qa+=q[t][0]*nx[1]-nx[0]*q[t][1];}if(cnt/(Math.abs(qa)/2)<.8)q=null;}
     if(!q)q=[[x0,y0],[x1+1,y0],[x1+1,y1+1],[x0,y1+1]];
     res.push({canvas:c,share:cnt/(W*H),
       quad:q.map(function(p){return {x:p[0]/W,y:p[1]/H};}),
