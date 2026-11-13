@@ -159,9 +159,10 @@ async function scan(wall,onStep,dbg,solid){
     if(cnt>=Math.max(10,wn*.0015))blobs.push([cnt,sx/cnt,sy/cnt]);
   }
   blobs.sort(function(a,b){return b[0]-a[0];});
-  if(solid)pts=[];
-  inner=pts.length;
-  blobs.slice(0,24).forEach(function(b){pts.push([b[1],b[2]]);});
+  /* Bei erkannten Wänden sind Fenster schon Löcher in der Fläche; im Inneren wird nur bei von Hand
+     markierten Wänden gesucht, die ihre Fenster noch enthalten. */
+  if(solid){pts=[];blobs.slice(0,24).forEach(function(b){pts.push([b[1],b[2]]);});}
+  inner=solid?0:pts.length;
   var cands=[],sure=[],p;
   for(p=0;p<pts.length;p++){
     if(job!==j)return [];
@@ -176,10 +177,12 @@ async function scan(wall,onStep,dbg,solid){
     });
     var m=out.output_masks,K=m.dims[2],data=m.data,iou=out.iou_predictions.data,k;
     for(k=0;k<K;k++){
-      var off=k*N,n=0,ov=0,ex=0,gf=0,ls=0,lq=0,l,bx0=W,by0=H,bx1=-1,by1=-1,e;
+      var off=k*N,n=0,ov=0,ex=0,gf=0,ls=0,lq=0,l,wc=0,bx0=W,by0=H,bx1=-1,by1=-1,e;
       for(y=0;y<H;y++)for(x=0;x<W;x++){
         i=y*W+x;if(data[off+i]<=0)continue;
         n++;ov+=wallM[i];e=2*pd[i*4+1]-pd[i*4]-pd[i*4+2];ex+=e;if(e>35)gf++;
+        var er=pd[i*4]-mr,eg=pd[i*4+1]-mg,eb=pd[i*4+2]-mb,el=(er+eg+eb)/3;
+        if(.5*el*el+(er-el)*(er-el)+(eg-el)*(eg-el)+(eb-el)*(eb-el)<=1500)wc++;
         l=.299*pd[i*4]+.587*pd[i*4+1]+.114*pd[i*4+2];ls+=l;lq+=l*l;
         if(x<bx0)bx0=x;if(x>bx1)bx1=x;if(y<by0)by0=y;if(y>by1)by1=y;
       }
@@ -189,12 +192,14 @@ async function scan(wall,onStep,dbg,solid){
       if(dbg)dbg.push({p:[Math.round(P[0]),Math.round(P[1])],b:[bx0,by0,bx1,by1],fill:+fill.toFixed(2),q:+q.toFixed(2),ov:+(ov/n).toFixed(2),ex:+(ex/n).toFixed(1),gf:+(gf/n).toFixed(2),sd:+sd.toFixed(1),rw:+(bw/bw0).toFixed(2),rh:+(bh/bh0).toFixed(2)});
       /* Die Sicherheit des Modells (q) schwankt stark mit der Lage des Tipps und zählt deshalb kaum. Entscheidend sind
          Form, Farbe (kein Bewuchs) und Kontrast: ein Fenster hat Rahmen und Glas, ein Schattenfleck ist gleichmäßig. */
-      if(ar<.35||ar>2.6||fill<.58||q<.1||(p<inner&&ov/n>=.35)||ex/n>=28||gf/n>=.4||sd<12)continue;
-      if(bw/bw0<.05||bw/bw0>.35||bh/bh0<.05||bh/bh0>.5)continue;
+      /* wc: Anteil in Wandfarbe. Ein Rechteck, das überwiegend wie die Wand aussieht (Garagentor, Wandfeld), ist kein Fenster.
+         Ein falsches Fenster richtet mehr Schaden an als ein übersehenes, deshalb sind die Schwellen streng. */
+      if(ar<.35||ar>2.6||fill<.58||q<.1||(p<inner&&ov/n>=.35)||ex/n>=28||gf/n>=.4||sd<12||wc/n>.45)continue;
+      if(bw/bw0<.04||bw/bw0>.3||bh/bh0<.05||bh/bh0>.5)continue;
       /* Rundherum muss zumindest teilweise Wand sein. */
       var d=Math.max(2,Math.round(.25*Math.min(bw,bh))),rx0=Math.max(0,bx0-d),ry0=Math.max(0,by0-d),rx1=Math.min(W,bx1+d),ry1=Math.min(H,by1+d),ring=0;
       for(y=ry0;y<ry1;y++)for(x=rx0;x<rx1;x++)if((x<bx0||x>=bx1||y<by0||y>=by1)&&wallM[y*W+x])ring++;
-      if(p<inner&&ring/Math.max(1,(rx1-rx0)*(ry1-ry0)-bw*bh)<.15)continue;
+      if(p<inner&&ring/Math.max(1,(rx1-rx0)*(ry1-ry0)-bw*bh)<.4)continue;
       var b=[bx0,by0,bx1,by1,n];cands.push(b);
       if(q>=.6&&fill>=.75&&bw/bw0>=.08)sure.push(b);
     }
@@ -252,7 +257,7 @@ async function masks(points,opt){
       /* f: wie farbig die angetippte Stelle ist. Bei Weiß und Grau trennt nur die Helligkeit (weiße Wand, graues Dach),
          sie zählt dort mehr. Kräftige Farben schwanken stärker im Ton und bekommen mehr Spielraum. */
       var f=Math.min(1,Math.max(Math.abs(R[0]/S2-1/3),Math.abs(R[1]/S2-1/3),Math.abs(R[2]/S2-1/3))/.05);
-      if((.18-.13*f)*dl*dl+30000*(a*a+c2*c2+e*e)<500+900*f){A[i]=1;break;}
+      if((.12-.07*f)*dl*dl+30000*(a*a+c2*c2+e*e)<500+900*f){A[i]=1;break;}
     }
   }
   var raws=[];
