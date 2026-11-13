@@ -9,7 +9,10 @@ var GUARD="hausprobe.seg";
 var sessions=null,job=null,listeners=[];
 var state={phase:"idle",progress:0};
 
-function crashed(){try{return localStorage.getItem(GUARD)==="busy";}catch(e){return false;}}
+/* Die Marke steht nur während einer Analyse. Ist sie beim Start der Seite noch da, ist der Tab beim letzten Mal
+   mittendrin abgestürzt. Geprüft wird das einmal beim Start, nicht während einer laufenden Analyse. */
+var crashedBefore=false;try{crashedBefore=localStorage.getItem(GUARD)==="busy";}catch(e){}
+function crashed(){return crashedBefore;}
 function guard(on){try{on?localStorage.setItem(GUARD,"busy"):localStorage.removeItem(GUARD);}catch(e){}}
 function set(phase,progress){
   progress=Math.round(progress||0);
@@ -224,7 +227,7 @@ var api={
   prepare:prepare,masks:masks,scan:scan,state:state,
   onChange:function(f){listeners.push(f);},
   blocked:crashed,
-  reset:function(){guard(false);if(job&&job.failed)job=null;}
+  reset:function(){crashedBefore=false;guard(false);if(job&&job.failed)job=null;}
 };
 root.HausSeg=api;
 })(typeof window!=="undefined"?window:this);
