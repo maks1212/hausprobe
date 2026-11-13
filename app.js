@@ -189,6 +189,11 @@ function renderAfter(){
   var a=after.getContext("2d");a.globalCompositeOperation="source-over";a.globalAlpha=1;a.drawImage(src,0,0);
   surfaces.forEach(function(s){if(s.kind!=="cut")paint(a,s);});
   surfaces.forEach(function(s){if(s.kind==="cut"){a.save();trace(a,px(s));a.clip();a.drawImage(src,0,0);a.restore();}});
+  /* Gefundene Fenster bleiben immer frei, auch wenn die Erkennung sie zur Wand gezählt hat. */
+  surfaces.forEach(function(s){
+    if(s.kind!=="fassade"||!s.wins)return;
+    s.wins.forEach(function(w){var x=w.x0*W,y=w.y0*H,ww=(w.x1-w.x0)*W,hh=(w.y1-w.y0)*H;a.drawImage(src,x,y,ww,hh,x,y,ww,hh);});
+  });
   surfaces.forEach(function(s){if(s.kind==="fassade")trims(a,s);});
 }
 /* Fensterverkleidung wie bei PREFA: Laibung und Sturz aus Ergänzungsband rund um das Fenster, unten eine
@@ -304,7 +309,7 @@ function runDetect(){
   var ticket=++d.ticket;
   if(!d.taps.length){d.cands=[];d.busy=false;d.miss=false;d.picked=false;ui();draw();return;}
   d.busy=true;ui();draw();
-  SEG.masks(d.taps.slice()).then(function(c){
+  SEG.masks(d.taps.slice(),{raw:d.kind==="fenster"}).then(function(c){
     if(drawing!==d||d.ticket!==ticket)return;
     d.busy=false;d.cands=c;d.miss=!c.length;
     if(!d.picked||d.pick>=c.length){
@@ -313,7 +318,16 @@ function runDetect(){
       if(d.kind==="fenster"){
         /* Fenster: die größte Fläche, die noch Fenstergröße hat (Glas samt Rahmen, nicht die ganze Wand). */
         for(var i=0;i<c.length;i++)if(winFits(d,c[i].mb))d.pick=i;
-      }else for(var i2=0;i2<c.length;i2++)if(c[i2].share>=.015){d.pick=i2;break;}
+      }else{
+        /* Standard: die größte Fläche, also alle Wände (oder Dachflächen) des Hauses in der angetippten Farbe.
+           Ausgenommen Kandidaten, die fast das ganze Bild füllen oder farblich kaum passen. */
+        var best=-1,top=0,i2;
+        for(i2=0;i2<c.length;i2++)top=Math.max(top,c[i2].sim);
+        /* Dach: nur Kandidaten, die farblich so sauber sind wie der beste (sonst rutscht eine gleichfarbige Wand mit hinein). */
+        for(i2=0;i2<c.length;i2++)if(c[i2].whole<=.62&&c[i2].sim>=(d.kind==="dach"?Math.max(.2,top-.025):.2))best=i2;
+        if(best<0)for(i2=0;i2<c.length;i2++)if(c[i2].share>=.015){best=i2;break;}
+        d.pick=Math.max(0,best);
+      }
     }
     ui();draw();
   }).catch(function(){autoFailed(d);});
