@@ -16,6 +16,12 @@ Startdaten: [building-facades-advertising-dataset](https://github.com/Urban-Rese
     python3 embed.py <modelle> <bilder>/images/test  <arbeit>/emb/test
     python3 train_win.py <arbeit> <bilder> <arbeit>/fenster        # schreibt fenster.onnx
 
+Wichtig: Die Prüffotos des Datensatzes sind Stadtfassaden. Ein länger trainiertes Modell wird dort besser
+(nach 40 Durchgängen 97 % Trefferquote, 94 % der Fenster gefunden), findet auf Einfamilienhäusern aber weniger.
+Der eingesetzte Stand stammt aus einem frühen Durchgang (Prüffotos: 66 % Trefferquote, 90 % gefunden), der auf
+Einfamilienhäusern deutlich besser abschneidet. Erst eigene, markierte Fotos aus Deutschland, Österreich und der
+Schweiz erlauben eine verlässliche Bewertung und längeres Training.
+
 ## Dach, Wand, Fenster, Tür als Flächen (`hausprobe_flaechen.onnx`)
 
 Daten kommen aus `label.html` (Seite „Trainingsdaten“): Fotos markieren, als ZIP exportieren.

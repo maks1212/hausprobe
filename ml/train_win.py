@@ -94,7 +94,7 @@ def evaluate(model,data,thr=.3):
     return [dict(P=round(tp[c]/max(1,tp[c]+fp[c]),3),R=round(tp[c]/max(1,tp[c]+fn[c]),3)) for c in range(NC)]
 
 if __name__=='__main__':
-    S=sys.argv[1];D=sys.argv[2];out=sys.argv[3];epochs=int(os.environ.get('EPOCHS','40'))
+    S=sys.argv[1];D=sys.argv[2];out=sys.argv[3];epochs=int(os.environ.get('EPOCHS','12'))  # länger trainiert passt es sich zu sehr an die Stadtfassaden an
     tr=load_split(S+'/emb/train',D+'/labels/train');va=load_split(S+'/emb/test',D+'/labels/test')
     print('train',len(tr),'val',len(va),flush=True)
     model=Head();opt=torch.optim.AdamW(model.parameters(),lr=1e-3,weight_decay=1e-4)
