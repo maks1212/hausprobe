@@ -189,6 +189,11 @@ function renderAfter(){
   var a=after.getContext("2d");a.globalCompositeOperation="source-over";a.globalAlpha=1;a.drawImage(src,0,0);
   surfaces.forEach(function(s){if(s.kind!=="cut")paint(a,s);});
   surfaces.forEach(function(s){if(s.kind==="cut"){a.save();trace(a,px(s));a.clip();a.drawImage(src,0,0);a.restore();}});
+  /* Gefundene Fenster bleiben immer frei, auch wenn die Erkennung sie zur Wand gezählt hat. */
+  surfaces.forEach(function(s){
+    if(s.kind!=="fassade"||!s.wins)return;
+    s.wins.forEach(function(w){var x=w.x0*W,y=w.y0*H,ww=(w.x1-w.x0)*W,hh=(w.y1-w.y0)*H;a.drawImage(src,x,y,ww,hh,x,y,ww,hh);});
+  });
   surfaces.forEach(function(s){if(s.kind==="fassade")trims(a,s);});
 }
 /* Fensterverkleidung wie bei PREFA: Laibung und Sturz aus Ergänzungsband rund um das Fenster, unten eine
@@ -304,7 +309,7 @@ function runDetect(){
   var ticket=++d.ticket;
   if(!d.taps.length){d.cands=[];d.busy=false;d.miss=false;d.picked=false;ui();draw();return;}
   d.busy=true;ui();draw();
-  SEG.masks(d.taps.slice()).then(function(c){
+  SEG.masks(d.taps.slice(),{raw:d.kind==="fenster"}).then(function(c){
     if(drawing!==d||d.ticket!==ticket)return;
     d.busy=false;d.cands=c;d.miss=!c.length;
     if(!d.picked||d.pick>=c.length){
@@ -313,7 +318,16 @@ function runDetect(){
       if(d.kind==="fenster"){
         /* Fenster: die größte Fläche, die noch Fenstergröße hat (Glas samt Rahmen, nicht die ganze Wand). */
         for(var i=0;i<c.length;i++)if(winFits(d,c[i].mb))d.pick=i;
-      }else for(var i2=0;i2<c.length;i2++)if(c[i2].share>=.015){d.pick=i2;break;}
+      }else{
+        /* Standard: die größte Fläche, also alle Wände (oder Dachflächen) des Hauses in der angetippten Farbe.
+           Ausgenommen Kandidaten, die fast das ganze Bild füllen oder farblich kaum passen. */
+        var best=-1,top=0,i2;
+        for(i2=0;i2<c.length;i2++)top=Math.max(top,c[i2].sim);
+        /* Dach: nur Kandidaten, die farblich so sauber sind wie der beste (sonst rutscht eine gleichfarbige Wand mit hinein). */
+        for(i2=0;i2<c.length;i2++)if(c[i2].whole<=.62&&c[i2].sim>=(d.kind==="dach"?Math.max(.1,top-.025):.1))best=i2;
+        if(best<0)for(i2=0;i2<c.length;i2++)if(c[i2].share>=.015){best=i2;break;}
+        d.pick=Math.max(0,best);
+      }
     }
     ui();draw();
   }).catch(function(){autoFailed(d);});
@@ -329,12 +343,19 @@ function findWindows(s){
   SEG.scan(wall,function(i,n){if(scanning){scanning.pct=Math.round(i/n*100);uiStatus();}},window.__scanDbg,!MASKS[s.id]).then(function(boxes){
     scanning=null;
     if(image!==src||surfaces.indexOf(s)<0){uiStatus();return;}
-    if(boxes.length){
-      s.wins=boxes;
-      /* Maßstab: ohne bessere Angabe gilt ein Fenster (ohne Zierrahmen) als rund 1,0 m breit. */
-      if(s.est===true){
-        var ws=boxes.map(function(b){return (b.x1-b.x0)*W;}).sort(function(a,b){return a-b;}),q=quadFor({rot:0},px(s));
-        var est=((dist(q[0],q[1])+dist(q[3],q[2]))/2)/ws[ws.length>>1];
+    /* Löcher in der Wandfläche bleiben; aus der Suche kommen Fenster dazu, die sich mit keinem davon überschneiden. */
+    boxes.forEach(function(b){
+      var hit=s.wins.some(function(w){
+        var ix=Math.max(0,Math.min(b.x1,w.x1)-Math.max(b.x0,w.x0)),iy=Math.max(0,Math.min(b.y1,w.y1)-Math.max(b.y0,w.y0));
+        return ix*iy>.2*Math.min((b.x1-b.x0)*(b.y1-b.y0),(w.x1-w.x0)*(w.y1-w.y0));
+      });
+      if(!hit)s.wins.push(b);
+    });
+    if(s.wins.length){
+      /* Maßstab: ohne bessere Angabe gilt ein Fenster als rund 1,1 m breit. */
+      if(s.est){
+        var ws=s.wins.map(function(b){return (b.x1-b.x0)*W;}).sort(function(a,b){return a-b;}),q=quadFor({rot:0},px(s));
+        var est=((dist(q[0],q[1])+dist(q[3],q[2]))/2)/ws[ws.length>>1]*1.1;
         if(est>=2&&est<=40){s.wm=Math.round(est*2)/2;s.est="fenster";}
       }
     }else if(!s.wins.length){error="Es wurden keine Fenster gefunden. Mit „+ Fenster markieren“ fügst du sie von Hand hinzu.";}
@@ -360,17 +381,12 @@ function finishDraw(){
     var s=addSurface(d.kind,c.quad,{mb:c.mb});
     var fine=c.canvas;try{if(REF)fine=REF.refine(c.canvas,src);}catch(e){}
     MASKS[s.id]=fine;try{s.maskUrl=fine.toDataURL("image/png");}catch(e){}
-    /* Maßstab schätzen: Fenster in der Fläche sind samt Rahmen meist rund 1,15 m breit. */
-    var holes=(fine._holes||[]).filter(function(h){var a=h.w*W/(h.h*H);return a>.45&&a<2.2;}).map(function(h){return h.w*W;}).sort(function(a,b){return a-b;});
-    if(holes.length){
-      var P=px(s),q=quadFor({rot:0},P),wpx=(dist(q[0],q[1])+dist(q[3],q[2]))/2,est=wpx/holes[holes.length>>1]*1.15;
-      if(est>=2&&est<=40){s.wm=Math.round(est*2)/2;s.est="fenster";}
-    }
     /* Vorläufig: ganz von Wand umschlossene Öffnungen. Die gründliche Suche läuft gleich danach im Hintergrund. */
     if(s.kind==="fassade"){
-      var k=ppm(s);
+      /* Größe relativ zur Wand: der Maßstab ist hier noch nicht bekannt. */
+      var bw=(c.mb[2]-c.mb[0]),bh=(c.mb[3]-c.mb[1]);
       s.wins=(fine._holes||[]).filter(function(h){
-        var wm=h.w*W/k,hm=h.h*H/k,ar=h.w*W/(h.h*H);return ar>.25&&ar<4&&wm>.3&&wm<4&&hm>.3&&hm<3.5;
+        var ar=h.w*W/(h.h*H);return ar>.35&&ar<2.6&&h.w>=.03*bw&&h.w<=.3*bw&&h.h>=.04*bh&&h.h<=.5*bh;
       }).map(function(h){return {x0:h.x,y0:h.y,x1:h.x+h.w,y1:h.y+h.h};});
       findWindows(s);
     }
