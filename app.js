@@ -341,14 +341,18 @@ var scanning=null;
 function modelWindows(boxes,wall){
   var w=Math.max(8,Math.round(W/4)),h=Math.max(8,Math.round(H/4)),c=mk(w,h),g=c.getContext("2d");g.drawImage(wall,0,0,w,h);
   var d=g.getImageData(0,0,w,h).data,M=new Uint8Array(w*h),i,x,y,bottom=new Int32Array(w).fill(-1);
-  for(i=0;i<w*h;i++)if(d[i*4+3]>127){M[i]=1;x=i%w;y=(i-x)/w;if(y>bottom[x])bottom[x]=y;}
-  var keep=[];
+  var wx0=w,wy0=h,wx1=-1,wy1=-1,wn=0;
+  for(i=0;i<w*h;i++)if(d[i*4+3]>127){M[i]=1;wn++;x=i%w;y=(i-x)/w;if(y>bottom[x])bottom[x]=y;if(x<wx0)wx0=x;if(x>wx1)wx1=x;if(y<wy0)wy0=y;if(y>wy1)wy1=y;}
+  var keep=[],WW=Math.max(1,wx1-wx0+1),WH=Math.max(1,wy1-wy0+1);
   boxes.forEach(function(b){
     if(keep.some(function(k){
       var ix=Math.max(0,Math.min(b.x1,k.x1)-Math.max(b.x0,k.x0)),iy=Math.max(0,Math.min(b.y1,k.y1)-Math.max(b.y0,k.y0));
       return ix*iy>.35*Math.min((b.x1-b.x0)*(b.y1-b.y0),(k.x1-k.x0)*(k.y1-k.y0));
     }))return;
-    var X0=Math.floor(b.x0*w),X1=Math.ceil(b.x1*w),Y0=Math.floor(b.y0*h),Y1=Math.ceil(b.y1*h),pad=Math.max(1,Math.round(.25*Math.min(X1-X0,Y1-Y0)));
+    var X0=Math.floor(b.x0*w),X1=Math.ceil(b.x1*w),Y0=Math.floor(b.y0*h),Y1=Math.ceil(b.y1*h);
+    /* Kein Fenster ist so groß wie ein guter Teil der Wand: das wären Erker, Giebelfelder oder Fehltreffer. */
+    if(b.cls!==1&&(X1-X0>.45*WW||Y1-Y0>.6*WH||(X1-X0)*(Y1-Y0)>.4*wn))return;
+    var pad=Math.max(1,Math.round(.25*Math.min(X1-X0,Y1-Y0)));
     var ring=0,n=0;
     for(y=Math.max(0,Y0-pad);y<Math.min(h,Y1+pad);y++)for(x=Math.max(0,X0-pad);x<Math.min(w,X1+pad);x++){
       if(x>=X0&&x<X1&&y>=Y0&&y<Y1)continue;n++;ring+=M[y*w+x];
@@ -366,7 +370,7 @@ function findWindows(s){
     g.beginPath();s.pts.forEach(function(p,i){i?g.lineTo(p.x*wall.width,p.y*wall.height):g.moveTo(p.x*wall.width,p.y*wall.height);});g.closePath();g.fill();}
   var image=src;scanning={id:s.id,pct:0};SEG.prepare(src);uiStatus();
   /* Zuerst das eigene Fenstermodell (ein Durchgang, Sekundenbruchteil); fehlt es, die Suche mit Probe-Tipps. */
-  var viaModel=SEG.windows?SEG.windows(.3).then(function(b){return modelWindows(b,wall);}):Promise.reject();
+  var viaModel=SEG.windows?SEG.windows(.3).then(function(b){var k=modelWindows(b,wall);if(!k.length)throw new Error("leer");return k;}):Promise.reject();
   viaModel.catch(function(){
     return SEG.scan(wall,function(i,n){if(scanning){scanning.pct=Math.round(i/n*100);uiStatus();}},window.__scanDbg,!MASKS[s.id]);
   }).then(function(boxes){
