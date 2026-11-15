@@ -334,13 +334,42 @@ function runDetect(){
 }
 /* Alle Fenster der Fassade automatisch suchen. Ersetzt die bisherige Liste nur, wenn etwas gefunden wurde. */
 var scanning=null;
+/* Treffer des Fenstermodells auf die markierte Wand beschränken und aufräumen:
+   - Doppeltreffer (stark überlappend) zusammenlegen, der sicherere bleibt.
+   - Nur Rechtecke, die überwiegend an Wand grenzen (nicht an Himmel, Nachbarhaus oder Garten).
+   - Was bis zum unteren Rand der Wand reicht, ist eine Tür oder ein Tor: Verkleidung ohne Fensterbank. */
+function modelWindows(boxes,wall){
+  var w=Math.max(8,Math.round(W/4)),h=Math.max(8,Math.round(H/4)),c=mk(w,h),g=c.getContext("2d");g.drawImage(wall,0,0,w,h);
+  var d=g.getImageData(0,0,w,h).data,M=new Uint8Array(w*h),i,x,y,bottom=new Int32Array(w).fill(-1);
+  for(i=0;i<w*h;i++)if(d[i*4+3]>127){M[i]=1;x=i%w;y=(i-x)/w;if(y>bottom[x])bottom[x]=y;}
+  var keep=[];
+  boxes.forEach(function(b){
+    if(keep.some(function(k){
+      var ix=Math.max(0,Math.min(b.x1,k.x1)-Math.max(b.x0,k.x0)),iy=Math.max(0,Math.min(b.y1,k.y1)-Math.max(b.y0,k.y0));
+      return ix*iy>.35*Math.min((b.x1-b.x0)*(b.y1-b.y0),(k.x1-k.x0)*(k.y1-k.y0));
+    }))return;
+    var X0=Math.floor(b.x0*w),X1=Math.ceil(b.x1*w),Y0=Math.floor(b.y0*h),Y1=Math.ceil(b.y1*h),pad=Math.max(1,Math.round(.25*Math.min(X1-X0,Y1-Y0)));
+    var ring=0,n=0;
+    for(y=Math.max(0,Y0-pad);y<Math.min(h,Y1+pad);y++)for(x=Math.max(0,X0-pad);x<Math.min(w,X1+pad);x++){
+      if(x>=X0&&x<X1&&y>=Y0&&y<Y1)continue;n++;ring+=M[y*w+x];
+    }
+    if(!n||ring/n<.35)return;
+    var cx=Math.min(w-1,Math.max(0,Math.round((b.x0+b.x1)/2*w))),low=bottom[cx]>=0&&Y1>=bottom[cx]-Math.max(1,Math.round(.03*h));
+    keep.push({x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1,door:b.cls===1||low,score:b.score});
+  });
+  return keep.map(function(k){var o={x0:k.x0,y0:k.y0,x1:k.x1,y1:k.y1};if(k.door)o.door=true;return o;});
+}
 function findWindows(s){
   if(!SEG||SEG.blocked()||scanning)return;
   var wall=MASKS[s.id];
   if(!wall){wall=mk(Math.max(8,Math.round(W/4)),Math.max(8,Math.round(H/4)));var g=wall.getContext("2d");
     g.beginPath();s.pts.forEach(function(p,i){i?g.lineTo(p.x*wall.width,p.y*wall.height):g.moveTo(p.x*wall.width,p.y*wall.height);});g.closePath();g.fill();}
   var image=src;scanning={id:s.id,pct:0};SEG.prepare(src);uiStatus();
-  SEG.scan(wall,function(i,n){if(scanning){scanning.pct=Math.round(i/n*100);uiStatus();}},window.__scanDbg,!MASKS[s.id]).then(function(boxes){
+  /* Zuerst das eigene Fenstermodell (ein Durchgang, Sekundenbruchteil); fehlt es, die Suche mit Probe-Tipps. */
+  var viaModel=SEG.windows?SEG.windows(.3).then(function(b){return modelWindows(b,wall);}):Promise.reject();
+  viaModel.catch(function(){
+    return SEG.scan(wall,function(i,n){if(scanning){scanning.pct=Math.round(i/n*100);uiStatus();}},window.__scanDbg,!MASKS[s.id]);
+  }).then(function(boxes){
     scanning=null;
     if(image!==src||surfaces.indexOf(s)<0){uiStatus();return;}
     /* Löcher in der Wandfläche bleiben; aus der Suche kommen Fenster dazu, die sich mit keinem davon überschneiden. */
@@ -354,7 +383,7 @@ function findWindows(s){
     if(s.wins.length){
       /* Maßstab: ohne bessere Angabe gilt ein Fenster als rund 1,1 m breit. */
       if(s.est){
-        var ws=s.wins.map(function(b){return (b.x1-b.x0)*W;}).sort(function(a,b){return a-b;}),q=quadFor({rot:0},px(s));
+        var ws=(s.wins.some(function(b){return !b.door;})?s.wins.filter(function(b){return !b.door;}):s.wins).map(function(b){return (b.x1-b.x0)*W;}).sort(function(a,b){return a-b;}),q=quadFor({rot:0},px(s));
         var est=((dist(q[0],q[1])+dist(q[3],q[2]))/2)/ws[ws.length>>1]*1.1;
         if(est>=2&&est<=40){s.wm=Math.round(est*2)/2;s.est="fenster";}
       }
