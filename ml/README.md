@@ -30,3 +30,15 @@ Daten kommen aus `label.html` (Seite „Trainingsdaten“): Fotos markieren, als
 
 Nur Fotos mit geklärter Lizenz (eigenes Foto, mit Erlaubnis, CC0, CC BY, CC BY-SA) gehen ins Training.
 Bei CC BY und CC BY-SA ist eine Namensnennung nötig; die Angaben stehen im `manifest.json` des Exports.
+
+## Auf einem eigenen Server trainieren (`ml/server/`)
+
+`run.sh` erledigt alles auf einem Ubuntu-Server ohne Grafikkarte: lädt COCO-Stuff, wählt Fotos mit Dach oder Haus
+und kommerziell nutzbarer Lizenz (CC BY, CC BY-SA, ohne bekannte Rechte, US-Regierung), berechnet die Merkmale,
+trainiert das Flächenmodell und lädt das Ergebnis als neuen Branch ins Repo hoch.
+
+    nohup bash ml/server/run.sh > ~/hausprobe-training.log 2>&1 &
+    tail -f ~/hausprobe-training.log
+
+Quellenangabe: COCO-Stuff (Caesar, Uijlings, Ferrari), Markierungen CC BY 4.0. Die Liste der verwendeten Fotos
+mit Lizenz steht nach dem Lauf in `ml/ergebnis/quellen.json`.
