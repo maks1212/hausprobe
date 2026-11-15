@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hausprobe Trainingsdaten</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="label.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>Trainingsdaten</h1>
+      <p class="tag">Dach, Wand, Fenster und Türen markieren, damit Hausprobe sie künftig von selbst erkennt.</p>
+    </div>
+    <div class="row">
+      <span id="count" class="countpill">0 gespeichert</span>
+      <button id="export" class="btn primary" type="button" disabled>Export (ZIP)</button>
+    </div>
+  </header>
+
+  <main class="work">
+    <section class="stage-col" aria-label="Foto">
+      <div class="stage">
+        <div id="view" class="view"><canvas id="cv" width="1200" height="800"></canvas></div>
+        <div id="busy" class="busy" role="status" hidden><span id="busy-text"></span><div class="bar"><i id="busy-bar" class="run"></i></div></div>
+      </div>
+      <p id="hint" class="hint" aria-live="polite"></p>
+      <div class="legend" aria-hidden="true"><span class="k k1">Dach</span><span class="k k2">Wand</span><span class="k k3">Fenster</span><span class="k k4">Tür</span></div>
+    </section>
+
+    <section class="panel stack" aria-label="Bedienung">
+      <div class="row">
+        <input id="files" class="sr" type="file" accept="image/*" multiple>
+        <label class="btn" for="files">Fotos wählen</label>
+        <button id="open-commons" class="btn" type="button">Wikimedia Commons</button>
+        <span id="queue" class="muted"></span>
+      </div>
+
+      <div id="work" class="stack" hidden>
+        <div class="stack">
+          <h3>Was markierst du?</h3>
+          <div id="cls" class="seg" role="group" aria-label="Klasse">
+            <button type="button" data-c="1" aria-pressed="true">Dach</button>
+            <button type="button" data-c="2" aria-pressed="false">Wand</button>
+            <button type="button" data-c="3" aria-pressed="false">Fenster</button>
+            <button type="button" data-c="4" aria-pressed="false">Tür</button>
+            <button type="button" data-c="0" aria-pressed="false">Löschen</button>
+          </div>
+          <div class="row">
+            <div class="seg grow" role="group" aria-label="Was ein Tipp bewirkt">
+              <button id="pt-add" type="button" aria-pressed="true">Hinzufügen</button>
+              <button id="pt-sub" type="button" aria-pressed="false">Wegnehmen</button>
+            </div>
+            <button id="sz-less" class="btn" type="button" disabled>Kleiner</button>
+            <button id="sz-more" class="btn" type="button" disabled>Größer</button>
+          </div>
+          <div class="row">
+            <button id="cand-clear" class="btn" type="button" disabled>Tipps verwerfen</button>
+            <button id="undo" class="btn" type="button" disabled>Rückgängig</button>
+            <button id="apply" class="btn primary grow" type="button" disabled>Übernehmen</button>
+          </div>
+          <button id="suggest" class="btn" type="button">Fenster und Türen vorschlagen</button>
+        </div>
+
+        <div class="stack box">
+          <h3>Vollständig markiert</h3>
+          <p class="small">Nur was hier angehakt ist, lernt das Modell als „überall richtig“. Nicht angehakte Klassen zählen nur dort, wo du sie markiert hast.</p>
+          <div class="checks">
+            <label class="check"><input id="c1" type="checkbox"> Dach</label>
+            <label class="check"><input id="c2" type="checkbox"> Wand</label>
+            <label class="check"><input id="c3" type="checkbox"> Fenster</label>
+            <label class="check"><input id="c4" type="checkbox"> Tür</label>
+          </div>
+        </div>
+
+        <div class="stack box">
+          <h3>Herkunft des Fotos</h3>
+          <div class="dims">
+            <div class="field"><label class="lbl" for="lic">Lizenz</label>
+              <select id="lic" class="num">
+                <option value="own">Eigenes Foto</option>
+                <option value="permission">Mit Erlaubnis des Fotografen</option>
+                <option value="CC0">CC0 / gemeinfrei</option>
+                <option value="CC BY">CC BY</option>
+                <option value="CC BY-SA">CC BY-SA</option>
+                <option value="unknown">Unbekannt (nicht fürs Training)</option>
+              </select></div>
+            <div class="field"><label class="lbl" for="author">Urheber</label><input id="author" class="num" type="text" autocomplete="off"></div>
+          </div>
+          <div class="field"><label class="lbl" for="srcurl">Quelle (Link)</label><input id="srcurl" class="num" type="url" autocomplete="off"></div>
+        </div>
+
+        <div class="row">
+          <button id="skip" class="btn" type="button">Überspringen</button>
+          <button id="save" class="btn primary grow" type="button">Speichern und nächstes Foto</button>
+        </div>
+      </div>
+
+      <div class="stack box">
+        <h3>Gespeichert</h3>
+        <div id="saved" class="thumbs"></div>
+        <div class="row">
+          <button id="clear-all" class="btn danger" type="button" disabled>Alle löschen</button>
+          <span id="confirm" class="row" hidden><span class="small">Wirklich alle löschen?</span><button id="clear-yes" class="btn danger" type="button">Ja, löschen</button><button id="clear-no" class="btn" type="button">Nein</button></span>
+        </div>
+      </div>
+      <p class="note">Alles bleibt in diesem Browser gespeichert, bis du es exportierst. Die ZIP-Datei enthält Fotos, Markierungen und Herkunftsangaben und ist die Grundlage für das Training.</p>
+    </section>
+  </main>
+</div>
+
+<div id="commons" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="commons-title">
+  <div class="sheet-inner stack">
+    <div class="row between"><h2 id="commons-title">Fotos von Wikimedia Commons</h2><button id="commons-close" class="btn" type="button">Schließen</button></div>
+    <p class="small">Es werden nur Fotos mit freier Lizenz angezeigt (CC0, gemeinfrei, CC BY, CC BY-SA). Urheber und Lizenz werden automatisch übernommen. Wähle Fotos, auf denen ein Haus gut zu sehen ist.</p>
+    <form id="commons-form" class="row">
+      <input id="commons-q" class="num grow" type="search" value="Einfamilienhaus" aria-label="Suchbegriff">
+      <button class="btn primary" type="submit">Suchen</button>
+    </form>
+    <div class="row" id="commons-presets">
+      <button type="button" class="btn chip" data-q="Einfamilienhaus">Einfamilienhaus</button>
+      <button type="button" class="btn chip" data-q="Wohnhaus Österreich">Wohnhaus Österreich</button>
+      <button type="button" class="btn chip" data-q="Bauernhaus Bayern">Bauernhaus Bayern</button>
+      <button type="button" class="btn chip" data-q="Chalet Schweiz">Chalet Schweiz</button>
+      <button type="button" class="btn chip" data-q="Siedlungshaus">Siedlungshaus</button>
+      <button type="button" class="btn chip" data-q="Doppelhaus">Doppelhaus</button>
+    </div>
+    <p id="commons-msg" class="small" aria-live="polite"></p>
+    <div id="commons-grid" class="cgrid"></div>
+    <div class="row">
+      <button id="commons-more" class="btn" type="button" hidden>Mehr laden</button>
+      <button id="commons-take" class="btn primary grow" type="button" disabled>Ausgewählte übernehmen</button>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/ort/ort.wasm.min.js"></script>
+<script src="segment.js"></script>
+<script src="label.js"></script>
+</body>
+</html>
