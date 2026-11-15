@@ -54,7 +54,9 @@ function softAlpha(mask,src){
   var near=box(P,w,h,r*2,new Float32Array(N));
   var out=mg.createImageData(w,h),d=out.data,t,a;
   for(i=0;i<N;i++){
-    a=near[i]>.985?1:near[i]<.015?0:q[i];
+    /* Fest bleiben nur Stellen, an denen Umgebung und Pixel übereinstimmen. Sonst würden kleine Löcher
+       (Fenster auf kleinen Fotos) zugeschmiert. */
+    a=near[i]>.985&&P[i]>.5?1:near[i]<.015&&P[i]<.5?0:q[i];
     t=(a-.3)/.4;t=t<0?0:t>1?1:t;a=t*t*(3-2*t);
     d[i*4]=255;d[i*4+1]=216;d[i*4+2]=77;d[i*4+3]=Math.round(a*255);
   }
