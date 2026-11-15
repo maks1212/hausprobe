@@ -159,10 +159,11 @@ async function scan(wall,onStep,dbg,solid){
     if(cnt>=Math.max(10,wn*.0015))blobs.push([cnt,sx/cnt,sy/cnt]);
   }
   blobs.sort(function(a,b){return b[0]-a[0];});
-  /* Bei erkannten Wänden sind Fenster schon Löcher in der Fläche; im Inneren wird nur bei von Hand
-     markierten Wänden gesucht, die ihre Fenster noch enthalten. */
-  if(solid){pts=[];blobs.slice(0,24).forEach(function(b){pts.push([b[1],b[2]]);});}
-  inner=solid?0:pts.length;
+    /* Fenster, die die Erkennung zur Wand gezählt hat (Rahmen in Wandfarbe), findet nur ein Tipp im Inneren.
+     Dafür gelten unten strenge Regeln: Fenstergröße, Kontrast, nicht überwiegend Wandfarbe. */
+  if(solid)pts=[];
+  inner=pts.length;
+  blobs.slice(0,24).forEach(function(b){pts.push([b[1],b[2]]);});
   var cands=[],sure=[],p;
   for(p=0;p<pts.length;p++){
     if(job!==j)return [];
@@ -189,12 +190,15 @@ async function scan(wall,onStep,dbg,solid){
       if(n<12)continue;
       bx1++;by1++;
       var bw=bx1-bx0,bh=by1-by0,fill=n/(bw*bh),ar=bw/bh,q=iou[k],sd=Math.sqrt(Math.max(0,lq/n-(ls/n)*(ls/n)));
-      if(dbg)dbg.push({p:[Math.round(P[0]),Math.round(P[1])],b:[bx0,by0,bx1,by1],fill:+fill.toFixed(2),q:+q.toFixed(2),ov:+(ov/n).toFixed(2),ex:+(ex/n).toFixed(1),gf:+(gf/n).toFixed(2),sd:+sd.toFixed(1),rw:+(bw/bw0).toFixed(2),rh:+(bh/bh0).toFixed(2)});
+      if(dbg)dbg.push({p:[Math.round(P[0]),Math.round(P[1])],b:[bx0,by0,bx1,by1],fill:+fill.toFixed(2),q:+q.toFixed(2),ov:+(ov/n).toFixed(2),ex:+(ex/n).toFixed(1),gf:+(gf/n).toFixed(2),sd:+sd.toFixed(1),wc:+(wc/n).toFixed(2),inner:p>=inner,ar:+ar.toFixed(2),rw:+(bw/bw0).toFixed(2),rh:+(bh/bh0).toFixed(2)});
       /* Die Sicherheit des Modells (q) schwankt stark mit der Lage des Tipps und zählt deshalb kaum. Entscheidend sind
          Form, Farbe (kein Bewuchs) und Kontrast: ein Fenster hat Rahmen und Glas, ein Schattenfleck ist gleichmäßig. */
       /* wc: Anteil in Wandfarbe. Ein Rechteck, das überwiegend wie die Wand aussieht (Garagentor, Wandfeld), ist kein Fenster.
          Ein falsches Fenster richtet mehr Schaden an als ein übersehenes, deshalb sind die Schwellen streng. */
-      if(ar<.35||ar>2.6||fill<.58||q<.1||(p<inner&&ov/n>=.35)||ex/n>=28||gf/n>=.4||sd<12||wc/n>.45)continue;
+      if(ar<.35||ar>2.6||fill<.58||q<.1||ex/n>=28||gf/n>=.4||sd<12)continue;
+      /* Überwiegend Wandfarbe: nur ein kleines, klar gegliedertes Rechteck (Fenster mit hellem Rahmen) zählt,
+         nicht ein großes gleichfarbiges Feld wie ein Garagentor. */
+      if(wc/n>.45&&!(sd>=25&&q>=.6&&fill>=.75&&bw/bw0<=.15&&bh/bh0<=.3))continue;
       if(bw/bw0<.04||bw/bw0>.3||bh/bh0<.05||bh/bh0>.5)continue;
       /* Rundherum muss zumindest teilweise Wand sein. */
       var d=Math.max(2,Math.round(.25*Math.min(bw,bh))),rx0=Math.max(0,bx0-d),ry0=Math.max(0,by0-d),rx1=Math.min(W,bx1+d),ry1=Math.min(H,by1+d),ring=0;
@@ -267,9 +271,9 @@ async function masks(points,opt){
     if(cnt>=240)raws.push({B:B,cnt:cnt,sim:same/cnt});
   }
   raws.sort(function(u,v){return u.cnt-v.cnt;});
-  /* Passt schon das kleinste Stück farblich kaum zur angetippten Stelle, ist das Material gemustert
+  /* Passt kein Kandidat farblich zur angetippten Stelle, ist das Material gemustert
      (z. B. Ziegel): dann taugt die Farbe nicht zum Trennen und die Flächen bleiben, wie das Modell sie liefert. */
-  var useColor=!(opt&&opt.raw)&&refs.length>0&&raws.length>0&&raws[0].sim>=.5;
+  var useColor=!(opt&&opt.raw)&&refs.length>0&&raws.some(function(r){return r.sim>=.5;});
   function clean(B){
     /* Farbfilter, dann Mehrheit im 5×5-Fenster (entfernt Sprenkel, schließt Poren), dann kleine Inseln weg. */
     var F=new Uint8Array(N),tmp=new Uint8Array(N),r=2,q;

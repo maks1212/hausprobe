@@ -251,6 +251,22 @@ function shade(src,drawMask){
   for(i=0;i<N;i++){Lb[i]=Mb[i]>.04?Lb[i]/Mb[i]:-1;if(M[i])vals.push(Lb[i]);}
   vals.sort(function(a,b){return a-b;});
   var ref=Math.max(8,vals[Math.floor(vals.length*.75)]);
+  /* Kleine dunkle Flecken (Fenster, die die Erkennung zur Wand gezählt hat) sind kein Schatten und würden als
+     dunkle Kleckse im neuen Material erscheinen. Eine Schließung mit waagrechter und senkrechter Linie entfernt
+     dunkle Stellen, die in beiden Richtungen kürzer als L sind; lange Schatten (Dachvorsprung, Baum) bleiben. */
+  var L=Math.max(3,Math.round(Math.max(w,h)*.045)),V=new Float32Array(N);
+  for(i=0;i<N;i++)V[i]=Lb[i]<0?ref:Lb[i];
+  function line(src,horiz,isMax){
+    var out=new Float32Array(N),x,y,k,n1=horiz?h:w,n2=horiz?w:h;
+    for(var a1=0;a1<n1;a1++)for(var a2=0;a2<n2;a2++){
+      var best=isMax?-1e9:1e9,lo=Math.max(0,a2-L),hi=Math.min(n2-1,a2+L);
+      for(k=lo;k<=hi;k++){var v2=horiz?src[a1*w+k]:src[k*w+a1];if(isMax?v2>best:v2<best)best=v2;}
+      out[horiz?a1*w+a2:a2*w+a1]=best;
+    }
+    return out;
+  }
+  var cH=line(line(V,true,true),true,false),cV=line(line(V,false,true),false,false);
+  for(i=0;i<N;i++)if(Lb[i]>=0)Lb[i]=Math.min(cH[i],cV[i]);
   var out=pg.createImageData(w,h),d=out.data,v,dk,t,k;
   for(i=0;i<N;i++){
     v=Lb[i]<0?1:Lb[i]/ref;
