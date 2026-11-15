@@ -105,7 +105,41 @@ function toQuad(hull){
    {canvas (gelbe Maske mit Alpha), share (Flächenanteil), quad (Ecken für die Perspektive), mb (Maskengrenzen)}. */
 /* Der Decoder verträgt nur einen Lauf zur selben Zeit: alle Aufrufe laufen nacheinander. */
 var chain=Promise.resolve();
-function decode(s,feeds){var p=chain.then(function(){return s.dec.run(feeds);});chain=p.catch(function(){});return p;}
+function decode(s,feeds){return runOn(s.dec,feeds);}
+function runOn(sess,feeds){var p=chain.then(function(){return sess.run(feeds);});chain=p.catch(function(){});return p;}
+
+/* Eigener Erkennungskopf für Fenster und Türen: arbeitet auf denselben Bildmerkmalen wie die Flächenerkennung
+   und liefert in einem Durchgang alle Fenster als Rechtecke (Mittelpunkt-Wärmekarte, Größe, Versatz je Zelle). */
+var HEAD="models/hausprobe_fenster.onnx",headSess=null;
+function loadHead(){
+  if(headSess)return headSess;
+  headSess=(async function(){
+    await load();var res=await fetch(HEAD);if(!res.ok)throw new Error("kein Fenstermodell");
+    return root.ort.InferenceSession.create(new Uint8Array(await res.arrayBuffer()),{executionProviders:["wasm"]});
+  })();
+  headSess.catch(function(){headSess=null;});
+  return headSess;
+}
+async function windows(thr){
+  var j=job;if(!j)throw new Error("kein Foto");
+  await j.promise;var h=await loadHead(),ort=root.ort;
+  var out=await runOn(h,{image_embeddings:new ort.Tensor("float32",new Float32Array(j.emb.data),j.emb.dims)});
+  var hm=out.heat,wh=out.size.data,off=out.offset.data,NC=hm.dims[1],G=hm.dims[2],GW=hm.dims[3],d=hm.data,res=[],c,y,x,i,k;
+  thr=thr||.3;
+  for(c=0;c<NC;c++)for(y=0;y<G;y++)for(x=0;x<GW;x++){
+    i=c*G*GW+y*GW+x;var v=d[i];if(v<thr)continue;
+    var peak=true;
+    for(var dy=-1;dy<=1&&peak;dy++)for(var dx=-1;dx<=1;dx++){
+      var yy=y+dy,xx=x+dx;if(yy<0||xx<0||yy>=G||xx>=GW||(!dx&&!dy))continue;
+      if(d[c*G*GW+yy*GW+xx]>v){peak=false;break;}
+    }
+    if(!peak)continue;
+    k=y*GW+x;var bw=Math.exp(wh[k]),bh=Math.exp(wh[G*GW+k]),cx=x+off[k],cy=y+off[G*GW+k];
+    res.push({cls:c,score:v,x0:Math.max(0,(cx-bw/2)/GW),y0:Math.max(0,(cy-bh/2)/G),x1:Math.min(1,(cx+bw/2)/GW),y1:Math.min(1,(cy+bh/2)/G)});
+  }
+  res.sort(function(a,b){return b.score-a.score;});
+  return res;
+}
 
 /* Fenster suchen: viele Probe-Tipps auf Stellen im Wandbereich, die nicht Wand sind. Behalten werden nur
    rechteckige Flächen in Fenstergröße, die an Wand grenzen und nicht nach Bewuchs aussehen.
@@ -328,7 +362,7 @@ async function masks(points,opt){
 }
 
 var api={
-  prepare:prepare,masks:masks,scan:scan,state:state,
+  prepare:prepare,masks:masks,scan:scan,windows:windows,state:state,
   onChange:function(f){listeners.push(f);},
   blocked:crashed,
   reset:function(){crashedBefore=false;guard(false);if(job&&job.failed)job=null;}
