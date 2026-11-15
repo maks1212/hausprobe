@@ -26,6 +26,8 @@ Statische Seite ohne Build-Schritt.
 - `app.js`: Zeichnen, Bedienung, Speichern
 - `data.js`: Stammdaten (Produkte, Formate, Farbnummern mit RAL-Näherung) aus öffentlichen PREFA Unterlagen; die hex-Werte sind eigene Bildschirm-Näherungen
 - Erkennung: jede vom Modell gelieferte Fläche wird auf die Farbe der angetippten Stelle eingeschränkt (Farbton zählt mehr als Helligkeit), so fallen Fenster, Türen, Tore und Dach heraus; getestet an zwölf Frontalfotos aus dem offenen Houses-Dataset (github.com/emanhamed/Houses-dataset) und einem eigenen Foto
+- `label.html`: Seite „Trainingsdaten“ zum Markieren von Dach, Wand, Fenstern und Türen und zum Export als ZIP; Trainingsskripte in `ml/`
+- `models/hausprobe_fenster.onnx`: eigenes Fenster- und Türmodell (2 MB) auf den Bildmerkmalen von EfficientSAM, trainiert auf einem CC0-Fassadendatensatz
 - `segment.js`: Flächenerkennung mit EfficientSAM ViT-Tiny über onnxruntime-web (läuft im Browser, einmalig rund 52 MB Download)
 - `refine.js`: Kanten der erkannten Fläche verfeinern (Guided Filter für weiche Ränder; gerade Bauteilkanten wie Fensterrahmen werden als Linien bestimmt und scharf gezeichnet), Licht und Schatten aus dem Foto ableiten
 - `models/`, `vendor/ort/`: Modell und Laufzeit, Herkunft und Lizenzen in `models/README.md`
