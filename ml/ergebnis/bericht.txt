@@ -1,0 +1,28 @@
+Durchgang 1/25 Verlust 2.359 2 min
+Durchgang 2/25 Verlust 1.802 4 min
+Durchgang 3/25 Verlust 1.551 5 min IoU {'Dach': 0.392, 'Wand': 0.543, 'Fenster': 0.096, 'Tür': 0.0} (bester Stand)
+Durchgang 4/25 Verlust 1.484 7 min
+Durchgang 5/25 Verlust 1.433 9 min
+Durchgang 6/25 Verlust 1.402 11 min IoU {'Dach': 0.375, 'Wand': 0.517, 'Fenster': 0.107, 'Tür': 0.063}
+Durchgang 7/25 Verlust 1.343 13 min
+Durchgang 8/25 Verlust 1.318 15 min
+Durchgang 9/25 Verlust 1.313 16 min IoU {'Dach': 0.394, 'Wand': 0.53, 'Fenster': 0.092, 'Tür': 0.021}
+Durchgang 10/25 Verlust 1.257 18 min
+Durchgang 11/25 Verlust 1.215 20 min
+Durchgang 12/25 Verlust 1.200 22 min IoU {'Dach': 0.393, 'Wand': 0.529, 'Fenster': 0.085, 'Tür': 0.019}
+Durchgang 13/25 Verlust 1.158 24 min
+Durchgang 14/25 Verlust 1.124 26 min
+Durchgang 15/25 Verlust 1.121 27 min IoU {'Dach': 0.426, 'Wand': 0.538, 'Fenster': 0.098, 'Tür': 0.053} (bester Stand)
+Durchgang 16/25 Verlust 1.102 29 min
+Durchgang 17/25 Verlust 1.066 31 min
+Durchgang 18/25 Verlust 1.034 33 min IoU {'Dach': 0.433, 'Wand': 0.558, 'Fenster': 0.092, 'Tür': 0.045} (bester Stand)
+Durchgang 19/25 Verlust 1.020 35 min
+Durchgang 20/25 Verlust 0.976 37 min
+Durchgang 21/25 Verlust 0.973 39 min IoU {'Dach': 0.442, 'Wand': 0.552, 'Fenster': 0.091, 'Tür': 0.038} (bester Stand)
+Durchgang 22/25 Verlust 0.944 40 min
+Durchgang 23/25 Verlust 0.930 42 min
+Durchgang 24/25 Verlust 0.919 44 min IoU {'Dach': 0.447, 'Wand': 0.566, 'Fenster': 0.089, 'Tür': 0.041} (bester Stand)
+Durchgang 25/25 Verlust 0.913 46 min IoU {'Dach': 0.447, 'Wand': 0.567, 'Fenster': 0.088, 'Tür': 0.041} (bester Stand)
+Endstand IoU {'Dach': 0.447, 'Wand': 0.567, 'Fenster': 0.088, 'Tür': 0.041}
+Fotos Training 973 Prüfung 108
+COCO-Stuff 2017 (Caesar, Uijlings, Ferrari), annotations CC BY 4.0, github.com/nightrome/cocostuff
