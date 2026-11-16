@@ -8,7 +8,7 @@
 #   4 CC BY, 5 CC BY-SA, 7 "No known copyright restrictions", 8 "United States Government Work".
 #
 # Aufruf: python3 coco_prep.py <arbeitsordner> [max_fotos]
-import sys,os,io,json,zipfile,time,random,urllib.request,concurrent.futures as cf,numpy as np
+import sys,os,io,json,zipfile,time,random,shutil,subprocess,urllib.request,concurrent.futures as cf,numpy as np
 from PIL import Image
 W=sys.argv[1];MAX=int(sys.argv[2]) if len(sys.argv)>2 else 4000
 os.makedirs(W+'/dl',exist_ok=True);os.makedirs(W+'/images',exist_ok=True);os.makedirs(W+'/labels',exist_ok=True)
@@ -23,12 +23,26 @@ for v in ROOF:LUT[v]=1
 for v in WIN:LUT[v]=3
 for v in DOOR:LUT[v]=4
 
+UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36'
 def fetch(url,dst,tries=4):
+    # Manche Server lehnen das Python-Standardprogramm ab (HTTP 406). Darum mit Browser-Kennung,
+    # und wenn das nicht reicht, mit curl oder wget.
+    tmp=dst+'.part'
     for t in range(tries):
         try:
-            tmp=dst+'.part';urllib.request.urlretrieve(url,tmp);os.replace(tmp,dst);return True
+            req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'*/*'})
+            with urllib.request.urlopen(req,timeout=120) as r,open(tmp,'wb') as f:
+                while True:
+                    b=r.read(1<<20)
+                    if not b:break
+                    f.write(b)
+            os.replace(tmp,dst);return True
         except Exception as e:
-            print('  Download fehlgeschlagen',url,e,flush=True);time.sleep(5*(t+1))
+            print('  Download fehlgeschlagen',url,e,flush=True)
+            for cmd in (['curl','-fsSL','-A',UA,'-o',tmp,url],['wget','-q','-U',UA,'-O',tmp,url]):
+                if shutil.which(cmd[0]) and subprocess.call(cmd)==0:
+                    os.replace(tmp,dst);return True
+            time.sleep(5*(t+1))
     return False
 
 for name,url in URLS.items():

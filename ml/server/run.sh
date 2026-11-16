@@ -11,6 +11,15 @@ echo "== $(date '+%F %T') Start, Arbeitsordner $W"
 echo "CPU-Kerne: $(nproc)   Arbeitsspeicher: $(free -g | awk '/Mem:/{print $2}') GB   frei auf Platte: $(df -BG --output=avail "$W" | tail -1 | tr -d ' G') GB"
 FREE=$(df -BG --output=avail "$W" | tail -1 | tr -d ' G')
 if [ "$FREE" -lt 12 ]; then echo "FEHLER: Es werden rund 12 GB freier Platz gebraucht, frei sind $FREE GB."; exit 1; fi
+# Wenig Arbeitsspeicher: Auslagerungsdatei anlegen, damit Merkmale und Training nicht abbrechen.
+MEM=$(free -m | awk '/Mem:/{print $2}'); SWAP=$(free -m | awk '/Swap:/{print $2}')
+if [ "$((MEM+SWAP))" -lt 4000 ] && [ "$(id -u)" = "0" ] && [ ! -e /swapfile-hausprobe ]; then
+  echo "Wenig Arbeitsspeicher ($MEM MB). Lege 4 GB Auslagerungsdatei an."
+  fallocate -l 4G /swapfile-hausprobe || dd if=/dev/zero of=/swapfile-hausprobe bs=1M count=4096
+  chmod 600 /swapfile-hausprobe && mkswap /swapfile-hausprobe >/dev/null && swapon /swapfile-hausprobe
+fi
+[ -e /swapfile-hausprobe ] && swapon --show=NAME | grep -q swapfile-hausprobe || { [ -e /swapfile-hausprobe ] && swapon /swapfile-hausprobe 2>/dev/null || true; }
+echo "Auslagerung: $(free -m | awk '/Swap:/{print $2}') MB"
 if [ ! -x "$W/venv/bin/python" ]; then
   python3 -m venv "$W/venv" || { echo "FEHLER: Python-venv fehlt. Bitte ausführen: sudo apt update && sudo apt install -y python3-venv"; exit 1; }
 fi
@@ -19,6 +28,7 @@ echo "== $(date '+%F %T') Python-Pakete"
 pip install -q --upgrade pip
 pip install -q torch --index-url https://download.pytorch.org/whl/cpu
 pip install -q onnxruntime onnx numpy pillow
+command -v curl >/dev/null || command -v wget >/dev/null || apt-get install -y -q curl >/dev/null 2>&1 || true
 cp "$REPO/models/efficient_sam_vitt_encoder.onnx" "$W/models/"
 echo "== $(date '+%F %T') Daten laden und auswählen"
 python3 "$HERE/coco_prep.py" "$W" "$MAX"
