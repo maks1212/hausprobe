@@ -281,7 +281,7 @@ function addSurface(kind,pts,o){
   var n=surfaces.filter(function(s){return s.kind===kind;}).length+1;
   var s={id:nextId++,kind:kind,name:KIND[kind]+" "+n,pts:pts,rot:0,shade:.9,
     mat:kind==="dach"?"prefalz":"siding",color:"02",wm:kind==="dach"?10:9,hm:null,est:true};
-  if(kind==="fassade"){s.trim={style:"schlank",sill:true,color:null};s.wins=[];}
+  if(kind==="fassade"){s.trim={style:"rahmen",sill:true,color:null};s.wins=[];}
   if(o)for(var key in o)s[key]=o[key];
   surfaces.push(s);return s;
 }
@@ -442,7 +442,7 @@ function finishDraw(){
     if(d.auto){var cc=d.cands[d.pick];if(!cc||d.busy)return;b=cc.mb;}
     else{if(d.pts.length<3)return;var bb=bbox(d.pts.map(function(p){return [p.x,p.y];}));b=bb;}
     if(!winFits(d,b)){error="Die markierte Fläche ist für ein Fenster zu groß oder zu klein. Tippe auf „Kleiner“ oder „Größer“, oder prüf die Breite der Fassade.";uiStatus();error="";return;}
-    if(t){t.wins=t.wins||[];t.wins.push({x0:b[0],y0:b[1],x1:b[2],y1:b[3]});if(!t.trim)t.trim={style:"schlank",sill:true,color:null};}
+    if(t){t.wins=t.wins||[];t.wins.push({x0:b[0],y0:b[1],x1:b[2],y1:b[3]});if(!t.trim)t.trim={style:"rahmen",sill:true,color:null};}
     sel=d.target;drawing=null;ui();refresh();return;
   }
   if(d.auto){
@@ -492,7 +492,7 @@ function sizeInfo(s){
 }
 function winUi(s,pal){
   $("ed-win").hidden=s.kind!=="fassade";if(s.kind!=="fassade")return;
-  if(!s.trim)s.trim={style:"schlank",sill:true,color:null};if(!s.wins)s.wins=[];
+  if(!s.trim)s.trim={style:"rahmen",sill:true,color:null};if(!s.wins)s.wins=[];
   var t=s.trim,n=s.wins.length;
   $("scan-win").disabled=!!scanning;
   $("win-info").textContent=n?n+(n===1?" Fenster":" Fenster")+" verkleidet":"noch keines markiert";
@@ -521,7 +521,10 @@ function matName(s){return prod(s).name;}
 function colName(code){var c=DATA.colors[code];return c?code+" "+c.name:"";}
 function hintText(){
   if(error)return error;
-  if(autoNote&&!drawing&&surfaces.length)return "Fassade und Dach wurden automatisch erkannt. Wähle Produkt und Farbe. Passt eine Fläche nicht, lösche sie und markiere sie mit „+ Fassade“ oder „+ Dach“ neu.";
+  if(autoNote&&!drawing&&surfaces.length){
+    var nw=0;surfaces.forEach(function(s){if(s.kind==="fassade"&&s.wins)nw+=s.wins.length;});
+    return (scanning?"Fassade erkannt, Fenster werden gesucht. ":"Automatisch erkannt: "+surfaces.filter(function(s){return s.kind!=="cut";}).map(function(s){return s.kind==="dach"?"Dach":"Fassade";}).join(" und ")+(nw?" mit "+nw+" Fenster"+(nw===1?"":"n")+". ":". "))+"Wähle Produkt und Farbe. Fehlt ein Fenster, tippe auf „+ Fenster markieren“.";
+  }
   if(drawing)return drawHint();
   var s=current();
   if(adjust&&s)return MASKS[s.id]?"Zieh die Eckpunkte, um das Muster auszurichten. Die Fläche selbst bleibt gleich.":"Zieh die Eckpunkte an die Ecken der Fläche.";
