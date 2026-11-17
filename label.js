@@ -77,19 +77,63 @@ function next(){
     var c=toCanvas(img),ls=Math.min(1,1024/Math.max(c.width,c.height));
     cur={canvas:c,w:c.width,h:c.height,lw:Math.max(8,Math.round(c.width*ls)),lh:Math.max(8,Math.round(c.height*ls)),meta:q.meta,name:q.name};
     cur.label=new Uint8Array(cur.lw*cur.lh);
-    cv.width=cur.w;cv.height=cur.h;paintOverlay();
+    cv.width=cur.w;cv.height=cur.h;
+    return (q.prelabel?q.prelabel().then(createImageBitmap).then(function(pb){
+      /* Vormarkierung übernehmen: Graustufenbild mit den Klassen 0 bis 4, ohne Glätten auf die Markierungsgröße. */
+      var t=document.createElement("canvas");t.width=cur.lw;t.height=cur.lh;var tg=t.getContext("2d");tg.imageSmoothingEnabled=false;
+      tg.drawImage(pb,0,0,cur.lw,cur.lh);var d=tg.getImageData(0,0,cur.lw,cur.lh).data;
+      for(var i=0;i<cur.label.length;i++){var v=d[i*4];cur.label[i]=v<=4?v:0;}
+      cur.pre=true;
+    }).catch(function(){}):Promise.resolve()).then(function(){
+    paintOverlay();
     $("lic").value=q.meta.license||"own";$("author").value=q.meta.author||"";$("srcurl").value=q.meta.url||"";
     ["c1","c2","c3","c4"].forEach(function(id){$(id).checked=false;});
     SEG.prepare(c);setBusy("");ui();draw();
+    if(cur.pre)hint("Vormarkiert. Prüfe Dach (rot), Wand (blau), Fenster (gelb) und Tür (grün), korrigiere mit Tipps und setze unten die Häkchen für alles, was vollständig stimmt.");
+    });
   }).catch(function(){setBusy("");hint("Dieses Foto ließ sich nicht laden. Es wird übersprungen.");setTimeout(next,1200);});
 }
 function enqueue(list){var start=!cur&&!queue.length;queue=queue.concat(list);if(start)next();else ui();}
 $("files").onchange=function(){
   var fs=Array.prototype.slice.call(this.files||[]);this.value="";
+  fs.filter(function(f){return /\.zip$/i.test(f.name)||f.type==="application/zip";}).forEach(importZip);
   enqueue(fs.filter(function(f){return /^image\//.test(f.type);}).map(function(f){
     return {name:f.name,meta:{license:"own"},load:function(){return createImageBitmap(f);}};
   }));
 };
+/* ZIP mit vormarkierten Fotos lesen (Format wie der Export: images/, labels/, manifest.json).
+   Gelesen werden unkomprimierte und mit Deflate komprimierte Einträge. */
+function readZip(buf){
+  var v=new DataView(buf),u=new Uint8Array(buf),e=-1,i;
+  for(i=u.length-22;i>=Math.max(0,u.length-65558);i--)if(v.getUint32(i,true)===0x06054b50){e=i;break;}
+  if(e<0)throw new Error("keine ZIP-Datei");
+  var n=v.getUint16(e+10,true),off=v.getUint32(e+16,true),dec=new TextDecoder(),out={};
+  for(i=0;i<n;i++){
+    var m=v.getUint16(off+10,true),cs=v.getUint32(off+20,true),nl=v.getUint16(off+28,true),xl=v.getUint16(off+30,true),cl=v.getUint16(off+32,true),lo=v.getUint32(off+42,true);
+    var name=dec.decode(u.subarray(off+46,off+46+nl)),ds=lo+30+v.getUint16(lo+26,true)+v.getUint16(lo+28,true);
+    out[name]={method:m,data:u.subarray(ds,ds+cs)};off+=46+nl+xl+cl;
+  }
+  return out;
+}
+function entryBlob(en,type){
+  if(en.method===0)return Promise.resolve(new Blob([en.data],{type:type}));
+  if(en.method===8&&window.DecompressionStream)return new Response(new Blob([en.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).blob().then(function(b){return new Blob([b],{type:type});});
+  return Promise.reject(new Error("Komprimierung nicht unterstützt"));
+}
+function importZip(f){
+  setBusy("Paket wird gelesen");
+  f.arrayBuffer().then(function(buf){
+    var z=readZip(buf),man=z["manifest.json"];if(!man)throw new Error("manifest.json fehlt");
+    return entryBlob(man,"application/json").then(function(b){return b.text();}).then(function(t){
+      var m=JSON.parse(t),list=(m.items||[]).filter(function(it){return z["images/"+it.id+".jpg"];}).map(function(it){
+        return {name:it.name||it.id,meta:{license:it.license,author:it.author,url:it.url},
+          load:function(){return entryBlob(z["images/"+it.id+".jpg"],"image/jpeg").then(createImageBitmap);},
+          prelabel:z["labels/"+it.id+".png"]?function(){return entryBlob(z["labels/"+it.id+".png"],"image/png");}:null};
+      });
+      setBusy("");enqueue(list);if(!list.length)hint("Im Paket waren keine Fotos.");
+    });
+  }).catch(function(e){setBusy("");hint("Das Paket ließ sich nicht lesen: "+e.message);});
+}
 
 /* ---------- Markieren ---------- */
 function pos(e){var r=cv.getBoundingClientRect();return {x:Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),y:Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))};}
