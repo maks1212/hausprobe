@@ -287,7 +287,7 @@ function addSurface(kind,pts,o){
 }
 function startDraw(kind){
   var target=kind==="fenster"?sel:null;
-  adjust=false;sel=null;error="";
+  adjust=false;sel=null;error="";autoNote=false;
   drawing={target:target,kind:kind,pts:[],auto:kind!=="cut"&&!!SEG&&!SEG.blocked(),taps:[],sub:false,cands:[],pick:0,picked:false,busy:false,miss:false,ticket:0};
   if(drawing.auto)SEG.prepare(src);
   ui();draw();
@@ -309,8 +309,13 @@ function runDetect(){
   var ticket=++d.ticket;
   if(!d.taps.length){d.cands=[];d.busy=false;d.miss=false;d.picked=false;ui();draw();return;}
   d.busy=true;ui();draw();
-  SEG.masks(d.taps.slice(),{raw:d.kind==="fenster"}).then(function(c){
+  var first=d.taps.length===1&&d.taps[0].add&&(d.kind==="fassade"||d.kind==="dach")&&SEG.surface;
+  Promise.all([SEG.masks(d.taps.slice(),{raw:d.kind==="fenster"}),
+    first?SEG.surface(d.kind==="dach"?1:2,d.taps[0]).catch(function(){return null;}):Promise.resolve(null)]).then(function(r){
+    var c=r[0],mc=r[1];
     if(drawing!==d||d.ticket!==ticket)return;
+    /* Hat das Flächenmodell an der Tippstelle die gewünschte Fläche gefunden, steht sie an erster Stelle. */
+    if(mc){c=c.concat([mc]).sort(function(a,b){return a.share-b.share;});}
     d.busy=false;d.cands=c;d.miss=!c.length;
     if(!d.picked||d.pick>=c.length){
       /* Standard: die kleinste Fläche, die kein Detail ist (also das Bauteil, nicht das ganze Haus). */
@@ -325,6 +330,7 @@ function runDetect(){
         for(i2=0;i2<c.length;i2++)top=Math.max(top,c[i2].sim);
         /* Dach: nur Kandidaten, die farblich so sauber sind wie der beste (sonst rutscht eine gleichfarbige Wand mit hinein). */
         for(i2=0;i2<c.length;i2++)if(c[i2].whole<=.62&&c[i2].sim>=(d.kind==="dach"?Math.max(.1,top-.025):.1))best=i2;
+        for(i2=0;i2<c.length;i2++)if(c[i2].model)best=i2;
         if(best<0)for(i2=0;i2<c.length;i2++)if(c[i2].share>=.015){best=i2;break;}
         d.pick=Math.max(0,best);
       }
@@ -399,6 +405,36 @@ function winFits(d,b){
   var t=surfaces.filter(function(x){return x.id===d.target;})[0];if(!t)return true;
   var k=ppm(t),wm=(b[2]-b[0])*W/k,hm=(b[3]-b[1])*H/k;return wm>=.25&&wm<=3.5&&hm>=.25&&hm<=3.2;
 }
+/* Erkannte Fläche übernehmen: Kanten am Foto verfeinern, bei Fassaden Fenster vormerken und gründlich suchen. */
+function addDetected(kind,c){
+  var s=addSurface(kind,c.quad,{mb:c.mb});
+  var fine=c.canvas;try{if(REF)fine=REF.refine(c.canvas,src);}catch(e){}
+  MASKS[s.id]=fine;try{s.maskUrl=fine.toDataURL("image/png");}catch(e){}
+  if(s.kind==="fassade"){
+    /* Vorläufig: ganz von Wand umschlossene Öffnungen. Die gründliche Suche läuft gleich danach im Hintergrund. */
+    var bw=(c.mb[2]-c.mb[0]),bh=(c.mb[3]-c.mb[1]);
+    s.wins=(fine._holes||[]).filter(function(h){
+      var ar=h.w*W/(h.h*H);return ar>.35&&ar<2.6&&h.w>=.03*bw&&h.w<=.3*bw&&h.h>=.04*bh&&h.h<=.5*bh;
+    }).map(function(h){return {x0:h.x,y0:h.y,x1:h.x+h.w,y1:h.y+h.h};});
+    findWindows(s);
+  }
+  return s;
+}
+/* Nach dem Laden eines Fotos: Fassade und Dach ohne Tipp markieren, wenn das Flächenmodell sie sicher findet. */
+var autoTicket=0,autoRunning=false,autoNote=false;
+function autoDetect(){
+  if(!SEG||!SEG.surface||SEG.blocked())return;
+  var t=++autoTicket,image=src;autoRunning=true;uiStatus();
+  Promise.all([SEG.surface(2).catch(function(){return null;}),SEG.surface(1).catch(function(){return null;})]).then(function(r){
+    autoRunning=false;
+    if(t!==autoTicket||image!==src||surfaces.length||drawing){uiStatus();return;}
+    var wall=r[0],roof=r[1],first=null;
+    if(wall&&wall.share>=.03){first=addDetected("fassade",wall);}
+    if(roof&&roof.share>=.012){var sr=addDetected("dach",roof);if(!first)first=sr;}
+    if(first){sel=first.id;autoNote=true;}
+    ui();refresh();
+  });
+}
 function finishDraw(){
   var d=drawing;if(!d)return;
   if(d.kind==="fenster"){
@@ -411,18 +447,7 @@ function finishDraw(){
   }
   if(d.auto){
     var c=d.cands[d.pick];if(!c||d.busy)return;
-    var s=addSurface(d.kind,c.quad,{mb:c.mb});
-    var fine=c.canvas;try{if(REF)fine=REF.refine(c.canvas,src);}catch(e){}
-    MASKS[s.id]=fine;try{s.maskUrl=fine.toDataURL("image/png");}catch(e){}
-    /* Vorläufig: ganz von Wand umschlossene Öffnungen. Die gründliche Suche läuft gleich danach im Hintergrund. */
-    if(s.kind==="fassade"){
-      /* Größe relativ zur Wand: der Maßstab ist hier noch nicht bekannt. */
-      var bw=(c.mb[2]-c.mb[0]),bh=(c.mb[3]-c.mb[1]);
-      s.wins=(fine._holes||[]).filter(function(h){
-        var ar=h.w*W/(h.h*H);return ar>.35&&ar<2.6&&h.w>=.03*bw&&h.w<=.3*bw&&h.h>=.04*bh&&h.h<=.5*bh;
-      }).map(function(h){return {x0:h.x,y0:h.y,x1:h.x+h.w,y1:h.y+h.h};});
-      findWindows(s);
-    }
+    var s=addDetected(d.kind,c);
     sel=s.id;
   }else{
     if(d.pts.length<3)return;
@@ -496,6 +521,7 @@ function matName(s){return prod(s).name;}
 function colName(code){var c=DATA.colors[code];return c?code+" "+c.name:"";}
 function hintText(){
   if(error)return error;
+  if(autoNote&&!drawing&&surfaces.length)return "Fassade und Dach wurden automatisch erkannt. Wähle Produkt und Farbe. Passt eine Fläche nicht, lösche sie und markiere sie mit „+ Fassade“ oder „+ Dach“ neu.";
   if(drawing)return drawHint();
   var s=current();
   if(adjust&&s)return MASKS[s.id]?"Zieh die Eckpunkte, um das Muster auszurichten. Die Fläche selbst bleibt gleich.":"Zieh die Eckpunkte an die Ecken der Fläche.";
@@ -523,6 +549,7 @@ function uiStatus(){
   else if(st.phase==="analyse")t="Foto wird analysiert";
   else if(D&&D.busy)t="Fläche wird gesucht";
   else if(scanning){t="Fenster werden gesucht";pct=scanning.pct;}
+  else if(autoRunning&&!surfaces.length)t="Fassade und Dach werden erkannt";
   $("busy").hidden=!t;$("busy-text").textContent=t+(pct>=0?": "+pct+" %":"");
   $("busy-bar").style.width=pct>=0?pct+"%":"";$("busy-bar").className=pct>=0?"":"run";
   $("save").disabled=$("share").disabled=!surfaces.length;
@@ -733,7 +760,7 @@ function loadFile(f){
     c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
     setImage(c);isSample=false;storePhoto(c);surfaces=[];nextId=1;sel=null;drawing=null;split=.5;adjust=false;$("badge").hidden=true;
     /* Die Analyse startet sofort im Hintergrund, damit der erste Tipp nicht warten muss. */
-    if(SEG&&!SEG.blocked())SEG.prepare(src);
+    if(SEG&&!SEG.blocked()){SEG.prepare(src);autoNote=false;autoDetect();}
     renderAfter();ui();draw();window.scrollTo(0,0);
   };
   img.onerror=function(){URL.revokeObjectURL(url);error="Dieses Bild lässt sich nicht öffnen. Wähle ein JPG oder PNG.";uiStatus();error="";};

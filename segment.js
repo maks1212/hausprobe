@@ -260,6 +260,120 @@ async function scan(wall,onStep,dbg,solid){
    Das Modell liefert meist "Teilstück / Gebäudeteil samt Fenstern / ganzes Haus". Deshalb wird jeder Kandidat auf die
    Farbe der angetippten Stellen eingeschränkt: übrig bleibt das Material (Wand oder Dach) ohne Fenster, Türen und
    anders gefärbte Bauteile. opt.raw schaltet das ab (für das Markieren von Fenstern). */
+/* Aus einer Binärmaske (W×H) eine Fläche bauen: gelbe Maske, Anteil, Ecken für die Perspektive, Grenzen. */
+function candidate(F,W,H,minCnt){
+  var cnt=0,edge=[],x0=W,y0=H,x1=-1,y1=-1,i,x,y;
+  var c=document.createElement("canvas");c.width=W;c.height=H;var g=c.getContext("2d"),im=g.createImageData(W,H),d=im.data;
+  for(y=0;y<H;y++)for(x=0;x<W;x++){
+    i=y*W+x;if(!F[i])continue;
+    cnt++;d[i*4]=255;d[i*4+1]=216;d[i*4+2]=77;d[i*4+3]=255;
+    if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+    if(x===0||x===W-1||y===0||y===H-1||!F[i-1]||!F[i+1]||!F[i-W]||!F[i+W])edge.push([x+.5,y+.5]);
+  }
+  if(cnt<minCnt)return null;
+  g.putImageData(im,0,0);
+  var hull=convexHull(edge),q=hull.length>=4?toQuad(hull):null;
+  /* Nur wenn die Fläche ihr Viereck gut ausfüllt, ist es eine echte Vierecksfläche (z. B. eine Dachseite).
+     Sonst (Giebel, verdeckte Wand) ist das gerade Rechteck die bessere Ausgangslage für das Muster. */
+  if(q){var qa=0,t2;for(t2=0;t2<4;t2++){var nx=q[(t2+1)%4];qa+=q[t2][0]*nx[1]-nx[0]*q[t2][1];}if(cnt/(Math.abs(qa)/2)<.8)q=null;}
+  if(!q)q=[[x0,y0],[x1+1,y0],[x1+1,y1+1],[x0,y1+1]];
+  return {canvas:c,share:cnt/(W*H),sim:1,whole:cnt/(W*H),
+    quad:q.map(function(p){return {x:p[0]/W,y:p[1]/H};}),
+    mb:[x0/W,y0/H,(x1+1)/W,(y1+1)/H]};
+}
+
+/* Eigenes Flächenmodell: ordnet jedem Bildpunkt Dach, Wand, Fenster, Tür oder Sonstiges zu (128 × 128, auf das
+   Bild gestreckt). Trainiert auf COCO-Stuff, läuft auf denselben Bildmerkmalen wie die übrige Erkennung. */
+var SURF="models/hausprobe_flaechen.onnx",surfSess=null;
+function loadSurf(){
+  if(surfSess)return surfSess;
+  surfSess=(async function(){
+    await load();var res=await fetch(SURF);if(!res.ok)throw new Error("kein Flächenmodell");
+    return root.ort.InferenceSession.create(new Uint8Array(await res.arrayBuffer()),{executionProviders:["wasm"]});
+  })();
+  surfSess.catch(function(){surfSess=null;});
+  return surfSess;
+}
+async function classMap(){
+  var j=job;if(!j)throw new Error("kein Foto");
+  await j.promise;
+  if(j.cls)return j.cls;
+  var s=await loadSurf(),ort=root.ort;
+  var out=await runOn(s,{image_embeddings:new ort.Tensor("float32",new Float32Array(j.emb.data),j.emb.dims)});
+  var t=out.classes,NC=t.dims[1],H=t.dims[2],W=t.dims[3],p=t.data,N=W*H,lab=new Uint8Array(N),i,k;
+  for(i=0;i<N;i++){var best=0,bv=p[i];for(k=1;k<NC;k++)if(p[k*N+i]>bv){bv=p[k*N+i];best=k;}lab[i]=best;}
+  j.cls={w:W,h:H,lab:lab,prob:p,nc:NC};
+  return j.cls;
+}
+/* Fläche einer Klasse (1 Dach, 2 Wand): mit Tipp die zusammenhängende Fläche dort, sonst die größte.
+   Kleine Lücken (Regenrinne, Schatten) werden geschlossen; Fenster und Türen bleiben ausgespart. */
+async function surface(kind,at){
+  var m=await classMap(),W=m.w,H=m.h,N=W*H,lab=m.lab,prob=m.prob,i,x,y,j=job;
+  /* Nur sichere Bildpunkte: die Klasse muss klar vorne liegen. Dazu Himmel und Bewuchs über die Farbe ausschließen,
+     wenn die Fläche selbst nicht blau oder grün ist; daran scheitert das Modell an Rändern am häufigsten. */
+  if(!j.small||j.small.w!==W){var sc=document.createElement("canvas");sc.width=W;sc.height=H;var sg=sc.getContext("2d");sg.drawImage(j.canvas,0,0,W,H);j.small={w:W,d:sg.getImageData(0,0,W,H).data};}
+  var px=j.small.d,B=new Uint8Array(N),R=[],Gc=[],Bc=[],n0=0;
+  for(i=0;i<N;i++){if(lab[i]===kind&&prob[kind*N+i]>=.5){B[i]=1;R.push(px[i*4]);Gc.push(px[i*4+1]);Bc.push(px[i*4+2]);n0++;}}
+  function med(a){a.sort(function(u,v){return u-v;});return a[a.length>>1];}
+  if(n0){
+    /* Typische Farbe der Fläche über den Median: Himmel oder Bäume am Rand verfälschen ihn nicht. */
+    var sr=med(R),sg2=med(Gc),sb=med(Bc);
+    /* Himmel: himmelfarbene Bildpunkte, die zusammenhängend vom oberen Bildrand her erreichbar sind. So fällt der
+       Himmel über dem Dach weg, eine hellblaue Wand unter dem Dach bleibt. Bewuchs: grün und deutlich anders als die Fläche. */
+    var sl=(sr+sg2+sb)/3,skyL=new Uint8Array(N),skyR=new Uint8Array(N),st=new Int32Array(N),top=0;
+    for(i=0;i<N;i++){var r0=px[i*4],g0=px[i*4+1],b0=px[i*4+2],l0=(r0+g0+b0)/3;
+      skyL[i]=(b0>=r0+10&&b0>=g0-5&&l0>120)||(l0>205&&Math.abs(r0-b0)<35)?1:0;}
+    for(x=0;x<W;x++)if(skyL[x]){skyR[x]=1;st[top++]=x;}
+    while(top){var q=st[--top],qx=q%W;
+      if(qx>0&&skyL[q-1]&&!skyR[q-1]){skyR[q-1]=1;st[top++]=q-1;}
+      if(qx<W-1&&skyL[q+1]&&!skyR[q+1]){skyR[q+1]=1;st[top++]=q+1;}
+      if(q>=W&&skyL[q-W]&&!skyR[q-W]){skyR[q-W]=1;st[top++]=q-W;}
+      if(q<N-W&&skyL[q+W]&&!skyR[q+W]){skyR[q+W]=1;st[top++]=q+W;}}
+    /* Würde der Himmelsfilter einen großen Teil der Fläche entfernen, ist die Fläche selbst hell oder blau
+       (weiße Wand, Blechdach) und der Filter bleibt aus. */
+    var sk=0;for(i=0;i<N;i++)if(B[i]&&skyR[i])sk++;
+    var useSky=sk<=.3*n0;
+    /* Ein Dach, das großteils mit dem Himmel zusammenhängt, ist unsicher: dann lieber kein automatisches Dach,
+       der Nutzer markiert es mit einem Tipp. */
+    if(kind===1&&!useSky&&!at)return null;
+    for(i=0;i<N;i++){
+      if(!B[i])continue;var r=px[i*4],gq=px[i*4+1],b=px[i*4+2],l=(r+gq+b)/3;
+      var cd=Math.abs((r-l)-(sr-sl))+Math.abs((gq-l)-(sg2-sl))+Math.abs((b-l)-(sb-sl));
+      if((useSky&&skyR[i])||(gq>r+15&&gq>b+10&&cd>30))B[i]=0;
+    }
+  }
+  /* Schließen 3×3: erst wachsen, dann schrumpfen, nur innerhalb von Wand, Dach, Fenster, Tür */
+  function grow(A,keepOut){var O=new Uint8Array(N);for(y=0;y<H;y++)for(x=0;x<W;x++){i=y*W+x;
+    var v=A[i]||(x>0&&A[i-1])||(x<W-1&&A[i+1])||(y>0&&A[i-W])||(y<H-1&&A[i+W]);O[i]=v&&(!keepOut||lab[i]!==0)?1:0;}return O;}
+  function shrink(A){var O=new Uint8Array(N);for(y=0;y<H;y++)for(x=0;x<W;x++){i=y*W+x;
+    O[i]=A[i]&&(x===0||A[i-1])&&(x===W-1||A[i+1])&&(y===0||A[i-W])&&(y===H-1||A[i+W])?1:0;}return O;}
+  var C=shrink(grow(B,true));for(i=0;i<N;i++){if(B[i])C[i]=1;if(lab[i]===3||lab[i]===4)C[i]=0;}
+  var comp=new Int32Array(N),stack=new Int32Array(N),sizes=[0],id=0;
+  for(i=0;i<N;i++){
+    if(!C[i]||comp[i])continue;id++;var top=0,sz=0,q;stack[top++]=i;comp[i]=id;
+    while(top){q=stack[--top];sz++;var qx=q%W;
+      if(qx>0&&C[q-1]&&!comp[q-1]){comp[q-1]=id;stack[top++]=q-1;}
+      if(qx<W-1&&C[q+1]&&!comp[q+1]){comp[q+1]=id;stack[top++]=q+1;}
+      if(q>=W&&C[q-W]&&!comp[q-W]){comp[q-W]=id;stack[top++]=q-W;}
+      if(q<N-W&&C[q+W]&&!comp[q+W]){comp[q+W]=id;stack[top++]=q+W;}}
+    sizes.push(sz);
+  }
+  if(id===0)return null;
+  var pick=0;
+  if(at){
+    var px=Math.min(W-1,Math.max(0,Math.round(at.x*W))),py=Math.min(H-1,Math.max(0,Math.round(at.y*H))),bd=1e9,dx,dy;
+    for(dy=-4;dy<=4;dy++)for(dx=-4;dx<=4;dx++){var xx=px+dx,yy=py+dy;if(xx<0||yy<0||xx>=W||yy>=H)continue;
+      var c2=comp[yy*W+xx];if(c2&&dx*dx+dy*dy<bd){bd=dx*dx+dy*dy;pick=c2;}}
+    if(!pick)return null;
+  }else{var bs=0;for(i=1;i<sizes.length;i++)if(sizes[i]>bs){bs=sizes[i];pick=i;}}
+  /* Alle Teile derselben Klasse, die groß genug sind, gehören meist zum selben Haus (Wand links und rechts der Garage). */
+  var keep={};keep[pick]=1;
+  if(!at)for(i=1;i<sizes.length;i++)if(sizes[i]>=Math.max(40,sizes[pick]*.25))keep[i]=1;
+  var F=new Uint8Array(N);for(i=0;i<N;i++)if(keep[comp[i]])F[i]=1;
+  var r=candidate(F,W,H,Math.max(20,N*.004));if(r)r.model=true;
+  return r;
+}
+
 async function masks(points,opt){
   var j=job;if(!j)throw new Error("kein Foto");
   await j.promise;var s=await load(),ort=root.ort;
@@ -337,24 +451,8 @@ async function masks(points,opt){
     return O;
   }
   raws.forEach(function(rw){
-    var F=useColor?clean(rw.B):rw.B,cnt=0,edge=[],x0=W,y0=H,x1=-1,y1=-1;
-    var c=document.createElement("canvas");c.width=W;c.height=H;var g=c.getContext("2d"),im=g.createImageData(W,H),d=im.data;
-    for(y=0;y<H;y++)for(x=0;x<W;x++){
-      i=y*W+x;if(!F[i])continue;
-      cnt++;d[i*4]=255;d[i*4+1]=216;d[i*4+2]=77;d[i*4+3]=255;
-      if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
-      if(x===0||x===W-1||y===0||y===H-1||!F[i-1]||!F[i+1]||!F[i-W]||!F[i+W])edge.push([x+.5,y+.5]);
-    }
-    if(cnt<240)return;
-    g.putImageData(im,0,0);
-    var hull=convexHull(edge),q=hull.length>=4?toQuad(hull):null;
-    /* Nur wenn die Fläche ihr Viereck gut ausfüllt, ist es eine echte Vierecksfläche (z. B. eine Dachseite).
-       Sonst (Giebel, verdeckte Wand) ist das gerade Rechteck die bessere Ausgangslage für das Muster. */
-    if(q){var qa=0,t2;for(t2=0;t2<4;t2++){var nx=q[(t2+1)%4];qa+=q[t2][0]*nx[1]-nx[0]*q[t2][1];}if(cnt/(Math.abs(qa)/2)<.8)q=null;}
-    if(!q)q=[[x0,y0],[x1+1,y0],[x1+1,y1+1],[x0,y1+1]];
-    res.push({canvas:c,share:cnt/N,sim:rw.sim,whole:rw.cnt/N,
-      quad:q.map(function(p){return {x:p[0]/W,y:p[1]/H};}),
-      mb:[x0/W,y0/H,(x1+1)/W,(y1+1)/H]});
+    var r=candidate(useColor?clean(rw.B):rw.B,W,H,240);
+    if(r){r.sim=rw.sim;r.whole=rw.cnt/N;res.push(r);}
   });
   res.sort(function(a,b){return a.share-b.share;});
   /* Fast gleich große Kandidaten zusammenlegen. */
@@ -362,7 +460,7 @@ async function masks(points,opt){
 }
 
 var api={
-  prepare:prepare,masks:masks,scan:scan,windows:windows,state:state,
+  prepare:prepare,masks:masks,scan:scan,windows:windows,surface:surface,classMap:classMap,state:state,
   onChange:function(f){listeners.push(f);},
   blocked:crashed,
   reset:function(){crashedBefore=false;guard(false);if(job&&job.failed)job=null;}
