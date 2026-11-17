@@ -308,8 +308,40 @@ async function classMap(){
 /* Fläche einer Klasse (1 Dach, 2 Wand): mit Tipp die zusammenhängende Fläche dort, sonst die größte.
    Kleine Lücken (Regenrinne, Schatten) werden geschlossen; Fenster und Türen bleiben ausgespart. */
 async function surface(kind,at){
-  var m=await classMap(),W=m.w,H=m.h,N=W*H,lab=m.lab,i,x,y;
-  var B=new Uint8Array(N);for(i=0;i<N;i++)B[i]=lab[i]===kind?1:0;
+  var m=await classMap(),W=m.w,H=m.h,N=W*H,lab=m.lab,prob=m.prob,i,x,y,j=job;
+  /* Nur sichere Bildpunkte: die Klasse muss klar vorne liegen. Dazu Himmel und Bewuchs über die Farbe ausschließen,
+     wenn die Fläche selbst nicht blau oder grün ist; daran scheitert das Modell an Rändern am häufigsten. */
+  if(!j.small||j.small.w!==W){var sc=document.createElement("canvas");sc.width=W;sc.height=H;var sg=sc.getContext("2d");sg.drawImage(j.canvas,0,0,W,H);j.small={w:W,d:sg.getImageData(0,0,W,H).data};}
+  var px=j.small.d,B=new Uint8Array(N),R=[],Gc=[],Bc=[],n0=0;
+  for(i=0;i<N;i++){if(lab[i]===kind&&prob[kind*N+i]>=.5){B[i]=1;R.push(px[i*4]);Gc.push(px[i*4+1]);Bc.push(px[i*4+2]);n0++;}}
+  function med(a){a.sort(function(u,v){return u-v;});return a[a.length>>1];}
+  if(n0){
+    /* Typische Farbe der Fläche über den Median: Himmel oder Bäume am Rand verfälschen ihn nicht. */
+    var sr=med(R),sg2=med(Gc),sb=med(Bc);
+    /* Himmel: himmelfarbene Bildpunkte, die zusammenhängend vom oberen Bildrand her erreichbar sind. So fällt der
+       Himmel über dem Dach weg, eine hellblaue Wand unter dem Dach bleibt. Bewuchs: grün und deutlich anders als die Fläche. */
+    var sl=(sr+sg2+sb)/3,skyL=new Uint8Array(N),skyR=new Uint8Array(N),st=new Int32Array(N),top=0;
+    for(i=0;i<N;i++){var r0=px[i*4],g0=px[i*4+1],b0=px[i*4+2],l0=(r0+g0+b0)/3;
+      skyL[i]=(b0>=r0+10&&b0>=g0-5&&l0>120)||(l0>205&&Math.abs(r0-b0)<35)?1:0;}
+    for(x=0;x<W;x++)if(skyL[x]){skyR[x]=1;st[top++]=x;}
+    while(top){var q=st[--top],qx=q%W;
+      if(qx>0&&skyL[q-1]&&!skyR[q-1]){skyR[q-1]=1;st[top++]=q-1;}
+      if(qx<W-1&&skyL[q+1]&&!skyR[q+1]){skyR[q+1]=1;st[top++]=q+1;}
+      if(q>=W&&skyL[q-W]&&!skyR[q-W]){skyR[q-W]=1;st[top++]=q-W;}
+      if(q<N-W&&skyL[q+W]&&!skyR[q+W]){skyR[q+W]=1;st[top++]=q+W;}}
+    /* Würde der Himmelsfilter einen großen Teil der Fläche entfernen, ist die Fläche selbst hell oder blau
+       (weiße Wand, Blechdach) und der Filter bleibt aus. */
+    var sk=0;for(i=0;i<N;i++)if(B[i]&&skyR[i])sk++;
+    var useSky=sk<=.3*n0;
+    /* Ein Dach, das großteils mit dem Himmel zusammenhängt, ist unsicher: dann lieber kein automatisches Dach,
+       der Nutzer markiert es mit einem Tipp. */
+    if(kind===1&&!useSky&&!at)return null;
+    for(i=0;i<N;i++){
+      if(!B[i])continue;var r=px[i*4],gq=px[i*4+1],b=px[i*4+2],l=(r+gq+b)/3;
+      var cd=Math.abs((r-l)-(sr-sl))+Math.abs((gq-l)-(sg2-sl))+Math.abs((b-l)-(sb-sl));
+      if((useSky&&skyR[i])||(gq>r+15&&gq>b+10&&cd>30))B[i]=0;
+    }
+  }
   /* Schließen 3×3: erst wachsen, dann schrumpfen, nur innerhalb von Wand, Dach, Fenster, Tür */
   function grow(A,keepOut){var O=new Uint8Array(N);for(y=0;y<H;y++)for(x=0;x<W;x++){i=y*W+x;
     var v=A[i]||(x>0&&A[i-1])||(x<W-1&&A[i+1])||(y>0&&A[i-W])||(y<H-1&&A[i+W]);O[i]=v&&(!keepOut||lab[i]!==0)?1:0;}return O;}
