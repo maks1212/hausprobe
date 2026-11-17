@@ -1,0 +1,13 @@
+Briefkasten läuft als root auf ubuntu
+CPU-Kerne: 2
+               total        used        free      shared  buff/cache   available
+Mem:            1839         461         644           4         900        1377
+Swap:           4095          49        4046
+/dev/vda1        77G   12G   66G  15% /
+Python 3.14.4
+Mapillary-Schlüssel: fehlt
+bericht.txt
+hausprobe_flaechen.onnx
+hausprobe_flaechen.pt
+vorschau.jpg
+Exitcode 0
