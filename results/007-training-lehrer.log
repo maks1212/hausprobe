@@ -50,3 +50,26 @@ Durchgang 26/30 Verlust 0.751 71 min
 Durchgang 27/30 Verlust 0.740 74 min IoU {'Dach': 0.348, 'Wand': 0.62, 'Fenster': 0.354, 'Tür': 0.162} (bester Stand)
 Durchgang 28/30 Verlust 0.729 77 min
 Durchgang 29/30 Verlust 0.723 79 min
+Durchgang 30/30 Verlust 0.722 82 min IoU {'Dach': 0.342, 'Wand': 0.612, 'Fenster': 0.352, 'Tür': 0.163}
+IoU nur COCO (108 Fotos): {'Dach': 0.346, 'Wand': 0.588, 'Fenster': 0.196, 'Tür': 0.081}
+IoU nur Mapillary (38 Fotos): {'Dach': 0.355, 'Wand': 0.677, 'Fenster': 0.477, 'Tür': 0.195}
+IoU bisheriges Modell, nur COCO (108 Fotos): {'Dach': 0.442, 'Wand': 0.618, 'Fenster': 0.295, 'Tür': 0.247}
+IoU bisheriges Modell, nur Mapillary (38 Fotos): {'Dach': 0.338, 'Wand': 0.604, 'Fenster': 0.226, 'Tür': 0.116}
+/root/hausprobe/ml/server/train_flaechen.py:98: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(Export(model),(torch.zeros(1,256,G,G),),OUT+'/hausprobe_flaechen.onnx',input_names=['image_embeddings'],output_names=['classes'],opset_version=17,dynamo=False)
+FERTIG /root/hausprobe-training/out/hausprobe_flaechen.onnx {'Dach': 0.348, 'Wand': 0.62, 'Fenster': 0.354, 'Tür': 0.162}
+== 2026-11-18 14:23:57 Ergebnis ins Repo hochladen
+Switched to a new branch 'modell-flaechen-20261118-1423'
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/maks1212/hausprobe.git        
+remote: 
+remote: Create a pull request for 'modell-flaechen-20261118-1423' on GitHub by visiting:        
+remote:      https://github.com/maks1212/hausprobe/pull/new/modell-flaechen-20261118-1423        
+remote: 
+To https://github.com/Maks1212/hausprobe.git
+ * [new branch]      modell-flaechen-20261118-1423 -> modell-flaechen-20261118-1423
+branch 'modell-flaechen-20261118-1423' set up to track 'origin/modell-flaechen-20261118-1423'.
+Hochgeladen auf Branch modell-flaechen-20261118-1423
+== 2026-11-18 14:23:59 FERTIG
+Sammlung läuft weiter
+Exitcode 0
