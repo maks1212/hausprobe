@@ -1,1 +1,85 @@
 Warte auf ~/.mapillary_token …
+Schlüssel gefunden, Start 2026-11-17 23:00:04
+Suche Fotos in 16 Gegenden
+  Suche 0: 0 Kandidaten
+  Suche 20: 297 Kandidaten
+  Suche 40: 662 Kandidaten
+  Suche 60: 1112 Kandidaten
+Kandidaten: 1203
+  geprüft 1, behalten 0  (3.2 s je Foto)
+  geprüft 21, behalten 1  (3.0 s je Foto)
+  geprüft 41, behalten 3  (3.0 s je Foto)
+  geprüft 61, behalten 4  (3.0 s je Foto)
+  geprüft 81, behalten 5  (3.0 s je Foto)
+  geprüft 101, behalten 8  (3.0 s je Foto)
+  geprüft 121, behalten 11  (3.0 s je Foto)
+  geprüft 141, behalten 12  (3.0 s je Foto)
+  geprüft 161, behalten 14  (3.0 s je Foto)
+  geprüft 181, behalten 17  (3.0 s je Foto)
+  geprüft 201, behalten 18  (3.0 s je Foto)
+  geprüft 221, behalten 18  (3.0 s je Foto)
+  geprüft 241, behalten 20  (3.0 s je Foto)
+  geprüft 261, behalten 21  (3.0 s je Foto)
+  geprüft 281, behalten 21  (3.1 s je Foto)
+  geprüft 301, behalten 21  (3.1 s je Foto)
+  geprüft 321, behalten 23  (3.1 s je Foto)
+  geprüft 341, behalten 23  (3.1 s je Foto)
+  geprüft 361, behalten 23  (3.1 s je Foto)
+  geprüft 381, behalten 23  (3.1 s je Foto)
+  geprüft 401, behalten 23  (3.1 s je Foto)
+  geprüft 421, behalten 23  (3.1 s je Foto)
+  geprüft 441, behalten 23  (3.1 s je Foto)
+  geprüft 461, behalten 23  (3.0 s je Foto)
+  geprüft 481, behalten 24  (3.0 s je Foto)
+  geprüft 501, behalten 25  (3.0 s je Foto)
+  geprüft 521, behalten 25  (3.0 s je Foto)
+  geprüft 541, behalten 30  (3.0 s je Foto)
+  geprüft 561, behalten 31  (3.0 s je Foto)
+  geprüft 581, behalten 32  (3.0 s je Foto)
+  geprüft 601, behalten 32  (3.0 s je Foto)
+  geprüft 621, behalten 33  (3.0 s je Foto)
+  geprüft 641, behalten 33  (3.0 s je Foto)
+  geprüft 661, behalten 34  (3.0 s je Foto)
+  geprüft 681, behalten 37  (3.0 s je Foto)
+  geprüft 701, behalten 37  (3.0 s je Foto)
+  geprüft 721, behalten 39  (3.0 s je Foto)
+  geprüft 741, behalten 41  (3.0 s je Foto)
+  geprüft 761, behalten 42  (3.0 s je Foto)
+  geprüft 781, behalten 45  (3.0 s je Foto)
+  geprüft 801, behalten 46  (3.0 s je Foto)
+  geprüft 821, behalten 47  (3.0 s je Foto)
+  geprüft 841, behalten 48  (3.0 s je Foto)
+  geprüft 861, behalten 48  (3.0 s je Foto)
+  geprüft 881, behalten 52  (3.0 s je Foto)
+  geprüft 901, behalten 52  (3.0 s je Foto)
+  geprüft 921, behalten 53  (3.0 s je Foto)
+  geprüft 941, behalten 53  (3.0 s je Foto)
+  geprüft 961, behalten 54  (3.0 s je Foto)
+  geprüft 981, behalten 57  (3.0 s je Foto)
+  geprüft 1001, behalten 58  (3.0 s je Foto)
+  geprüft 1021, behalten 58  (3.0 s je Foto)
+  geprüft 1041, behalten 58  (3.0 s je Foto)
+  geprüft 1061, behalten 58  (3.0 s je Foto)
+  geprüft 1081, behalten 58  (3.0 s je Foto)
+  geprüft 1101, behalten 60  (3.0 s je Foto)
+  geprüft 1121, behalten 60  (3.0 s je Foto)
+  geprüft 1141, behalten 60  (3.0 s je Foto)
+  geprüft 1161, behalten 61  (3.0 s je Foto)
+  geprüft 1181, behalten 62  (3.0 s je Foto)
+  geprüft 1201, behalten 63  (3.0 s je Foto)
+Paket /root/mapillary/pakete/paket-001.zip
+Paket /root/mapillary/pakete/paket-002.zip
+FERTIG: 63 Fotos in 2 Paketen
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/maks1212/hausprobe.git        
+remote: 
+remote: Create a pull request for 'daten' on GitHub by visiting:        
+remote:      https://github.com/maks1212/hausprobe/pull/new/daten        
+remote: 
+Pakete hochgeladen:
+total 9728
+drwxr-xr-x 2 root root    4096 Nov 18 00:04 .
+drwxr-xr-x 4 root root    4096 Nov 18 00:04 ..
+-rw-r--r-- 1 root root 7854129 Nov 18 00:04 paket-001.zip
+-rw-r--r-- 1 root root 2093915 Nov 18 00:04 paket-002.zip
+Exitcode 0
