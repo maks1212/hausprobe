@@ -1,0 +1,33 @@
+total 33604
+drwxr-xr-x 2 runner runner    4096 Nov 18 08:12 .
+drwxr-xr-x 3 runner runner    4096 Nov 18 11:02 ..
+-rw-r--r-- 1 runner runner 7854129 Nov 18 08:12 paket-001.zip
+-rw-r--r-- 1 runner runner 2093915 Nov 18 08:12 paket-002.zip
+-rw-r--r-- 1 runner runner 8752695 Nov 18 08:12 paket-003.zip
+-rw-r--r-- 1 runner runner 5503466 Nov 18 08:12 paket-004.zip
+-rw-r--r-- 1 runner runner 8687537 Nov 18 08:12 paket-005.zip
+-rw-r--r-- 1 runner runner 1503158 Nov 18 08:12 paket-006.zip
+Modelle geladen in 30 s
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/transformers/models/grounding_dino/processing_grounding_dino.py:93: FutureWarning: The key `labels` is will return integer ids in `GroundingDinoProcessor.post_process_grounded_object_detection` output since v4.51.0. Use `text_labels` instead to retrieve string object names.
+  warnings.warn(self.message, FutureWarning)
+1 mly185782116733145 63.9 s {'roof': 0.03, 'wall': 0.265, 'window': 0.034, 'door': 0.023}
+2 mly178221717515603 63.3 s {'roof': 0.025, 'wall': 0.167, 'window': 0.042, 'door': 0.015}
+3 mly1954256825013354 59.9 s {'roof': 0.0, 'wall': 0.162, 'window': 0.056, 'door': 0.003}
+4 mly460401163433197 65.1 s {'roof': 0.0, 'wall': 0.386, 'window': 0.113, 'door': 0.033}
+5 mly480308369854257 64.4 s {'roof': 0.0, 'wall': 0.288, 'window': 0.066, 'door': 0.032}
+6 mly103233072304968 62.2 s {'roof': 0.021, 'wall': 0.282, 'window': 0.065, 'door': 0.002}
+7 mly735286567158255 62.4 s {'roof': 0.003, 'wall': 0.331, 'window': 0.108, 'door': 0.034}
+8 mly237037041546415 58.7 s {'roof': 0.0, 'wall': 0.665, 'window': 0.025, 'door': 0.027}
+9 mly211661873849152 64.7 s {'roof': 0.006, 'wall': 0.372, 'window': 0.09, 'door': 0.0}
+10 mly1149297282417736 62.7 s {'roof': 0.012, 'wall': 0.172, 'window': 0.023, 'door': 0.015}
+11 mly516341462839172 62.6 s {'roof': 0.0, 'wall': 0.192, 'window': 0.062, 'door': 0.013}
+12 mly459575266481753 61.8 s {'roof': 0.003, 'wall': 0.519, 'window': 0.043, 'door': 0.022}
+13 mly935942933843108 57.2 s {'roof': 0.0, 'wall': 0.19, 'window': 0.048, 'door': 0.005}
+14 mly842958853833043 59.5 s {'roof': 0.113, 'wall': 0.257, 'window': 0.055, 'door': 0.037}
+15 mly1193228084439848 58.0 s {'roof': 0.0, 'wall': 0.511, 'window': 0.028, 'door': 0.103}
+16 mly3932769603483001 62.8 s {'roof': 0.0, 'wall': 0.33, 'window': 0.039, 'door': 0.0}
+17 mly456114615465032 64.1 s {'roof': 0.017, 'wall': 0.339, 'window': 0.099, 'door': 0.01}
+18 mly3318780198225398 59.2 s {'roof': 0.0, 'wall': 0.175, 'window': 0.063, 'door': 0.0}
+19 mly1184009416353552 62.2 s {'roof': 0.0, 'wall': 0.35, 'window': 0.031, 'door': 0.0}
+20 mly3025631251047451 63.0 s {'roof': 0.0, 'wall': 0.282, 'window': 0.054, 'door': 0.0}
+FERTIG 20 Fotos in 21.1 min
