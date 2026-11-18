@@ -11,7 +11,7 @@ torch.set_num_threads(os.cpu_count() or 2)
 A=json.load(open(sys.argv[1]));IN=sys.argv[2];OUT=sys.argv[3];os.makedirs(OUT,exist_ok=True)
 DINO=A.get('dino','IDEA-Research/grounding-dino-base');SAM=A.get('sam','facebook/sam-vit-large')
 MAXN=int(A.get('max',100000));MAXS=int(A.get('max_sekunden',5*3600))
-PROMPT='house. building. roof. window. door. garage door.'
+PROMPT='house. building. facade. roof. window. door. garage door.'
 TH={1:.30,2:.30,3:.25,4:.30}
 
 from transformers import AutoProcessor,AutoModelForZeroShotObjectDetection,SamModel,SamProcessor
@@ -25,7 +25,7 @@ def cls_of(t):
     if 'window' in t:return 3
     if 'door' in t:return 4
     if 'roof' in t:return 1
-    if 'house' in t or 'building' in t:return 2
+    if 'house' in t or 'building' in t or 'facade' in t:return 2
     return 0
 
 @torch.no_grad()
@@ -44,6 +44,10 @@ def label(im):
         if c in(3,4) and a>.15:continue            # ganze Fassade als "Fenster" erkannt
         if c==4 and a<.002:continue
         boxes.append([x0,y0,x1,y1]);cl.append(c);sc.append(s)
+    # Ein "Fenster"- oder "Tür"-Kasten, der drei oder mehr andere Fenster enthält, ist eine ganze Fassade.
+    def inside(a,b):return a[0]>=b[0]-2 and a[1]>=b[1]-2 and a[2]<=b[2]+2 and a[3]<=b[3]+2
+    keep=[not(c in(3,4) and sum(1 for b2,c2 in zip(boxes,cl) if c2==3 and b2 is not b and inside(b2,b))>=3) for b,c in zip(boxes,cl)]
+    boxes=[b for b,k in zip(boxes,keep) if k];cl=[c for c,k in zip(cl,keep) if k];sc=[x for x,k in zip(sc,keep) if k]
     if not any(c==2 for c in cl):return None,{}
     si=sp(im,return_tensors='pt');emb=sm.get_image_embeddings(si['pixel_values'])
     masks=[]
@@ -70,6 +74,8 @@ def over(im,lab,w=320):
 
 pk=sorted(f for f in os.listdir(IN) if f.endswith('.zip'))
 if A.get('pakete'):pk=[f for f in pk if f in A['pakete']]
+# Mehrere GitHub-Rechner teilen sich die Pakete: TEIL von TEILE.
+TE=int(os.environ.get('TEILE','1'));TI=int(os.environ.get('TEIL','0'));pk=pk[TI::TE];print('Pakete:',pk,flush=True)
 n=0;prev=[];summary=[]
 for f in pk:
     z=zipfile.ZipFile(f'{IN}/{f}');man=json.loads(z.read('manifest.json'))

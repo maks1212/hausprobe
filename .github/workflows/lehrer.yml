@@ -13,6 +13,13 @@ jobs:
   markieren:
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        teil: [0, 1, 2]
+    env:
+      TEILE: 3
+      TEIL: ${{ matrix.teil }}
     steps:
       - uses: actions/checkout@v4
       - name: Pakete holen
@@ -40,9 +47,10 @@ jobs:
       - name: Ergebnis hochladen
         if: always()
         run: |
-          L="$(date -u +%Y%m%d-%H%M)-${GITHUB_SHA::7}"
+          L="${GITHUB_SHA::7}-teil$TEIL"
           git config user.name "Hausprobe Lehrer"; git config user.email "lehrer@hausprobe.local"
           mkdir -p aus; echo "${{ job.status }}" > aus/status.txt
-          if git fetch -q --depth=1 origin "+refs/heads/lehrer-ergebnis:refs/remotes/origin/lehrer-ergebnis"; then git switch -q -c erg refs/remotes/origin/lehrer-ergebnis; else git switch -q --orphan erg; git rm -rqf . || true; fi
+          if git fetch -q origin "+refs/heads/lehrer-ergebnis:refs/remotes/origin/lehrer-ergebnis"; then git switch -q -c erg refs/remotes/origin/lehrer-ergebnis; else git switch -q --orphan erg; git rm -rqf . || true; fi
           mkdir -p "ergebnis/$L" && cp -r aus/. "ergebnis/$L/" 2>/dev/null || true
-          git add ergebnis && git commit -qm "Lehrer $L" && git push -q origin HEAD:lehrer-ergebnis
+          git add ergebnis && git commit -qm "Lehrer $L"
+          for t in 1 2 3 4 5; do git push -q origin HEAD:lehrer-ergebnis && break; sleep $((t*7)); git fetch -q origin "+refs/heads/lehrer-ergebnis:refs/remotes/origin/lehrer-ergebnis" && git rebase -q refs/remotes/origin/lehrer-ergebnis; done
