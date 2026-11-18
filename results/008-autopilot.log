@@ -1,0 +1,7 @@
+Start 2026-11-18 18:35:05
+Code: 636a6d9 Autopilot-Beschreibung mit Zielwerten und Protokoll
+cron:
+* * * * * bash $HOME/hausprobe/ml/server/agent.sh >> $HOME/agent.log 2>&1
+23 1 * * * bash /root/hausprobe/ml/server/auto_train.sh
+Autopilot eingerichtet: jede Nacht 01:23 Training, wenn mindestens 3 neue Lehrer-Pakete da sind.
+Exitcode 0
