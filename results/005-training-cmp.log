@@ -18,3 +18,6 @@ lade CMP_facade_DB_base.zip
 CMP_facade_DB_base.zip Klassen: {1: 'background', 2: 'facade', 3: 'window', 4: 'door', 5: 'cornice', 6: 'sill', 7: 'balcony', 8: 'blind', 9: 'deco', 10: 'molding', 11: 'pillar', 12: 'shop'}
 lade CMP_facade_DB_extended.zip
 CMP_facade_DB_extended.zip Klassen: {1: 'background', 2: 'facade', 3: 'window', 4: 'door', 5: 'cornice', 6: 'sill', 7: 'balcony', 8: 'blind', 9: 'deco', 10: 'molding', 11: 'pillar', 12: 'shop'}
+fertig: 606 CMP-Fotos, Anteile {'sonstiges': 0.216, 'Dach': 0.0, 'Wand': 0.629, 'Fenster': 0.143, 'Tür': 0.013}
+== 2026-11-18 08:16:06 Merkmale berechnen und trainieren
+Merkmale 0/606  noch etwa 29 min
