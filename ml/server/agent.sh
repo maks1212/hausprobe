@@ -24,12 +24,13 @@ for j in jobs/*.sh; do
     echo "=== $(date '+%F %T'): Auftrag lief nicht mehr, Neustart $((tries+1)) von 3 ===" >> "results/$n.log"
   fi
   echo "$(date '+%F %T')" > "$R"
+  # Eigene Sitzung (setsid), ohne die Sperre (9>&-), sonst blockiert der Auftrag den Briefkasten, solange er läuft.
   # Eigene Sitzung (setsid), damit cron oder das Ende der Anmeldung den Auftrag nicht mitbeendet.
   setsid nohup bash -c '
     D="$1"; n="$2"; j="$3"
     ( cd "$HOME/hausprobe" && git pull -q ) 2>/dev/null
     timeout 20h bash "$D/$j" >> "$D/results/$n.log" 2>&1; echo "Exitcode $?" >> "$D/results/$n.log"
-    rm -f "$D/results/$n.running"; date "+%F %T" > "$D/results/$n.done"' _ "$D" "$n" "$j" </dev/null >/dev/null 2>&1 &
+    rm -f "$D/results/$n.running"; date "+%F %T" > "$D/results/$n.done"' _ "$D" "$n" "$j" </dev/null >/dev/null 2>&1 9>&- &
   echo "$!" >> "$R"
 done
 sleep 2
