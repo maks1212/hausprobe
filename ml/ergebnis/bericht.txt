@@ -1,0 +1,35 @@
+Durchgang 1/30 Verlust 2.234 3 min
+Durchgang 2/30 Verlust 1.593 6 min
+Durchgang 3/30 Verlust 1.371 8 min IoU {'Dach': 0.195, 'Wand': 0.665, 'Fenster': 0.58, 'Tür': 0.17} (bester Stand)
+Durchgang 4/30 Verlust 1.288 11 min
+Durchgang 5/30 Verlust 1.241 14 min
+Durchgang 6/30 Verlust 1.199 17 min IoU {'Dach': 0.188, 'Wand': 0.665, 'Fenster': 0.637, 'Tür': 0.228} (bester Stand)
+Durchgang 7/30 Verlust 1.104 19 min
+Durchgang 8/30 Verlust 1.058 22 min
+Durchgang 9/30 Verlust 1.032 25 min IoU {'Dach': 0.237, 'Wand': 0.693, 'Fenster': 0.574, 'Tür': 0.157} (bester Stand)
+Durchgang 10/30 Verlust 1.004 28 min
+Durchgang 11/30 Verlust 1.004 30 min
+Durchgang 12/30 Verlust 0.951 33 min IoU {'Dach': 0.275, 'Wand': 0.712, 'Fenster': 0.649, 'Tür': 0.195} (bester Stand)
+Durchgang 13/30 Verlust 0.932 36 min
+Durchgang 14/30 Verlust 0.921 39 min
+Durchgang 15/30 Verlust 0.897 42 min IoU {'Dach': 0.33, 'Wand': 0.713, 'Fenster': 0.629, 'Tür': 0.204} (bester Stand)
+Durchgang 16/30 Verlust 0.895 44 min
+Durchgang 17/30 Verlust 0.877 47 min
+Durchgang 18/30 Verlust 0.859 50 min IoU {'Dach': 0.29, 'Wand': 0.702, 'Fenster': 0.61, 'Tür': 0.24}
+Durchgang 19/30 Verlust 0.847 53 min
+Durchgang 20/30 Verlust 0.831 55 min
+Durchgang 21/30 Verlust 0.809 58 min IoU {'Dach': 0.356, 'Wand': 0.719, 'Fenster': 0.639, 'Tür': 0.245} (bester Stand)
+Durchgang 22/30 Verlust 0.789 61 min
+Durchgang 23/30 Verlust 0.783 64 min
+Durchgang 24/30 Verlust 0.766 67 min IoU {'Dach': 0.322, 'Wand': 0.73, 'Fenster': 0.659, 'Tür': 0.246}
+Durchgang 25/30 Verlust 0.755 69 min
+Durchgang 26/30 Verlust 0.743 72 min
+Durchgang 27/30 Verlust 0.734 75 min IoU {'Dach': 0.325, 'Wand': 0.735, 'Fenster': 0.666, 'Tür': 0.29} (bester Stand)
+Durchgang 28/30 Verlust 0.724 78 min
+Durchgang 29/30 Verlust 0.722 80 min
+Durchgang 30/30 Verlust 0.716 83 min IoU {'Dach': 0.344, 'Wand': 0.734, 'Fenster': 0.664, 'Tür': 0.289} (bester Stand)
+IoU nur COCO (98 Fotos): {'Dach': 0.346, 'Wand': 0.582, 'Fenster': 0.249, 'Tür': 0.002}
+IoU nur CMP (70 Fotos): {'Dach': 0.0, 'Wand': 0.808, 'Fenster': 0.722, 'Tür': 0.366}
+Endstand IoU {'Dach': 0.344, 'Wand': 0.734, 'Fenster': 0.664, 'Tür': 0.289}
+Fotos Training 1519 Prüfung 168
+COCO-Stuff 2017 (Caesar, Uijlings, Ferrari), annotations CC BY 4.0, github.com/nightrome/cocostuff | CMP Facade Database (R. Tyleček, R. Šára), CC BY-SA, https://cmp.felk.cvut.cz/~tylecr1/facade/
