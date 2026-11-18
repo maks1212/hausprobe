@@ -26,3 +26,6 @@ Merkmale 200/606  noch etwa 16 min
 Merkmale 300/606  noch etwa 12 min
 Merkmale 400/606  noch etwa 8 min
 Merkmale 500/606  noch etwa 4 min
+Merkmale 600/606  noch etwa 0 min
+Training 1519 Prüfung 168
+Anteile {'sonstiges': 0.561, 'Dach': 0.027, 'Wand': 0.349, 'Fenster': 0.058, 'Tür': 0.006} Gewichte [0.25, 1.16, 0.32, 0.79, 2.48]
