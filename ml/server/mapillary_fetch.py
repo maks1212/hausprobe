@@ -18,7 +18,8 @@ REG=json.load(open(sys.argv[4])) if len(sys.argv)>4 else {
   'Rosenheim':[12.05,47.83,12.16,47.88],'Passau':[13.40,48.55,13.49,48.59],'Augsburg Umland':[10.82,48.31,10.95,48.40],
   'Freiburg Umland':[7.78,47.96,7.90,48.02],'Winterthur':[8.68,47.48,8.79,47.53],'St. Gallen':[9.33,47.40,9.43,47.44],
   'Luzern Umland':[8.25,47.02,8.36,47.08]}
-TH=int(os.environ.get('THREADS',str(os.cpu_count() or 2)));random.seed(int(os.environ.get('SEED','1')))
+TH=int(os.environ.get('THREADS',str(os.cpu_count() or 2)));random.seed(int(os.environ.get('SEED',str(int(time.time())))))
+FACTOR=int(os.environ.get('FACTOR','25'))   # so viele Kandidaten je gewünschtem Foto suchen (behalten wird etwa jedes 20.)
 UA='Hausprobe-Trainingsdaten/1.0'
 
 def api(params):
@@ -32,11 +33,14 @@ def api(params):
             print('  Suche fehlgeschlagen:',e,flush=True);time.sleep(3*(t+1))
     return []
 
+# Schon geprüfte Fotos (auch frühere Läufe) nicht noch einmal prüfen.
+CK=W+'/geprueft.txt';CHECKED=set(open(CK).read().split()) if os.path.exists(CK) else set()
+for f in os.listdir(W+'/raw'):CHECKED.add(f.split('.')[0])
 def candidates():
     # Zufällige Zellen von 0,009 × 0,009 Grad (unter der Grenze von 0,01 Quadratgrad) in den Gegenden absuchen.
     seen_seq={};out=[];names=list(REG)
     for rnd in range(4000):
-        if len(out)>=WANT*6:break
+        if len(out)>=WANT*FACTOR:break
         name=names[rnd%len(names)];x0,y0,x1,y1=REG[name]
         cx=random.uniform(x0,x1-.009);cy=random.uniform(y0,y1-.009)
         data=api({'bbox':f'{cx:.5f},{cy:.5f},{cx+.009:.5f},{cy+.009:.5f}','is_pano':'false','limit':200,
@@ -44,7 +48,7 @@ def candidates():
         random.shuffle(data)
         for d in data:
             s=d.get('sequence','');
-            if not d.get('thumb_1024_url') or seen_seq.get(s,0)>=2:continue
+            if not d.get('thumb_1024_url') or seen_seq.get(s,0)>=2 or str(d['id']) in CHECKED:continue
             seen_seq[s]=seen_seq.get(s,0)+1;d['region']=name;out.append(d)
         if rnd%20==0:print(f'  Suche {rnd}: {len(out)} Kandidaten',flush=True)
     random.shuffle(out);return out
@@ -99,6 +103,7 @@ for k,d in enumerate(cands):
         p=d.get('local') or download(d);im=Image.open(p).convert('RGB')
         if max(im.size)>1024:im.thumbnail((1024,1024))
         full,small=label(im)
+        open(CK,'a').write(str(d['id'])+'\n')
     except Exception as e:
         print('  übersprungen',d['id'],e,flush=True);continue
     wall=(small==2).mean();win=(small==3).mean();roof=(small==1).mean()
