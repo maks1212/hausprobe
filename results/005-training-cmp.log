@@ -59,3 +59,22 @@ Durchgang 27/30 Verlust 0.734 75 min IoU {'Dach': 0.325, 'Wand': 0.735, 'Fenster
 Durchgang 28/30 Verlust 0.724 78 min
 Durchgang 29/30 Verlust 0.722 80 min
 Durchgang 30/30 Verlust 0.716 83 min IoU {'Dach': 0.344, 'Wand': 0.734, 'Fenster': 0.664, 'Tür': 0.289} (bester Stand)
+IoU nur COCO (98 Fotos): {'Dach': 0.346, 'Wand': 0.582, 'Fenster': 0.249, 'Tür': 0.002}
+IoU nur CMP (70 Fotos): {'Dach': 0.0, 'Wand': 0.808, 'Fenster': 0.722, 'Tür': 0.366}
+/root/hausprobe/ml/server/train_flaechen.py:81: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(Export(model),(torch.zeros(1,256,G,G),),OUT+'/hausprobe_flaechen.onnx',input_names=['image_embeddings'],output_names=['classes'],opset_version=17,dynamo=False)
+FERTIG /root/hausprobe-training/out/hausprobe_flaechen.onnx {'Dach': 0.344, 'Wand': 0.734, 'Fenster': 0.664, 'Tür': 0.289}
+== 2026-11-18 10:03:17 Ergebnis ins Repo hochladen
+Switched to a new branch 'modell-flaechen-20261118-1003'
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/maks1212/hausprobe.git        
+remote: 
+remote: Create a pull request for 'modell-flaechen-20261118-1003' on GitHub by visiting:        
+remote:      https://github.com/maks1212/hausprobe/pull/new/modell-flaechen-20261118-1003        
+remote: 
+To https://github.com/Maks1212/hausprobe.git
+ * [new branch]      modell-flaechen-20261118-1003 -> modell-flaechen-20261118-1003
+branch 'modell-flaechen-20261118-1003' set up to track 'origin/modell-flaechen-20261118-1003'.
+Hochgeladen auf Branch modell-flaechen-20261118-1003
+== 2026-11-18 10:03:20 FERTIG
+Exitcode 0
