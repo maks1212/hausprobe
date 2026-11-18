@@ -1,4 +1,5 @@
-# Mapillary-Fotos sammeln, vormarkieren und als Pakete auf den Branch "daten" hochladen.
+# Den doppelten Auftrag 003 beenden, dann mit neuen Fotos weitersammeln (Ziel: 200 Fotos insgesamt).
+pkill -f "jobs/003-mapillary.sh"; pkill -f "mapillary_fetch.py"; sleep 2
 set -uo pipefail
 [ -s ~/.mapillary_token ] || { echo "Kein Mapillary-Schlüssel gefunden, Auftrag beendet."; exit 1; }
 echo "Start $(date '+%F %T')"
