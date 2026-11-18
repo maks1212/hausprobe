@@ -1,6 +1,6 @@
 /* Seite: Netz zuerst, damit neue Versionen sofort ankommen; der Cache springt nur ohne Verbindung ein.
    Modell und Laufzeit (über 50 MB) ändern sich nicht und kommen zuerst aus dem Cache. */
-const CACHE = "hausprobe-v2";
+const CACHE = "hausprobe-v3";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) =>
   e.waitUntil(
