@@ -1,1 +1,85 @@
 Start 2026-11-18 05:35:04
+Suche Fotos in 16 Gegenden
+  Suche 0: 0 Kandidaten
+  Suche 20: 428 Kandidaten
+  Suche 40: 750 Kandidaten
+  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
+  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
+  Suche 60: 1063 Kandidaten
+Kandidaten: 1208
+Bereits verpackt: 63 Fotos in 2 Paketen
+  geprüft 1, behalten 63  (3.1 s je Foto)
+  geprüft 21, behalten 65  (3.1 s je Foto)
+  geprüft 41, behalten 67  (3.0 s je Foto)
+  geprüft 61, behalten 69  (3.0 s je Foto)
+  geprüft 81, behalten 70  (3.0 s je Foto)
+  geprüft 101, behalten 70  (3.0 s je Foto)
+  geprüft 121, behalten 72  (3.0 s je Foto)
+  geprüft 141, behalten 74  (3.0 s je Foto)
+  geprüft 161, behalten 75  (3.0 s je Foto)
+  geprüft 181, behalten 79  (3.0 s je Foto)
+  geprüft 201, behalten 80  (3.0 s je Foto)
+  geprüft 221, behalten 82  (3.0 s je Foto)
+  geprüft 241, behalten 84  (3.0 s je Foto)
+  geprüft 261, behalten 84  (3.0 s je Foto)
+  geprüft 281, behalten 85  (3.0 s je Foto)
+  geprüft 301, behalten 86  (3.0 s je Foto)
+  geprüft 321, behalten 88  (3.0 s je Foto)
+  geprüft 341, behalten 90  (3.0 s je Foto)
+  geprüft 361, behalten 90  (3.0 s je Foto)
+  geprüft 381, behalten 90  (3.0 s je Foto)
+  geprüft 401, behalten 92  (3.0 s je Foto)
+  geprüft 421, behalten 93  (3.0 s je Foto)
+  geprüft 441, behalten 96  (3.0 s je Foto)
+  geprüft 461, behalten 96  (3.0 s je Foto)
+  geprüft 481, behalten 98  (3.0 s je Foto)
+  geprüft 501, behalten 99  (3.0 s je Foto)
+  geprüft 521, behalten 99  (3.0 s je Foto)
+  geprüft 541, behalten 99  (3.0 s je Foto)
+  geprüft 561, behalten 101  (3.0 s je Foto)
+  geprüft 581, behalten 102  (3.0 s je Foto)
+  geprüft 601, behalten 103  (3.0 s je Foto)
+  geprüft 621, behalten 105  (3.0 s je Foto)
+  geprüft 641, behalten 106  (3.0 s je Foto)
+  geprüft 661, behalten 109  (3.0 s je Foto)
+  geprüft 681, behalten 109  (3.0 s je Foto)
+  geprüft 701, behalten 111  (3.0 s je Foto)
+Paket /root/mapillary/pakete/paket-003.zip
+  geprüft 721, behalten 113  (3.0 s je Foto)
+  geprüft 741, behalten 114  (3.0 s je Foto)
+  geprüft 761, behalten 115  (3.0 s je Foto)
+  geprüft 781, behalten 115  (3.0 s je Foto)
+  geprüft 801, behalten 116  (3.0 s je Foto)
+  geprüft 821, behalten 118  (3.0 s je Foto)
+  geprüft 841, behalten 121  (3.0 s je Foto)
+  geprüft 861, behalten 122  (3.0 s je Foto)
+  geprüft 881, behalten 123  (3.0 s je Foto)
+  geprüft 901, behalten 124  (3.0 s je Foto)
+  geprüft 921, behalten 127  (3.0 s je Foto)
+  geprüft 941, behalten 130  (3.0 s je Foto)
+  geprüft 961, behalten 131  (3.0 s je Foto)
+  geprüft 981, behalten 131  (3.0 s je Foto)
+  geprüft 1001, behalten 131  (3.0 s je Foto)
+  geprüft 1021, behalten 132  (3.0 s je Foto)
+  geprüft 1041, behalten 133  (3.0 s je Foto)
+  geprüft 1061, behalten 134  (3.0 s je Foto)
+  geprüft 1081, behalten 136  (3.0 s je Foto)
+  geprüft 1101, behalten 137  (3.0 s je Foto)
+  geprüft 1121, behalten 137  (3.0 s je Foto)
+  geprüft 1141, behalten 138  (3.0 s je Foto)
+  geprüft 1161, behalten 139  (3.0 s je Foto)
+  geprüft 1181, behalten 141  (3.0 s je Foto)
+  geprüft 1201, behalten 141  (3.0 s je Foto)
+Paket /root/mapillary/pakete/paket-004.zip
+FERTIG: 142 Fotos in 4 Paketen
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/maks1212/hausprobe.git        
+Pakete hochgeladen:
+total 23652
+drwxr-xr-x 2 root root    4096 Nov 18 06:39 .
+drwxr-xr-x 4 root root    4096 Nov 18 00:04 ..
+-rw-r--r-- 1 root root 7854129 Nov 18 06:39 paket-001.zip
+-rw-r--r-- 1 root root 2093915 Nov 18 06:39 paket-002.zip
+-rw-r--r-- 1 root root 8752695 Nov 18 06:39 paket-003.zip
+-rw-r--r-- 1 root root 5503466 Nov 18 06:39 paket-004.zip
+Exitcode 0
