@@ -70,16 +70,19 @@ for ep in range(EPOCHS):
         opt.zero_grad();loss.backward();opt.step();sched.step();tot+=loss.item()*len(b)
     msg=f'Durchgang {ep+1}/{EPOCHS} Verlust {tot/len(tr):.3f} {round((time.time()-t0)/60)} min'
     if ep%3==2 or ep==EPOCHS-1:
-        r=iou(model,va);msg+=f' IoU {r}';score=r['Dach']+r['Wand']
+        r=iou(model,va);msg+=f' IoU {r}';score=r['Dach']+r['Wand']+.5*(r['Fenster']+r['Tür'])
         if score>best:best=score;torch.save(model.state_dict(),OUT+'/hausprobe_flaechen.pt');msg+=' (bester Stand)'
     print(msg,flush=True);log.append(msg)
 
 model.load_state_dict(torch.load(OUT+'/hausprobe_flaechen.pt'));model.eval();final=iou(model,va)
+# Getrennt nach Quelle, damit sichtbar ist, ob ganze Häuser (COCO) unter den Fassadenausschnitten (CMP) leiden.
+for name,sel in (('COCO',[i for i in va if not i.startswith('cmp_')]),('CMP',[i for i in va if i.startswith('cmp_')])):
+    if sel:r=iou(model,sel);log.append(f'IoU nur {name} ({len(sel)} Fotos): {r}');print(log[-1],flush=True)
 torch.onnx.export(Export(model),(torch.zeros(1,256,G,G),),OUT+'/hausprobe_flaechen.onnx',input_names=['image_embeddings'],output_names=['classes'],opset_version=17,dynamo=False)
 # Vorschau: 12 Prüffotos mit eingefärbten Klassen
 COL=np.array([[0,0,0],[224,72,58],[60,127,214],[242,194,48],[54,179,126]],np.uint8);tiles=[]
 with torch.no_grad():
-    for i in va[:12]:
+    for i in ([i for i in va if not i.startswith('cmp_')][:8]+[i for i in va if i.startswith('cmp_')][:4] or va[:12])[:12]:
         im=Image.open(f'{W}/images/{i}.jpg').convert('RGB').resize((320,240));p=model(feat(i)[None]).argmax(1)[0].numpy().astype(np.uint8)
         m=Image.fromarray(COL[p]).resize((320,240),Image.NEAREST);a=Image.fromarray(np.where(np.array(Image.fromarray(p).resize((320,240),Image.NEAREST))[...,None]>0,(np.array(im)*.45+np.array(m)*.55).astype(np.uint8),np.array(im)))
         tiles.append(a)

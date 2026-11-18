@@ -2,7 +2,7 @@
 # Hausprobe: Flächenmodell (Dach, Wand, Fenster, Tür) auf einem Ubuntu-Server trainieren.
 # Start im geklonten Repo:   nohup bash ml/server/run.sh > ~/hausprobe-training.log 2>&1 &
 # Fortschritt ansehen:       tail -f ~/hausprobe-training.log
-# Einstellungen (optional):  MAX=4000 Fotos, EPOCHS=30 Durchgänge, W=Arbeitsordner, PUSH=0 kein Hochladen ins Repo
+# Einstellungen (optional):  CMP=1 zusätzlich CMP-Fassaden, MAX=4000 Fotos, EPOCHS=30 Durchgänge, W=Arbeitsordner, PUSH=0 kein Hochladen ins Repo
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; REPO="$(git -C "$HERE" rev-parse --show-toplevel)"
 W="${W:-$HOME/hausprobe-training}"; MAX="${MAX:-4000}"; PUSH="${PUSH:-1}"
@@ -32,6 +32,7 @@ command -v curl >/dev/null || command -v wget >/dev/null || apt-get install -y -
 cp "$REPO/models/efficient_sam_vitt_encoder.onnx" "$W/models/"
 echo "== $(date '+%F %T') Daten laden und auswählen"
 python3 "$HERE/coco_prep.py" "$W" "$MAX"
+[ "${CMP:-0}" = "1" ] && python3 "$HERE/cmp_prep.py" "$W"
 echo "== $(date '+%F %T') Merkmale berechnen und trainieren"
 THREADS="$(nproc)" python3 "$HERE/train_flaechen.py" "$W/models" "$W"
 mkdir -p "$REPO/ml/ergebnis"
@@ -43,5 +44,6 @@ if [ "$PUSH" = "1" ]; then
   cd "$REPO" && git switch -c "$B" && git add ml/ergebnis \
     && git -c user.name="Hausprobe Server" -c user.email="server@hausprobe.local" commit -q -m "Flächenmodell vom Server ($(date +%F))" \
     && git push -u origin "$B" && echo "Hochgeladen auf Branch $B" || echo "Hochladen hat nicht geklappt. Die Dateien liegen in $REPO/ml/ergebnis."
+  git -C "$REPO" switch -q main   # zurück, damit der Auftragsbriefkasten weiter die aktuelle Fassung nutzt
 fi
 echo "== $(date '+%F %T') FERTIG"
