@@ -5,10 +5,12 @@
 # Abschalten: crontab -r
 set -uo pipefail
 B="${AUFTRAG_BRANCH:-server}"; D="$HOME/auftraege"; REPO_URL="$(git -C "$HOME/hausprobe" remote get-url origin)"
+# Hängende git-Aufrufe brechen nach 2 Minuten ab, damit die Sperre nicht dauerhaft belegt bleibt.
+export GIT_TERMINAL_PROMPT=0
 exec 9>"$HOME/.agent.lock"; flock -n 9 || exit 0
 if [ ! -d "$D/.git" ]; then git clone -q --single-branch -b "$B" "$REPO_URL" "$D" || exit 1; fi
 cd "$D" || exit 1
-git fetch -q origin "$B" && git merge -q --ff-only "origin/$B" 2>/dev/null || git reset -q --hard "origin/$B"
+timeout 120 git fetch -q origin "$B" && git merge -q --ff-only "origin/$B" 2>/dev/null || git reset -q --hard "origin/$B"
 mkdir -p results jobs
 for j in jobs/*.sh; do
   [ -e "$j" ] || continue
@@ -39,5 +41,5 @@ for f in results/*.log; do [ -e "$f" ] && [ "$(wc -l < "$f")" -gt 400 ] && { tai
 git add -A results >/dev/null 2>&1
 if ! git diff --cached --quiet; then
   git -c user.name="Hausprobe Server" -c user.email="server@hausprobe.local" commit -q -m "Status $(date '+%F %T')"
-  git push -q origin "HEAD:$B" 2>/dev/null || { git fetch -q origin "$B" && git rebase -q "origin/$B" && git push -q origin "HEAD:$B"; }
+  timeout 120 git push -q origin "HEAD:$B" 2>/dev/null || { timeout 120 git fetch -q origin "$B" && git rebase -q "origin/$B" && timeout 120 git push -q origin "HEAD:$B"; } || git rebase --abort 2>/dev/null
 fi
