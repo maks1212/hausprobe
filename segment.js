@@ -284,7 +284,7 @@ function candidate(F,W,H,minCnt){
 
 /* Eigenes Flächenmodell: ordnet jedem Bildpunkt Dach, Wand, Fenster, Tür oder Sonstiges zu (128 × 128, auf das
    Bild gestreckt). Trainiert auf COCO-Stuff, läuft auf denselben Bildmerkmalen wie die übrige Erkennung. */
-var SURF="models/hausprobe_flaechen.onnx",surfSess=null;
+var SURF="models/hausprobe_flaechen.onnx?v=3",surfSess=null;
 function loadSurf(){
   if(surfSess)return surfSess;
   surfSess=(async function(){
