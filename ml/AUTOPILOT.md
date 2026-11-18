@@ -35,3 +35,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 |---|---|---|---|---|
 | 2026-11-18 | modell-flaechen-20261118-1423 | .36/.68/.48/.20 | .34/.60/.23/.12 | ja (v3) |
 | 2026-11-18 | App: Guided-Filter-Kanten (512 px) + Schattenregel | – | – | ja |
+| 2026-11-18 | App: Dachrand aus Blech (Traufe mit Rinne, Ortgang) entlang des echten Dachumrisses | – | – | ja |

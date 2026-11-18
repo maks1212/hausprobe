@@ -103,6 +103,19 @@
               </div>
               <div class="scroller"><span id="win-list"></span><button id="add-win" class="btn add" type="button">+ Fenster markieren</button><button id="scan-win" class="btn" type="button">Fenster suchen</button></div>
             </div>
+            <div id="ed-rand" class="stack winbox" hidden>
+              <h3>Dachrand aus Blech</h3>
+              <div id="rand-style" class="seg" role="group" aria-label="Dachrand aus Blech">
+                <button type="button" data-rand="aus">Ohne</button>
+                <button type="button" data-rand="traufe">Traufe</button>
+                <button type="button" data-rand="alle">Traufe + Ortgang</button>
+              </div>
+              <div id="rand-opts" class="stack">
+                <label class="check" for="rand-rinne"><input id="rand-rinne" type="checkbox"> Dachrinne</label>
+                <h3>Farbe Dachrand: <span id="rand-color-name"></span></h3>
+                <div id="rand-colors" class="scroller"></div>
+              </div>
+            </div>
             <details id="more">
               <summary>Feinheiten</summary>
               <div class="stack">

@@ -195,10 +195,53 @@ function renderAfter(){
     s.wins.forEach(function(w){var x=w.x0*W,y=w.y0*H,ww=(w.x1-w.x0)*W,hh=(w.y1-w.y0)*H;a.drawImage(src,x,y,ww,hh,x,y,ww,hh);});
   });
   surfaces.forEach(function(s){if(s.kind==="fassade")trims(a,s);});
+  surfaces.forEach(function(s){if(s.kind==="dach")rand(a,s);});
 }
 /* Fensterverkleidung wie bei PREFA: Laibung und Sturz aus Ergänzungsband rund um das Fenster, unten eine
    Fensterbank mit Tropfkante. Von vorn sieht man die Kante der Einfassung als Rahmen und die Fensterbank.
    Maße in Metern, umgerechnet über die Breite der Fläche. */
+/* Dachrand aus Blech wie bei PREFA: Traufe (Stirnblech mit Dachrinne, unten am Dach) und Ortgang (Blech an den
+   schrägen Rändern oben). Der Rand folgt dem echten Umriss der Dachfläche: je Bildspalte die unterste und die
+   oberste Dachkante. Unten und fast waagrecht ist Traufe, oben schräg ist Ortgang, oben waagrecht der First (ohne Blech).
+   Maße: Stirnblech 20 cm, Rinne 12 cm, Ortgang 14 cm. */
+var RANDS={};
+function profile(s){
+  var m=MASKS[s.id],key=(m?"m":JSON.stringify(s.pts))+W+"x"+H,hit=RANDS[s.id];if(hit&&hit.key===key)return hit;
+  var sc=Math.min(1,500/W),w=Math.max(8,Math.round(W*sc)),h=Math.max(8,Math.round(H*sc)),c=mk(w,h),g=c.getContext("2d");
+  if(m)g.drawImage(m,0,0,w,h);else{g.scale(sc,sc);trace(g,px(s));g.fillStyle="#000";g.fill();}
+  var d=g.getImageData(0,0,w,h).data,top=new Float32Array(w).fill(-1),bot=new Float32Array(w).fill(-1),x,y;
+  for(x=0;x<w;x++){for(y=0;y<h;y++)if(d[(y*w+x)*4+3]>127){top[x]=y;break;}for(y=h-1;y>=0;y--)if(d[(y*w+x)*4+3]>127){bot[x]=y+1;break;}}
+  /* gleitender Median über 7 Spalten gegen Zacken der Maske */
+  function med(a){var o=new Float32Array(w).fill(-1);for(x=0;x<w;x++){if(a[x]<0)continue;var v=[];for(var k=-3;k<=3;k++)if(x+k>=0&&x+k<w&&a[x+k]>=0)v.push(a[x+k]);v.sort(function(p,q){return p-q;});o[x]=v[v.length>>1]/sc;}return o;}
+  hit={key:key,w:w,sc:sc,top:med(top),bot:med(bot)};RANDS[s.id]=hit;return hit;
+}
+function rand(a,s){
+  var r=s.rand;if(!r||r.style==="aus")return;
+  var pr=profile(s),w=pr.w,sc=pr.sc,k=ppm(s),col=hex(r.color||s.color),fh=Math.max(3,.2*k),gh=Math.max(2,.12*k),vh=Math.max(2,.14*k),lw=Math.max(1,.012*k);
+  /* Läufe zusammenhängender Spalten, deren Kante die gewünschte Neigung hat */
+  function runs(a,ok){var out=[],cur=null,x;
+    for(x=0;x<w;x++){var v=a[x],L=x>=3?a[x-3]:-1,R=x+3<w?a[x+3]:-1,sl=(L>=0&&R>=0)?Math.abs(R-L)/(6/sc):null;
+      if(v>=0&&sl!==null&&ok(sl)){if(!cur){cur=[];out.push(cur);}cur.push([(x+.5)/sc,v]);}else cur=null;}
+    return out.filter(function(q){return q.length>=4;});}
+  function band(line,dy,stops,shadow){
+    if(line.length<2)return;
+    a.beginPath();line.forEach(function(p,j){j?a.lineTo(p[0],p[1]+dy[0]):a.moveTo(p[0],p[1]+dy[0]);});
+    for(var j=line.length-1;j>=0;j--)a.lineTo(line[j][0],line[j][1]+dy[1]);a.closePath();
+    a.save();if(shadow){a.shadowColor="rgba(0,0,0,.4)";a.shadowBlur=Math.max(2,.05*k);a.shadowOffsetY=.03*k;}a.fillStyle=col;a.fill();a.restore();
+    var m=line[line.length>>1],g=a.createLinearGradient(0,m[1]+dy[0],0,m[1]+dy[1]);stops.forEach(function(t){g.addColorStop(t[0],t[1]);});a.fillStyle=g;a.fill();
+    a.lineWidth=lw;a.strokeStyle="rgba(0,0,0,.4)";a.beginPath();line.forEach(function(p,j){j?a.lineTo(p[0],p[1]+dy[1]):a.moveTo(p[0],p[1]+dy[1]);});a.stroke();
+  }
+  a.save();
+  if(r.style==="alle")runs(pr.top,function(sl){return sl>.27&&sl<2.7;}).forEach(function(line){
+    var sl=Math.abs(line[line.length-1][1]-line[0][1])/Math.max(1,line[line.length-1][0]-line[0][0]),t=vh*Math.sqrt(1+sl*sl);
+    band(line,[-t,0],[[0,"rgba(255,255,255,.25)"],[.5,"rgba(255,255,255,.05)"],[1,"rgba(0,0,0,.2)"]],true);
+  });
+  runs(pr.bot,function(sl){return sl<.45;}).forEach(function(line){
+    band(line,[0,fh],[[0,"rgba(255,255,255,.22)"],[.12,"rgba(255,255,255,.05)"],[1,"rgba(0,0,0,.18)"]],true);
+    if(r.rinne)band(line,[fh*.55,fh*.55+gh],[[0,"rgba(255,255,255,.45)"],[.18,"rgba(255,255,255,.12)"],[.55,"rgba(0,0,0,.05)"],[1,"rgba(0,0,0,.4)"]],true);
+  });
+  a.restore();
+}
 var TRIM={schlank:.04,rahmen:.1,breit:.17},tl=null,ta=null,tc=null;
 function ppm(s){var q=quadFor({rot:0},px(s));return ((dist(q[0],q[1])+dist(q[3],q[2]))/2)/(s.wm||9);}
 function trims(a,s){
@@ -282,6 +325,7 @@ function addSurface(kind,pts,o){
   var s={id:nextId++,kind:kind,name:KIND[kind]+" "+n,pts:pts,rot:0,shade:.9,
     mat:kind==="dach"?"prefalz":"siding",color:"02",wm:kind==="dach"?10:9,hm:null,est:true};
   if(kind==="fassade"){s.trim={style:"rahmen",sill:true,color:null};s.wins=[];}
+  if(kind==="dach")s.rand={style:"alle",rinne:true,color:null};
   if(o)for(var key in o)s[key]=o[key];
   surfaces.push(s);return s;
 }
@@ -475,7 +519,7 @@ function drawHint(){
   if(d.miss)return "Hier wurde keine Fläche gefunden. Tippe auf eine andere Stelle.";
   return "Passt die gelbe Fläche? Fehlt ein Teil, tippe darauf. Ist zu viel markiert, hilft „Kleiner“ oder „Wegnehmen“.";
 }
-function summary(){return surfaces.filter(function(s){return s.kind!=="cut";}).map(function(s){return s.name+": "+matName(s)+", "+colName(s.color);}).join("\n");}
+function summary(){return surfaces.filter(function(s){return s.kind!=="cut";}).map(function(s){return s.name+": "+matName(s)+", "+colName(s.color)+(s.kind==="dach"&&s.rand&&s.rand.style!=="aus"?"; Dachrand aus Blech ("+(s.rand.style==="alle"?"Traufe und Ortgang":"Traufe")+(s.rand.rinne?", mit Dachrinne":"")+"), "+colName(s.rand.color||s.color):"");}).join("\n");}
 function exportBlob(cb){renderAfter();after.toBlob(cb,"image/jpeg",.92);}
 
 /* Zeigt, was die Maße ergeben, damit sich die Proportion am Haus nachprüfen lässt. */
@@ -489,6 +533,21 @@ function sizeInfo(s){
   if(s.est==="fenster")t="Breite aus der Fenstergröße geschätzt, bitte prüfen. "+t;
   else if(s.est)t="Breite geschätzt. Trag das echte Maß der markierten Fläche ein, dann stimmt die Größe der Elemente. "+t;
   $("size-info").textContent=t;
+}
+function randUi(s){
+  $("ed-rand").hidden=s.kind!=="dach";if(s.kind!=="dach")return;
+  if(!s.rand)s.rand={style:"alle",rinne:true,color:null};var r=s.rand;
+  Array.prototype.forEach.call(document.querySelectorAll("#rand-style button"),function(b){b.setAttribute("aria-pressed",b.dataset.rand===r.style);});
+  $("rand-opts").hidden=r.style==="aus";$("rand-rinne").checked=!!r.rinne;
+  var rc=$("rand-colors"),l=rc.scrollLeft;rc.textContent="";
+  var same=el("button","btn","Wie Dach");same.type="button";same.setAttribute("aria-pressed",!r.color);
+  same.onclick=function(){r.color=null;ui();refresh();};rc.appendChild(same);
+  DATA.palettes.prefalz.forEach(function(code){
+    var c=DATA.colors[code],b=el("button","sw");b.type="button";b.style.background=c.hex;b.title=code+" "+c.name;
+    b.setAttribute("aria-label","Farbe Dachrand "+code+" "+c.name);b.setAttribute("aria-pressed",code===r.color);
+    b.onclick=function(){r.color=code;ui();refresh();};rc.appendChild(b);
+  });
+  rc.scrollLeft=l;$("rand-color-name").textContent=r.color?colName(r.color):"wie Dach";
 }
 function winUi(s,pal){
   $("ed-win").hidden=s.kind!=="fassade";if(s.kind!=="fassade")return;
@@ -588,7 +647,7 @@ function ui(){
     b.onclick=function(){s.color=code;if(split>.85)split=.5;ui();refresh();};cols.appendChild(b);
   });
   mats.scrollLeft=ml;cols.scrollLeft=cl;
-  winUi(s,pal);
+  winUi(s,pal);randUi(s);
   var cur=DATA.colors[s.color];
   $("color-name").textContent=colName(s.color)+(cur?" · ähnlich RAL "+cur.ral:"");
   if(document.activeElement!==$("wm"))$("wm").value=s.wm;
@@ -746,11 +805,15 @@ $("shade").oninput=function(){var s=current();if(s){s.shade=this.value/100;refre
 Array.prototype.forEach.call(document.querySelectorAll("#win-style button"),function(b){
   b.onclick=function(){var s=current();if(s&&s.trim){s.trim.style=b.dataset.style;ui();refresh();}};
 });
+Array.prototype.forEach.call(document.querySelectorAll("#rand-style button"),function(b){
+  b.onclick=function(){var s=current();if(s&&s.rand){s.rand.style=b.dataset.rand;ui();refresh();}};
+});
+$("rand-rinne").onchange=function(){var s=current();if(s&&s.rand){s.rand.rinne=this.checked;refresh();}};
 $("win-sill").onchange=function(){var s=current();if(s&&s.trim){s.trim.sill=this.checked;refresh();}};
 $("scan-win").onclick=function(){var s=current();if(s&&s.kind==="fassade")findWindows(s);};
 $("add-win").onclick=function(){var s=current();if(s&&s.kind==="fassade")startDraw("fenster");};
 $("rot").onclick=function(){var s=current();if(s){s.rot=((s.rot||0)+1)%4;sizeInfo(s);refresh();}};
-$("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];delete EDGES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});
+$("del").onclick=function(){delete MASKS[sel];delete SHADES[sel];delete RANDS[sel];delete EDGES[sel];surfaces=surfaces.filter(function(s){return s.id!==sel;});
   sel=surfaces.length?surfaces[surfaces.length-1].id:null;adjust=false;ui();refresh();};
 $("btn-sample").onclick=function(){try{localStorage.removeItem("hausprobe.photo");}catch(e){}loadSample();};
 /* Foto laden: aus der Auswahl, per Ziehen auf die Seite oder aus der Zwischenablage. */
