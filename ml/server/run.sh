@@ -2,7 +2,7 @@
 # Hausprobe: Flächenmodell (Dach, Wand, Fenster, Tür) auf einem Ubuntu-Server trainieren.
 # Start im geklonten Repo:   nohup bash ml/server/run.sh > ~/hausprobe-training.log 2>&1 &
 # Fortschritt ansehen:       tail -f ~/hausprobe-training.log
-# Einstellungen (optional):  CMP=1 zusätzlich CMP-Fassaden, MAX=4000 Fotos, EPOCHS=30 Durchgänge, W=Arbeitsordner, PUSH=0 kein Hochladen ins Repo
+# Einstellungen (optional):  LEHRER=1 vom großen Modell markierte Mapillary-Fotos, CMP=1 zusätzlich CMP-Fassaden, MAX=4000 Fotos, EPOCHS=30 Durchgänge, W=Arbeitsordner, PUSH=0 kein Hochladen ins Repo
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; REPO="$(git -C "$HERE" rev-parse --show-toplevel)"
 W="${W:-$HOME/hausprobe-training}"; MAX="${MAX:-4000}"; PUSH="${PUSH:-1}"
@@ -33,6 +33,8 @@ cp "$REPO/models/efficient_sam_vitt_encoder.onnx" "$W/models/"
 echo "== $(date '+%F %T') Daten laden und auswählen"
 python3 "$HERE/coco_prep.py" "$W" "$MAX"
 [ "${CMP:-0}" = "1" ] && python3 "$HERE/cmp_prep.py" "$W"
+[ "${LEHRER:-0}" = "1" ] && python3 "$HERE/lehrer_prep.py" "$W" "$REPO"
+cp "$REPO/models/hausprobe_flaechen.onnx" "$W/models/hausprobe_flaechen_alt.onnx"
 echo "== $(date '+%F %T') Merkmale berechnen und trainieren"
 THREADS="$(nproc)" python3 "$HERE/train_flaechen.py" "$W/models" "$W"
 mkdir -p "$REPO/ml/ergebnis"

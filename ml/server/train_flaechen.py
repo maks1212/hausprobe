@@ -22,7 +22,13 @@ for k,i in enumerate(todo):
         el=time.time()-t0;print(f'Merkmale {k}/{len(todo)}  noch etwa {round(el/max(1,k)*(len(todo)-k)/60)} min',flush=True)
 enc=None
 ids=[i for i in ids if os.path.exists(f'{FEAT}/{i}.npy')]
-random.shuffle(ids);nv=max(20,len(ids)//10);va,tr=ids[:nv],ids[nv:]
+def quelle(i):return 'CMP' if i.startswith('cmp_') else 'Mapillary' if i.startswith('mly') else 'COCO'
+random.shuffle(ids)
+# Prüfung: 10 % COCO/CMP, aber 20 % der Mapillary-Fotos (die zählen am meisten). Korrigierte Fotos kommen immer zuerst in die Prüfung.
+SPLIT={it['id']:it.get('split','') for it in man['items']}
+mly=sorted([i for i in ids if quelle(i)=='Mapillary'],key=lambda i:SPLIT.get(i)!='korrigiert');rest=[i for i in ids if quelle(i)!='Mapillary']
+nm=max(10,len(mly)//5) if mly else 0;nv=max(20,len(rest)//10)
+va=mly[:nm]+rest[:nv];tr=rest[nv:]+mly[nm:]*int(os.environ.get('MLY_X','3'))   # Mapillary im Training mehrfach, weil es genau unsere Fotos sind
 print('Training',len(tr),'Prüfung',len(va),flush=True)
 def label(i):  # gestreckt auf das Gitter, wie der Encoder das Bild sieht
     return np.array(Image.open(f'{W}/labels/{i}.png').resize((R,R),Image.NEAREST),dtype=np.uint8)
@@ -76,13 +82,24 @@ for ep in range(EPOCHS):
 
 model.load_state_dict(torch.load(OUT+'/hausprobe_flaechen.pt'));model.eval();final=iou(model,va)
 # Getrennt nach Quelle, damit sichtbar ist, ob ganze Häuser (COCO) unter den Fassadenausschnitten (CMP) leiden.
-for name,sel in (('COCO',[i for i in va if not i.startswith('cmp_')]),('CMP',[i for i in va if i.startswith('cmp_')])):
+for name in ('COCO','CMP','Mapillary'):
+    sel=[i for i in va if quelle(i)==name]
     if sel:r=iou(model,sel);log.append(f'IoU nur {name} ({len(sel)} Fotos): {r}');print(log[-1],flush=True)
+# Zum Vergleich das bisherige App-Modell auf denselben Prüffotos.
+if os.path.exists(M+'/hausprobe_flaechen_alt.onnx'):
+    alt=ort.InferenceSession(M+'/hausprobe_flaechen_alt.onnx',providers=['CPUExecutionProvider'])
+    class Alt:
+        def eval(s):pass
+        def train(s):pass
+        def __call__(s,e):return torch.cat([torch.from_numpy(alt.run(None,{'image_embeddings':e[k:k+1].numpy()})[0]) for k in range(len(e))])
+    for name in ('COCO','Mapillary'):
+        sel=[i for i in va if quelle(i)==name]
+        if sel:r=iou(Alt(),sel);log.append(f'IoU bisheriges Modell, nur {name} ({len(sel)} Fotos): {r}');print(log[-1],flush=True)
 torch.onnx.export(Export(model),(torch.zeros(1,256,G,G),),OUT+'/hausprobe_flaechen.onnx',input_names=['image_embeddings'],output_names=['classes'],opset_version=17,dynamo=False)
 # Vorschau: 12 Prüffotos mit eingefärbten Klassen
 COL=np.array([[0,0,0],[224,72,58],[60,127,214],[242,194,48],[54,179,126]],np.uint8);tiles=[]
 with torch.no_grad():
-    for i in ([i for i in va if not i.startswith('cmp_')][:8]+[i for i in va if i.startswith('cmp_')][:4] or va[:12])[:12]:
+    for i in ([i for i in va if quelle(i)=='Mapillary'][:8]+[i for i in va if quelle(i)=='COCO'][:4] or va[:12])[:12]:
         im=Image.open(f'{W}/images/{i}.jpg').convert('RGB').resize((320,240));p=model(feat(i)[None]).argmax(1)[0].numpy().astype(np.uint8)
         m=Image.fromarray(COL[p]).resize((320,240),Image.NEAREST);a=Image.fromarray(np.where(np.array(Image.fromarray(p).resize((320,240),Image.NEAREST))[...,None]>0,(np.array(im)*.45+np.array(m)*.55).astype(np.uint8),np.array(im)))
         tiles.append(a)
