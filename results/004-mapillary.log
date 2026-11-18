@@ -98,3 +98,19 @@ Paket /root/mapillary/pakete/paket-005.zip
   geprüft 1381, behalten 197  (3.0 s je Foto)
   geprüft 1401, behalten 198  (3.0 s je Foto)
   geprüft 1421, behalten 199  (3.0 s je Foto)
+  geprüft 1441, behalten 199  (3.0 s je Foto)
+Paket /root/mapillary/pakete/paket-006.zip
+FERTIG: 200 Fotos in 6 Paketen
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/maks1212/hausprobe.git        
+Pakete hochgeladen:
+total 33604
+drwxr-xr-x 2 root root    4096 Nov 18 08:12 .
+drwxr-xr-x 4 root root    4096 Nov 18 00:04 ..
+-rw-r--r-- 1 root root 7854129 Nov 18 08:12 paket-001.zip
+-rw-r--r-- 1 root root 2093915 Nov 18 08:12 paket-002.zip
+-rw-r--r-- 1 root root 8752695 Nov 18 08:12 paket-003.zip
+-rw-r--r-- 1 root root 5503466 Nov 18 08:12 paket-004.zip
+-rw-r--r-- 1 root root 8687537 Nov 18 08:12 paket-005.zip
+-rw-r--r-- 1 root root 1503158 Nov 18 08:12 paket-006.zip
+Exitcode 0
