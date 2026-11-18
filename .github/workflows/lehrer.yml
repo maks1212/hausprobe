@@ -17,9 +17,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Pakete holen
         run: |
-          git fetch -q --depth=1 origin daten
-          mkdir -p eingang && git archive origin/daten pakete | tar -x -C eingang
+          mkdir -p aus; exec > >(tee -a aus/protokoll.txt) 2>&1
+          git fetch -q --depth=1 origin "+refs/heads/daten:refs/remotes/origin/daten"
+          mkdir -p eingang && git archive refs/remotes/origin/daten pakete | tar -x -C eingang
           ls -la eingang/pakete
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
@@ -32,12 +36,13 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p aus
-          python ml/lehrer/lehrer.py ml/lehrer/auftrag.json eingang/pakete aus 2>&1 | tee aus/protokoll.txt
+          python ml/lehrer/lehrer.py ml/lehrer/auftrag.json eingang/pakete aus 2>&1 | tee -a aus/protokoll.txt
       - name: Ergebnis hochladen
         if: always()
         run: |
           L="$(date -u +%Y%m%d-%H%M)-${GITHUB_SHA::7}"
           git config user.name "Hausprobe Lehrer"; git config user.email "lehrer@hausprobe.local"
-          if git fetch -q --depth=1 origin lehrer-ergebnis; then git switch -q -c erg origin/lehrer-ergebnis; else git switch -q --orphan erg; git rm -rqf . || true; fi
+          mkdir -p aus; echo "${{ job.status }}" > aus/status.txt
+          if git fetch -q --depth=1 origin "+refs/heads/lehrer-ergebnis:refs/remotes/origin/lehrer-ergebnis"; then git switch -q -c erg refs/remotes/origin/lehrer-ergebnis; else git switch -q --orphan erg; git rm -rqf . || true; fi
           mkdir -p "ergebnis/$L" && cp -r aus/. "ergebnis/$L/" 2>/dev/null || true
           git add ergebnis && git commit -qm "Lehrer $L" && git push -q origin HEAD:lehrer-ergebnis
