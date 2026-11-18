@@ -1,0 +1,43 @@
+# Lehrer-Markierung auf GitHub-Rechnern. Startet bei jedem Push auf den Branch "lehrer"
+# (Auftrag steht dort in ml/lehrer/auftrag.json). Eingabe: Pakete vom Branch "daten".
+# Ergebnis: Branch "lehrer-ergebnis", Ordner ergebnis/<lauf>/ (Pakete, vorschau.jpg, protokoll.txt).
+name: lehrer
+on:
+  push:
+    branches: [lehrer]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: lehrer
+jobs:
+  markieren:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pakete holen
+        run: |
+          git fetch -q --depth=1 origin daten
+          mkdir -p eingang && git archive origin/daten pakete | tar -x -C eingang
+          ls -la eingang/pakete
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-gdino-base-sam-large-1
+      - name: Python-Pakete
+        run: |
+          pip install -q --index-url https://download.pytorch.org/whl/cpu torch==2.5.1
+          pip install -q transformers==4.57.1 pillow numpy
+      - name: Markieren
+        run: |
+          set -o pipefail
+          mkdir -p aus
+          python ml/lehrer/lehrer.py ml/lehrer/auftrag.json eingang/pakete aus 2>&1 | tee aus/protokoll.txt
+      - name: Ergebnis hochladen
+        if: always()
+        run: |
+          L="$(date -u +%Y%m%d-%H%M)-${GITHUB_SHA::7}"
+          git config user.name "Hausprobe Lehrer"; git config user.email "lehrer@hausprobe.local"
+          if git fetch -q --depth=1 origin lehrer-ergebnis; then git switch -q -c erg origin/lehrer-ergebnis; else git switch -q --orphan erg; git rm -rqf . || true; fi
+          mkdir -p "ergebnis/$L" && cp -r aus/. "ergebnis/$L/" 2>/dev/null || true
+          git add ergebnis && git commit -qm "Lehrer $L" && git push -q origin HEAD:lehrer-ergebnis
