@@ -39,3 +39,4 @@ Durchgang 7/30 Verlust 1.104 19 min
 Durchgang 8/30 Verlust 1.058 22 min
 Durchgang 9/30 Verlust 1.032 25 min IoU {'Dach': 0.237, 'Wand': 0.693, 'Fenster': 0.574, 'Tür': 0.157} (bester Stand)
 Durchgang 10/30 Verlust 1.004 28 min
+Durchgang 11/30 Verlust 1.004 30 min
