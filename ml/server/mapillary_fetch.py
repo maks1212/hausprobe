@@ -108,7 +108,11 @@ for k,d in enumerate(cands):
         print('  übersprungen',d['id'],e,flush=True);continue
     wall=(small==2).mean();win=(small==3).mean();roof=(small==1).mean()
     # Behalten: eine Hauswand füllt einen guten Teil des Bildes, und es sind Fenster zu sehen.
-    if wall>=.10 and win>=.004:
+    # Gegen Tunnel, Straßen und Menschenmengen: die Wand darf nicht das ganze Bild füllen, nicht bis
+    # ganz unten reichen (dort ist Straße) und es muss eine zusammenhängende Wand in der oberen Hälfte geben.
+    h=small.shape[0];low=(small[int(h*.8):]==2).mean();top=(small[:h//2]==2).mean();roofTop=(small[:h//4]==1).mean()
+    ok=wall<=.7 and low<=.2 and top>=.08 and roofTop<=.5
+    if ok and wall>=.10 and win>=.004:
         kept.append((d,im,full,{'wall':round(float(wall),3),'window':round(float(win),3),'roof':round(float(roof),3)}));total+=1
         done.add('mly'+str(d['id']))
         if len(kept)==50:npk+=1;print('Paket',write_zip(npk,kept),flush=True);kept=[]
