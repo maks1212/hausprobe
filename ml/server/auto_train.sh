@@ -3,7 +3,7 @@
 # Ergebnis wie bei jedem Training: Branch modell-flaechen-<zeit> mit bericht.txt. Übernommen in die App wird es
 # erst nach Prüfung (Vergleich mit dem bisherigen Modell auf denselben Prüffotos, Sichtprüfung an Testhäusern).
 set -uo pipefail
-exec >>/root/auto_train.log 2>&1
+mkdir -p /root/auftraege/results; exec >>/root/auftraege/results/autopilot.log 2>&1   # der Briefkasten lädt das Protokoll hoch
 echo "== $(date '+%F %T') Autopilot"
 pgrep -f train_flaechen.py >/dev/null && { echo "Training läuft schon"; exit 0; }
 cd /root/hausprobe && git switch -q main 2>/dev/null; timeout 120 git pull -q || exit 0
