@@ -21,3 +21,4 @@ Merkmale 0/192  noch etwa 9 min
 Merkmale 100/192  noch etwa 4 min
 Training 1435 Prüfung 146
 Anteile {'sonstiges': 0.697, 'Dach': 0.034, 'Wand': 0.242, 'Fenster': 0.021, 'Tür': 0.007} Gewichte [0.21, 0.97, 0.36, 1.24, 2.22]
+Durchgang 1/30 Verlust 2.246 3 min
