@@ -1,16 +1,36 @@
 # Lehrer-Markierung auf GitHub-Rechnern. Startet bei jedem Push auf den Branch "lehrer"
-# (Auftrag steht dort in ml/lehrer/auftrag.json). Eingabe: Pakete vom Branch "daten".
+# (Auftrag steht dort in ml/lehrer/auftrag.json) und alle 6 Stunden von selbst: dann nur, wenn auf dem Branch
+# "daten" Pakete liegen, die noch nicht markiert sind. Eingabe: Pakete vom Branch "daten".
 # Ergebnis: Branch "lehrer-ergebnis", Ordner ergebnis/<lauf>/ (Pakete, vorschau.jpg, protokoll.txt).
 name: lehrer
 on:
   push:
     branches: [lehrer]
   workflow_dispatch:
+  schedule:
+    - cron: "40 */6 * * *"
 permissions:
   contents: write
 concurrency: lehrer
 jobs:
+  neu:
+    runs-on: ubuntu-latest
+    outputs:
+      anzahl: ${{ steps.z.outputs.anzahl }}
+    steps:
+      - id: z
+        run: |
+          git init -q r && cd r && git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git fetch -q --depth=1 origin "+refs/heads/daten:refs/remotes/origin/daten"
+          git fetch -q --depth=1 origin "+refs/heads/lehrer-ergebnis:refs/remotes/origin/lehrer-ergebnis" || true
+          git ls-tree -r --name-only refs/remotes/origin/daten pakete | sed -n 's#^pakete/##p' | grep '\.zip$' | sort -u > alle.txt
+          (git ls-tree -r --name-only refs/remotes/origin/lehrer-ergebnis 2>/dev/null || true) | sed -n 's#.*/lehrer-\(paket-[^/]*\.zip\)$#\1#p' | sort -u > fertig.txt
+          n=$(comm -23 alle.txt fertig.txt | wc -l)
+          [ "${{ github.event_name }}" != "schedule" ] && n=1
+          echo "neue Pakete: $(comm -23 alle.txt fertig.txt | tr '\n' ' ')"; echo "anzahl=$n" >> "$GITHUB_OUTPUT"
   markieren:
+    needs: neu
+    if: needs.neu.outputs.anzahl != '0'
     runs-on: ubuntu-latest
     timeout-minutes: 350
     strategy:
@@ -26,6 +46,8 @@ jobs:
         run: |
           mkdir -p aus; exec > >(tee -a aus/protokoll.txt) 2>&1
           git fetch -q --depth=1 origin "+refs/heads/daten:refs/remotes/origin/daten"
+          git fetch -q --depth=1 origin "+refs/heads/lehrer-ergebnis:refs/remotes/origin/lehrer-ergebnis" || true
+          (git ls-tree -r --name-only refs/remotes/origin/lehrer-ergebnis 2>/dev/null || true) | sed -n 's#.*/lehrer-\(paket-[^/]*\.zip\)$#\1#p' | sort -u > fertig.txt
           mkdir -p eingang && git archive refs/remotes/origin/daten pakete | tar -x -C eingang
           ls -la eingang/pakete
       - uses: actions/setup-python@v5
@@ -43,11 +65,11 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p aus
-          python ml/lehrer/lehrer.py ml/lehrer/auftrag.json eingang/pakete aus 2>&1 | tee -a aus/protokoll.txt
+          FERTIG=fertig.txt python ml/lehrer/lehrer.py ml/lehrer/auftrag.json eingang/pakete aus 2>&1 | tee -a aus/protokoll.txt
       - name: Ergebnis hochladen
         if: always()
         run: |
-          L="${GITHUB_SHA::7}-teil$TEIL"
+          L="$(date -u +%Y%m%d-%H%M)-${GITHUB_SHA::7}-teil$TEIL"
           git config user.name "Hausprobe Lehrer"; git config user.email "lehrer@hausprobe.local"
           mkdir -p aus; echo "${{ job.status }}" > aus/status.txt
           if git fetch -q origin "+refs/heads/lehrer-ergebnis:refs/remotes/origin/lehrer-ergebnis"; then git switch -q -c erg refs/remotes/origin/lehrer-ergebnis; else git switch -q --orphan erg; git rm -rqf . || true; fi

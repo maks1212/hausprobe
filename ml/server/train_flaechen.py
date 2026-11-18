@@ -26,9 +26,12 @@ def quelle(i):return 'CMP' if i.startswith('cmp_') else 'Mapillary' if i.startsw
 random.shuffle(ids)
 # Prüfung: 10 % COCO/CMP, aber 20 % der Mapillary-Fotos (die zählen am meisten). Korrigierte Fotos kommen immer zuerst in die Prüfung.
 SPLIT={it['id']:it.get('split','') for it in man['items']}
-mly=sorted([i for i in ids if quelle(i)=='Mapillary'],key=lambda i:SPLIT.get(i)!='korrigiert');rest=[i for i in ids if quelle(i)!='Mapillary']
-nm=max(10,len(mly)//5) if mly else 0;nv=max(20,len(rest)//10)
-va=mly[:nm]+rest[:nv];tr=rest[nv:]+mly[nm:]*int(os.environ.get('MLY_X','3'))   # Mapillary im Training mehrfach, weil es genau unsere Fotos sind
+# Die Mapillary-Prüffotos sind fest (nach Prüfsumme der Foto-Nummer), damit jedes neue Training auf denselben Fotos gemessen wird.
+import zlib
+def pruef(i):return SPLIT.get(i)=='korrigiert' or zlib.crc32(i.encode())%5==0
+mly=[i for i in ids if quelle(i)=='Mapillary'];rest=[i for i in ids if quelle(i)!='Mapillary']
+nv=max(20,len(rest)//10)
+va=[i for i in mly if pruef(i)]+rest[:nv];tr=rest[nv:]+[i for i in mly if not pruef(i)]*int(os.environ.get('MLY_X','3'))   # Mapillary im Training mehrfach, weil es genau unsere Fotos sind
 print('Training',len(tr),'Prüfung',len(va),flush=True)
 def label(i):  # gestreckt auf das Gitter, wie der Encoder das Bild sieht
     return np.array(Image.open(f'{W}/labels/{i}.png').resize((R,R),Image.NEAREST),dtype=np.uint8)

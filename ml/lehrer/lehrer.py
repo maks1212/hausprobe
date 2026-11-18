@@ -74,6 +74,9 @@ def over(im,lab,w=320):
 
 pk=sorted(f for f in os.listdir(IN) if f.endswith('.zip'))
 if A.get('pakete'):pk=[f for f in pk if f in A['pakete']]
+# Ohne feste Liste: nur Pakete, die noch nicht markiert sind (Liste FERTIG aus dem Branch "lehrer-ergebnis").
+elif os.environ.get('FERTIG') and os.path.exists(os.environ['FERTIG']):
+    done=set(open(os.environ['FERTIG']).read().split());pk=[f for f in pk if f not in done]
 # Mehrere GitHub-Rechner teilen sich die Pakete: TEIL von TEILE.
 TE=int(os.environ.get('TEILE','1'));TI=int(os.environ.get('TEIL','0'));pk=pk[TI::TE];print('Pakete:',pk,flush=True)
 n=0;prev=[];summary=[]
