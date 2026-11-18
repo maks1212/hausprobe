@@ -300,10 +300,71 @@ async function classMap(){
   if(j.cls)return j.cls;
   var s=await loadSurf(),ort=root.ort;
   var out=await runOn(s,{image_embeddings:new ort.Tensor("float32",new Float32Array(j.emb.data),j.emb.dims)});
-  var t=out.classes,NC=t.dims[1],H=t.dims[2],W=t.dims[3],p=t.data,N=W*H,lab=new Uint8Array(N),i,k;
-  for(i=0;i<N;i++){var best=0,bv=p[i];for(k=1;k<NC;k++)if(p[k*N+i]>bv){bv=p[k*N+i];best=k;}lab[i]=best;}
-  j.cls={w:W,h:H,lab:lab,prob:p,nc:NC};
+  var t=out.classes,NC=t.dims[1];
+  j.cls=refineClasses(t.data,NC,t.dims[3],t.dims[2],j.canvas);
   return j.cls;
+}
+/* Scharfe Kanten: Das Modell liefert 128 × 128 Felder. Die Wahrscheinlichkeiten werden auf bis zu 512 Bildpunkte
+   vergrößert und mit einem Farb-Guided-Filter (He, Sun, Tang) an die Kanten im Foto angelegt.
+   Danach Schatten: dunkle Bildpunkte im "Dach", die die Farbe der Wand haben und an die Wand grenzen, sind Wand im Schatten. */
+function refineClasses(p0,NC,W0,H0,canvas){
+  var sc=512/Math.max(canvas.width,canvas.height);if(sc>1)sc=1;
+  var W=Math.max(8,Math.round(canvas.width*sc)),H=Math.max(8,Math.round(canvas.height*sc)),N=W*H,N0=W0*H0,i,k,x,y;
+  var cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");g.drawImage(canvas,0,0,W,H);
+  var d=g.getImageData(0,0,W,H).data,I=[new Float32Array(N),new Float32Array(N),new Float32Array(N)];
+  for(i=0;i<N;i++){I[0][i]=d[i*4]/255;I[1][i]=d[i*4+1]/255;I[2][i]=d[i*4+2]/255;}
+  /* bilinear vergrößern, Pixelmitten wie PIL */
+  var P=[];for(k=0;k<NC;k++)P.push(new Float32Array(N));
+  for(y=0;y<H;y++){var fy=Math.min(H0-1,Math.max(0,(y+.5)*H0/H-.5)),y0=Math.floor(fy),y1=Math.min(H0-1,y0+1),wy=fy-y0;
+    for(x=0;x<W;x++){var fx=Math.min(W0-1,Math.max(0,(x+.5)*W0/W-.5)),x0=Math.floor(fx),x1=Math.min(W0-1,x0+1),wx=fx-x0;
+      for(k=0;k<NC;k++){var b=k*N0;P[k][y*W+x]=(p0[b+y0*W0+x0]*(1-wx)+p0[b+y0*W0+x1]*wx)*(1-wy)+(p0[b+y1*W0+x0]*(1-wx)+p0[b+y1*W0+x1]*wx)*wy;}}}
+  var r=Math.max(2,Math.round(6*Math.max(W,H)/512)),eps=.004,S=new Float64Array((W+1)*(H+1));
+  function box(a){var o=new Float32Array(N),xx,yy;S.fill(0);
+    for(yy=0;yy<H;yy++){var run=0;for(xx=0;xx<W;xx++){run+=a[yy*W+xx];S[(yy+1)*(W+1)+xx+1]=S[yy*(W+1)+xx+1]+run;}}
+    for(yy=0;yy<H;yy++){var ya=Math.max(0,yy-r),yb=Math.min(H,yy+r+1);
+      for(xx=0;xx<W;xx++){var xa=Math.max(0,xx-r),xb=Math.min(W,xx+r+1);
+        o[yy*W+xx]=(S[yb*(W+1)+xb]-S[ya*(W+1)+xb]-S[yb*(W+1)+xa]+S[ya*(W+1)+xa])/((yb-ya)*(xb-xa));}}return o;}
+  function mul(a,b){var o=new Float32Array(N);for(var q=0;q<N;q++)o[q]=a[q]*b[q];return o;}
+  var m=[box(I[0]),box(I[1]),box(I[2])],V={};
+  for(var a=0;a<3;a++)for(var c=a;c<3;c++){var bb=box(mul(I[a],I[c]));for(i=0;i<N;i++)bb[i]-=m[a][i]*m[c][i];V[a+""+c]=bb;}
+  /* Inverse der 3×3-Kovarianz (+eps) je Bildpunkt */
+  var inv=[];for(k=0;k<6;k++)inv.push(new Float32Array(N));
+  for(i=0;i<N;i++){var s00=V["00"][i]+eps,s01=V["01"][i],s02=V["02"][i],s11=V["11"][i]+eps,s12=V["12"][i],s22=V["22"][i]+eps;
+    var c00=s11*s22-s12*s12,c01=s02*s12-s01*s22,c02=s01*s12-s02*s11,c11=s00*s22-s02*s02,c12=s01*s02-s00*s12,c22=s00*s11-s01*s01,det=s00*c00+s01*c01+s02*c02;
+    inv[0][i]=c00/det;inv[1][i]=c01/det;inv[2][i]=c02/det;inv[3][i]=c11/det;inv[4][i]=c12/det;inv[5][i]=c22/det;}
+  var Q=[];
+  for(k=0;k<NC;k++){var pk=P[k],mp=box(pk),cv0=box(mul(I[0],pk)),cv1=box(mul(I[1],pk)),cv2=box(mul(I[2],pk)),A0=new Float32Array(N),A1=new Float32Array(N),A2=new Float32Array(N),B=new Float32Array(N);
+    for(i=0;i<N;i++){var e0=cv0[i]-m[0][i]*mp[i],e1=cv1[i]-m[1][i]*mp[i],e2=cv2[i]-m[2][i]*mp[i];
+      A0[i]=inv[0][i]*e0+inv[1][i]*e1+inv[2][i]*e2;A1[i]=inv[1][i]*e0+inv[3][i]*e1+inv[4][i]*e2;A2[i]=inv[2][i]*e0+inv[4][i]*e1+inv[5][i]*e2;
+      B[i]=mp[i]-A0[i]*m[0][i]-A1[i]*m[1][i]-A2[i]*m[2][i];}
+    var mA0=box(A0),mA1=box(A1),mA2=box(A2),mB=box(B),qk=new Float32Array(N);
+    for(i=0;i<N;i++)qk[i]=mA0[i]*I[0][i]+mA1[i]*I[1][i]+mA2[i]*I[2][i]+mB[i];Q.push(qk);}
+  var lab=new Uint8Array(N),prob=new Float32Array(NC*N);
+  for(i=0;i<N;i++){var best=0,bv=-1e9,sum=0;
+    for(k=0;k<NC;k++){var v=Math.min(1,Math.max(0,Q[k][i]));prob[k*N+i]=v;sum+=v;if(Q[k][i]>bv){bv=Q[k][i];best=k;}}
+    lab[i]=best;if(sum>0)for(k=0;k<NC;k++)prob[k*N+i]/=sum;}
+  shadowToWall(lab,prob,I,W,H,NC);
+  return {w:W,h:H,lab:lab,prob:prob,nc:NC};
+}
+function shadowToWall(lab,prob,I,W,H,NC){
+  var N=W*H,i,cw=[[],[],[]],Y=[],ch=new Float32Array(3*N),lum=new Float32Array(N);
+  for(i=0;i<N;i++){var s=I[0][i]+I[1][i]+I[2][i]+1e-3;ch[3*i]=I[0][i]/s;ch[3*i+1]=I[1][i]/s;ch[3*i+2]=I[2][i]/s;lum[i]=s/3;
+    if(lab[i]===2){cw[0].push(ch[3*i]);cw[1].push(ch[3*i+1]);cw[2].push(ch[3*i+2]);Y.push(lum[i]);}}
+  if(Y.length<300)return;
+  function med(a){a.sort(function(u,v){return u-v;});return a[a.length>>1];}
+  var w0=med(cw[0]),w1=med(cw[1]),w2=med(cw[2]),Lw=med(Y),cand=new Uint8Array(N),nr=0,nc=0,rr=[[],[],[]];
+  for(i=0;i<N;i++){if(lab[i]!==1)continue;nr++;
+    var dw=Math.abs(ch[3*i]-w0)+Math.abs(ch[3*i+1]-w1)+Math.abs(ch[3*i+2]-w2);
+    if(dw<.06&&lum[i]<.85*Lw){cand[i]=1;nc++;}else{rr[0].push(ch[3*i]);rr[1].push(ch[3*i+1]);rr[2].push(ch[3*i+2]);}}
+  /* Nur wenn das Dach selbst eine andere Farbe hat als die Wand; sonst (graues Dach über grauer Wand) nichts ändern. */
+  if(!nc||nr-nc<.4*nr)return;
+  if(Math.abs(med(rr[0])-w0)+Math.abs(med(rr[1])-w1)+Math.abs(med(rr[2])-w2)<.06)return;
+  var st=new Int32Array(N),top=0,q;
+  for(i=0;i<N;i++)if(cand[i]){var x=i%W;if((x>0&&lab[i-1]===2)||(x<W-1&&lab[i+1]===2)||(i>=W&&lab[i-W]===2)||(i<N-W&&lab[i+W]===2)){cand[i]=2;st[top++]=i;}}
+  while(top){q=st[--top];var qx=q%W;
+    if(qx>0&&cand[q-1]===1){cand[q-1]=2;st[top++]=q-1;}if(qx<W-1&&cand[q+1]===1){cand[q+1]=2;st[top++]=q+1;}
+    if(q>=W&&cand[q-W]===1){cand[q-W]=2;st[top++]=q-W;}if(q<N-W&&cand[q+W]===1){cand[q+W]=2;st[top++]=q+W;}}
+  for(i=0;i<N;i++)if(cand[i]===2){lab[i]=2;var t=prob[N+i];prob[N+i]=prob[2*N+i];prob[2*N+i]=t;}
 }
 /* Fläche einer Klasse (1 Dach, 2 Wand): mit Tipp die zusammenhängende Fläche dort, sonst die größte.
    Kleine Lücken (Regenrinne, Schatten) werden geschlossen; Fenster und Türen bleiben ausgespart. */
@@ -347,7 +408,7 @@ async function surface(kind,at){
     var v=A[i]||(x>0&&A[i-1])||(x<W-1&&A[i+1])||(y>0&&A[i-W])||(y<H-1&&A[i+W]);O[i]=v&&(!keepOut||lab[i]!==0)?1:0;}return O;}
   function shrink(A){var O=new Uint8Array(N);for(y=0;y<H;y++)for(x=0;x<W;x++){i=y*W+x;
     O[i]=A[i]&&(x===0||A[i-1])&&(x===W-1||A[i+1])&&(y===0||A[i-W])&&(y===H-1||A[i+W])?1:0;}return O;}
-  var C=shrink(grow(B,true));for(i=0;i<N;i++){if(B[i])C[i]=1;if(lab[i]===3||lab[i]===4)C[i]=0;}
+  var C=shrink(shrink(grow(grow(B,true),true)));for(i=0;i<N;i++){if(B[i])C[i]=1;if(lab[i]===3||lab[i]===4)C[i]=0;}
   var comp=new Int32Array(N),stack=new Int32Array(N),sizes=[0],id=0;
   for(i=0;i<N;i++){
     if(!C[i]||comp[i])continue;id++;var top=0,sz=0,q;stack[top++]=i;comp[i]=id;
@@ -368,7 +429,7 @@ async function surface(kind,at){
   }else{var bs=0;for(i=1;i<sizes.length;i++)if(sizes[i]>bs){bs=sizes[i];pick=i;}}
   /* Alle Teile derselben Klasse, die groß genug sind, gehören meist zum selben Haus (Wand links und rechts der Garage). */
   var keep={};keep[pick]=1;
-  if(!at)for(i=1;i<sizes.length;i++)if(sizes[i]>=Math.max(40,sizes[pick]*.25))keep[i]=1;
+  if(!at)for(i=1;i<sizes.length;i++)if(sizes[i]>=Math.max(N*.0025,sizes[pick]*.25))keep[i]=1;
   var F=new Uint8Array(N);for(i=0;i<N;i++)if(keep[comp[i]])F[i]=1;
   var r=candidate(F,W,H,Math.max(20,N*.004));if(r)r.model=true;
   return r;
