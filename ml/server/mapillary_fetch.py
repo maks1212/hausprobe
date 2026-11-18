@@ -67,27 +67,6 @@ def label(im):
     up=np.stack([np.asarray(Image.fromarray(p[k].astype(np.float32),mode='F').resize(im.size,Image.BILINEAR)) for k in range(p.shape[0])])
     return up.argmax(0).astype(np.uint8),p.argmax(0)
 
-if os.environ.get('LOCAL_DIR'):
-    L=os.environ['LOCAL_DIR'];cands=[{'id':os.path.splitext(f)[0],'local':f'{L}/{f}','creator':{'username':'test'},'region':'lokal'} for f in sorted(os.listdir(L)) if f.endswith('.jpg')]
-else:
-    print('Suche Fotos in',len(REG),'Gegenden',flush=True);cands=candidates()
-print('Kandidaten:',len(cands),flush=True)
-kept=[];t0=time.time()
-for k,d in enumerate(cands):
-    if len(kept)>=WANT:break
-    try:
-        p=d.get('local') or download(d);im=Image.open(p).convert('RGB')
-        if max(im.size)>1024:im.thumbnail((1024,1024))
-        full,small=label(im)
-    except Exception as e:
-        print('  übersprungen',d['id'],e,flush=True);continue
-    n=small.size;wall=(small==2).mean();win=(small==3).mean();roof=(small==1).mean()
-    # Behalten: eine Hauswand füllt einen guten Teil des Bildes, und es sind Fenster zu sehen.
-    if wall>=.10 and win>=.004:
-        kept.append((d,im,full,{'wall':round(float(wall),3),'window':round(float(win),3),'roof':round(float(roof),3)}))
-    if k%20==0:
-        el=time.time()-t0;print(f'  geprüft {k+1}, behalten {len(kept)}  ({el/(k+1):.1f} s je Foto)',flush=True)
-
 def write_zip(no,items):
     path=f'{W}/pakete/paket-{no:03d}.zip';man={'format':'hausprobe-label-1','classes':['Hintergrund','Dach','Wand','Fenster','Tür'],'items':[]}
     with zipfile.ZipFile(path,'w',zipfile.ZIP_STORED) as z:
@@ -99,6 +78,36 @@ def write_zip(no,items):
               'prelabel':'hausprobe_flaechen','anteile':stat})
         z.writestr('manifest.json',json.dumps(man,ensure_ascii=False,indent=1))
     return path
-start=len([f for f in os.listdir(W+'/pakete') if f.endswith('.zip')])
-for i in range(0,len(kept),50):print('Paket',write_zip(start+i//50+1,kept[i:i+50]),flush=True)
-print(f'FERTIG: {len(kept)} Fotos in {(len(kept)+49)//50} Paketen',flush=True)
+if os.environ.get('LOCAL_DIR'):
+    L=os.environ['LOCAL_DIR'];cands=[{'id':os.path.splitext(f)[0],'local':f'{L}/{f}','creator':{'username':'test'},'region':'lokal'} for f in sorted(os.listdir(L)) if f.endswith('.jpg')]
+else:
+    print('Suche Fotos in',len(REG),'Gegenden',flush=True);cands=candidates()
+print('Kandidaten:',len(cands),flush=True)
+# Schon verpackte Fotos überspringen (nach einem Abbruch geht es dort weiter, wo es aufgehört hat).
+done=set();npk=0
+for f in sorted(os.listdir(W+'/pakete')):
+    if f.endswith('.zip'):
+        npk+=1
+        try:done|={it['id'] for it in json.loads(zipfile.ZipFile(W+'/pakete/'+f).read('manifest.json'))['items']}
+        except Exception:pass
+total=len(done);print('Bereits verpackt:',total,'Fotos in',npk,'Paketen',flush=True)
+kept=[];t0=time.time()
+for k,d in enumerate(cands):
+    if total>=WANT:break
+    if 'mly'+str(d['id']) in done:continue
+    try:
+        p=d.get('local') or download(d);im=Image.open(p).convert('RGB')
+        if max(im.size)>1024:im.thumbnail((1024,1024))
+        full,small=label(im)
+    except Exception as e:
+        print('  übersprungen',d['id'],e,flush=True);continue
+    wall=(small==2).mean();win=(small==3).mean();roof=(small==1).mean()
+    # Behalten: eine Hauswand füllt einen guten Teil des Bildes, und es sind Fenster zu sehen.
+    if wall>=.10 and win>=.004:
+        kept.append((d,im,full,{'wall':round(float(wall),3),'window':round(float(win),3),'roof':round(float(roof),3)}));total+=1
+        done.add('mly'+str(d['id']))
+        if len(kept)==50:npk+=1;print('Paket',write_zip(npk,kept),flush=True);kept=[]
+    if k%20==0:
+        el=time.time()-t0;print(f'  geprüft {k+1}, behalten {total}  ({el/(k+1):.1f} s je Foto)',flush=True)
+if kept:npk+=1;print('Paket',write_zip(npk,kept),flush=True)
+print(f'FERTIG: {total} Fotos in {npk} Paketen',flush=True)

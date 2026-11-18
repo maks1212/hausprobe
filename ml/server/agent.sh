@@ -12,13 +12,25 @@ git fetch -q origin "$B" && git merge -q --ff-only "origin/$B" 2>/dev/null || gi
 mkdir -p results jobs
 for j in jobs/*.sh; do
   [ -e "$j" ] || continue
-  n="$(basename "$j" .sh)"
-  [ -e "results/$n.done" ] || [ -e "results/$n.running" ] && continue
-  echo "$(date '+%F %T')" > "results/$n.running"
-  ( cd "$HOME/hausprobe" && git pull -q 2>/dev/null; cd "$D"
-    timeout 20h bash "$D/$j" > "$D/results/$n.log" 2>&1; echo "Exitcode $?" >> "$D/results/$n.log"
-    rm -f "$D/results/$n.running"; date '+%F %T' > "$D/results/$n.done" ) </dev/null >/dev/null 2>&1 &
-  disown
+  n="$(basename "$j" .sh)"; R="results/$n.running"
+  [ -e "results/$n.done" ] && continue
+  if [ -e "$R" ]; then
+    # Läuft der Auftrag noch? Wenn nicht (z. B. nach einem Neustart des Servers), höchstens dreimal neu starten.
+    pid="$(sed -n 2p "$R")"; [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && continue
+    pgrep -f "jobs/$n.sh" >/dev/null && continue
+    tries="$(cat "results/$n.restarts" 2>/dev/null || echo 0)"
+    if [ "$tries" -ge 3 ]; then echo "Dreimal abgebrochen, kein weiterer Neustart." >> "results/$n.log"; rm -f "$R"; date '+%F %T' > "results/$n.done"; continue; fi
+    echo $((tries+1)) > "results/$n.restarts"
+    echo "=== $(date '+%F %T'): Auftrag lief nicht mehr, Neustart $((tries+1)) von 3 ===" >> "results/$n.log"
+  fi
+  echo "$(date '+%F %T')" > "$R"
+  # Eigene Sitzung (setsid), damit cron oder das Ende der Anmeldung den Auftrag nicht mitbeendet.
+  setsid nohup bash -c '
+    D="$1"; n="$2"; j="$3"
+    ( cd "$HOME/hausprobe" && git pull -q ) 2>/dev/null
+    timeout 20h bash "$D/$j" >> "$D/results/$n.log" 2>&1; echo "Exitcode $?" >> "$D/results/$n.log"
+    rm -f "$D/results/$n.running"; date "+%F %T" > "$D/results/$n.done"' _ "$D" "$n" "$j" </dev/null >/dev/null 2>&1 &
+  echo "$!" >> "$R"
 done
 sleep 2
 # Protokolle kürzen, damit das Repo klein bleibt, und hochladen, wenn sich etwas geändert hat.
