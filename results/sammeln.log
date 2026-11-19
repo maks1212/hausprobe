@@ -1,8 +1,5 @@
   Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
   Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
-  Suche 200: 3605 Kandidaten
-  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
-  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
   Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
   Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
   Suche 220: 3808 Kandidaten
@@ -398,3 +395,6 @@ Bereits verpackt: 800 Fotos in 18 Paketen
 == 2026-11-19 19:00:34 Ziel 1000 Fotos
 Bereits verpackt: 900 Fotos in 20 Paketen
   Suche 0: 22 Kandidaten
+== 2026-11-19 19:33:30 Ziel 1100 Fotos
+Bereits verpackt: 1000 Fotos in 22 Paketen
+  Suche 0: 49 Kandidaten
