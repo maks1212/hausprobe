@@ -99,3 +99,4 @@ Merkmale 400/416  noch etwa 1 min
 Training 2419 Prüfung 234
 Anteile {'sonstiges': 0.729, 'Dach': 0.026, 'Wand': 0.215, 'Fenster': 0.024, 'Tür': 0.006} Gewichte [0.21, 1.09, 0.38, 1.14, 2.19]
 Durchgang 1/30 Verlust 2.058 5 min
+Durchgang 2/30 Verlust 1.511 9 min
