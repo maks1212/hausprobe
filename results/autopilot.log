@@ -71,3 +71,15 @@ branch 'modell-flaechen-20261119-0247' set up to track 'origin/modell-flaechen-2
 Hochgeladen auf Branch modell-flaechen-20261119-0247
 == 2026-11-19 02:48:01 FERTIG
 Sammlung läuft weiter
+== 2026-11-19 09:38:34 Autopilot
+Lehrer-Pakete: 17 (beim letzten Training 7)
+Sammlung angehalten
+== 2026-11-19 09:38:36 Start, Arbeitsordner /root/hausprobe-training
+CPU-Kerne: 2   Arbeitsspeicher: 1 GB   frei auf Platte: 63 GB
+Auslagerung: 4095 MB
+== 2026-11-19 09:38:36 Python-Pakete
+== 2026-11-19 09:38:38 Daten laden und auswählen
+Fotos mit passender Lizenz: 32115
+  geprüft 0 von 32115 Treffer 0
+  geprüft 5000 von 32115 Treffer 161
+  geprüft 10000 von 32115 Treffer 341
