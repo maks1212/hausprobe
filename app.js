@@ -218,27 +218,37 @@ function profile(s){
 function rand(a,s){
   var r=s.rand;if(!r||r.style==="aus")return;
   var pr=profile(s),w=pr.w,sc=pr.sc,k=ppm(s),col=hex(r.color||s.color),fh=Math.max(3,.2*k),gh=Math.max(2,.12*k),vh=Math.max(2,.14*k),lw=Math.max(1,.012*k);
-  /* Läufe zusammenhängender Spalten, deren Kante die gewünschte Neigung hat */
-  function runs(a,ok){var out=[],cur=null,x;
-    for(x=0;x<w;x++){var v=a[x],L=x>=3?a[x-3]:-1,R=x+3<w?a[x+3]:-1,sl=(L>=0&&R>=0)?Math.abs(R-L)/(6/sc):null;
-      if(v>=0&&sl!==null&&ok(sl)){if(!cur){cur=[];out.push(cur);}cur.push([(x+.5)/sc,v]);}else cur=null;}
-    return out.filter(function(q){return q.length>=4;});}
-  function band(line,dy,stops,shadow){
-    if(line.length<2)return;
-    a.beginPath();line.forEach(function(p,j){j?a.lineTo(p[0],p[1]+dy[0]):a.moveTo(p[0],p[1]+dy[0]);});
-    for(var j=line.length-1;j>=0;j--)a.lineTo(line[j][0],line[j][1]+dy[1]);a.closePath();
-    a.save();if(shadow){a.shadowColor="rgba(0,0,0,.4)";a.shadowBlur=Math.max(2,.05*k);a.shadowOffsetY=.03*k;}a.fillStyle=col;a.fill();a.restore();
-    var m=line[line.length>>1],g=a.createLinearGradient(0,m[1]+dy[0],0,m[1]+dy[1]);stops.forEach(function(t){g.addColorStop(t[0],t[1]);});a.fillStyle=g;a.fill();
-    a.lineWidth=lw;a.strokeStyle="rgba(0,0,0,.4)";a.beginPath();line.forEach(function(p,j){j?a.lineTo(p[0],p[1]+dy[1]):a.moveTo(p[0],p[1]+dy[1]);});a.stroke();
+  var xs=[],x;for(x=0;x<w;x++)if(pr.bot[x]>=0)xs.push(x);if(xs.length<8)return;
+  var span=xs.length;
+  /* Dachkanten sind gerade: zusammenhängende Spalten mit passender Neigung sammeln, Gerade robust einpassen,
+     nur lange Stücke zeichnen (kurze Reste sind Zacken der Maske). */
+  function segs(a,ok,minFrac){var out=[],cur=null,dir=0;
+    for(x=0;x<w;x++){var v=a[x],L=x>=4?a[x-4]:-1,R=x+4<w?a[x+4]:-1,sl=(L>=0&&R>=0)?(R-L)/(8/sc):null;
+      var good=v>=0&&sl!==null&&ok(Math.abs(sl)),d=sl>0?1:-1;
+      if(good&&cur&&d!==dir&&!ok(0)){cur=null;}
+      if(good){if(!cur){cur=[];out.push(cur);dir=d;}cur.push([(x+.5)/sc,v]);}else cur=null;}
+    return out.filter(function(q){return q.length>=Math.max(6,span*minFrac);}).map(fit).filter(Boolean);}
+  function fit(P){var it,m,c;
+    for(it=0;it<3;it++){var n=P.length,sx=0,sy=0,sxx=0,sxy=0;P.forEach(function(p){sx+=p[0];sy+=p[1];sxx+=p[0]*p[0];sxy+=p[0]*p[1];});
+      var den=n*sxx-sx*sx;if(!den)return null;m=(n*sxy-sx*sy)/den;c=(sy-m*sx)/n;
+      var res=P.map(function(p){return Math.abs(p[1]-(m*p[0]+c));}).sort(function(u,v){return u-v;}),tol=Math.max(2/sc,res[Math.floor(res.length*.7)]*1.5);
+      var Q=P.filter(function(p){return Math.abs(p[1]-(m*p[0]+c))<=tol;});if(Q.length<6)break;P=Q;}
+    var x0=P[0][0],x1=P[P.length-1][0];return [[x0,m*x0+c],[x1,m*x1+c]];}
+  function band(A,B,d0,d1,stops,shadow){
+    a.beginPath();a.moveTo(A[0],A[1]+d0);a.lineTo(B[0],B[1]+d0);a.lineTo(B[0],B[1]+d1);a.lineTo(A[0],A[1]+d1);a.closePath();
+    a.save();if(shadow){a.shadowColor="rgba(0,0,0,.35)";a.shadowBlur=Math.max(2,.05*k);a.shadowOffsetY=.03*k;}a.fillStyle=col;a.fill();a.restore();
+    var mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2,g=a.createLinearGradient(mx,my+d0,mx,my+d1);stops.forEach(function(t){g.addColorStop(t[0],t[1]);});a.fillStyle=g;a.fill();
+    a.lineWidth=lw;a.strokeStyle="rgba(0,0,0,.35)";a.beginPath();a.moveTo(A[0],A[1]+d1);a.lineTo(B[0],B[1]+d1);a.stroke();
   }
   a.save();
-  if(r.style==="alle")runs(pr.top,function(sl){return sl>.27&&sl<2.7;}).forEach(function(line){
-    var sl=Math.abs(line[line.length-1][1]-line[0][1])/Math.max(1,line[line.length-1][0]-line[0][0]),t=vh*Math.sqrt(1+sl*sl);
-    band(line,[-t,0],[[0,"rgba(255,255,255,.25)"],[.5,"rgba(255,255,255,.05)"],[1,"rgba(0,0,0,.2)"]],true);
+  if(r.style==="alle")segs(pr.top,function(sl){return sl>.27&&sl<2.7;},.1).forEach(function(e){
+    var sl=Math.abs(e[1][1]-e[0][1])/Math.max(1,e[1][0]-e[0][0]),t=vh*Math.sqrt(1+sl*sl);
+    band(e[0],e[1],-t,0,[[0,"rgba(255,255,255,.2)"],[.5,"rgba(255,255,255,.04)"],[1,"rgba(0,0,0,.15)"]],true);
   });
-  runs(pr.bot,function(sl){return sl<.45;}).forEach(function(line){
-    band(line,[0,fh],[[0,"rgba(255,255,255,.22)"],[.12,"rgba(255,255,255,.05)"],[1,"rgba(0,0,0,.18)"]],true);
-    if(r.rinne)band(line,[fh*.55,fh*.55+gh],[[0,"rgba(255,255,255,.45)"],[.18,"rgba(255,255,255,.12)"],[.55,"rgba(0,0,0,.05)"],[1,"rgba(0,0,0,.4)"]],true);
+  segs(pr.bot,function(sl){return sl<.3;},.15).forEach(function(e){
+    var ov=.1*k,dx=e[1][0]-e[0][0],ux=dx?ov/dx:0,A=[e[0][0]-ov,e[0][1]-(e[1][1]-e[0][1])*ux],B=[e[1][0]+ov,e[1][1]+(e[1][1]-e[0][1])*ux];
+    band(A,B,0,fh,[[0,"rgba(255,255,255,.18)"],[.12,"rgba(255,255,255,.04)"],[1,"rgba(0,0,0,.15)"]],true);
+    if(r.rinne)band(A,B,fh*.5,fh*.5+gh,[[0,"rgba(255,255,255,.35)"],[.2,"rgba(255,255,255,.1)"],[.6,"rgba(0,0,0,.05)"],[1,"rgba(0,0,0,.35)"]],true);
   });
   a.restore();
 }
@@ -325,7 +335,7 @@ function addSurface(kind,pts,o){
   var s={id:nextId++,kind:kind,name:KIND[kind]+" "+n,pts:pts,rot:0,shade:.9,
     mat:kind==="dach"?"prefalz":"siding",color:"02",wm:kind==="dach"?10:9,hm:null,est:true};
   if(kind==="fassade"){s.trim={style:"rahmen",sill:true,color:null};s.wins=[];}
-  if(kind==="dach")s.rand={style:"alle",rinne:true,color:null};
+  if(kind==="dach")s.rand={style:"traufe",rinne:true,color:null};
   if(o)for(var key in o)s[key]=o[key];
   surfaces.push(s);return s;
 }
@@ -449,10 +459,50 @@ function winFits(d,b){
   var t=surfaces.filter(function(x){return x.id===d.target;})[0];if(!t)return true;
   var k=ppm(t),wm=(b[2]-b[0])*W/k,hm=(b[3]-b[1])*H/k;return wm>=.25&&wm<=3.5&&hm>=.25&&hm<=3.2;
 }
+/* Dächer haben gerade Kanten: Umriss der erkannten Fläche nachfahren, zu einem Vieleck mit wenigen Ecken vereinfachen
+   (Douglas-Peucker) und dieses scharf zeichnen. Was die Erkennung innerhalb des Vielecks großflächig ausspart
+   (Baum, Kamin), bleibt ausgespart; schmale Zacken am Rand verschwinden. */
+function straightRoof(cv){
+  var sc=Math.min(1,400/Math.max(cv.width,cv.height)),w=Math.max(8,Math.round(cv.width*sc)),h=Math.max(8,Math.round(cv.height*sc));
+  var c=mk(w,h),g=c.getContext("2d");g.drawImage(cv,0,0,w,h);
+  var d=g.getImageData(0,0,w,h).data,N=w*h,B=new Uint8Array(N),i,n=0;for(i=0;i<N;i++)if(d[i*4+3]>127){B[i]=1;n++;}
+  if(n<60)return cv;
+  for(i=0;i<N&&!B[i];i++);
+  var DX=[1,1,0,-1,-1,-1,0,1],DY=[0,1,1,1,0,-1,-1,-1],sx=i%w,sy=(i/w)|0,x=sx,y=sy,dir=0,P=[[sx,sy]],steps=0;
+  function at(u,v){return u>=0&&v>=0&&u<w&&v<h&&B[v*w+u];}
+  do{var moved=false;
+    for(var k=0;k<8;k++){var nd=(dir+6+k)%8;if(at(x+DX[nd],y+DY[nd])){x+=DX[nd];y+=DY[nd];dir=nd;P.push([x,y]);moved=true;break;}}
+    if(!moved)return cv;
+  }while(!(x===sx&&y===sy)&&++steps<4*N);
+  var x0=1e9,y0=1e9,x1=-1,y1=-1;P.forEach(function(p){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);});
+  var eps=Math.max(1.5,.012*Math.hypot(x1-x0,y1-y0));
+  function dp(a,b,out){var A=P[a],Bp=P[b],dx=Bp[0]-A[0],dy=Bp[1]-A[1],L=Math.hypot(dx,dy)||1,best=-1,bi=-1;
+    for(var j=a+1;j<b;j++){var e=Math.abs(dy*(P[j][0]-A[0])-dx*(P[j][1]-A[1]))/L;if(e>best){best=e;bi=j;}}
+    if(best>eps){dp(a,bi,out);dp(bi,b,out);}else out.push(Bp);}
+  /* geschlossener Umriss: am weitesten entfernten Punkt teilen */
+  var far=0,fd=-1;P.forEach(function(p,j){var e=Math.hypot(p[0]-sx,p[1]-sy);if(e>fd){fd=e;far=j;}});
+  var Q=[P[0]];dp(0,far,Q);dp(far,P.length-1,Q);
+  if(Q.length<3)return cv;
+  /* Vieleck klein zeichnen, Abweichung zur Erkennung bestimmen und schmale Teile wegöffnen */
+  var pg=mk(w,h),pc=pg.getContext("2d");pc.beginPath();Q.forEach(function(p,j){j?pc.lineTo(p[0]+.5,p[1]+.5):pc.moveTo(p[0]+.5,p[1]+.5);});pc.closePath();pc.fillStyle="#000";pc.fill();
+  var pd=pc.getImageData(0,0,w,h).data,D=new Uint8Array(N);for(i=0;i<N;i++)D[i]=pd[i*4+3]>127&&!B[i]?1:0;
+  var r=Math.max(2,Math.round(.02*Math.hypot(x1-x0,y1-y0)));
+  function morph(M,keep){var o=new Uint8Array(N),t=new Uint8Array(N),u,v,q;
+    for(v=0;v<h;v++)for(u=0;u<w;u++){var hit=keep;for(q=-r;q<=r;q++){var uu=u+q;if(uu<0||uu>=w)continue;if(!!M[v*w+uu]!==keep){hit=!keep;break;}}t[v*w+u]=hit?1:0;}
+    for(v=0;v<h;v++)for(u=0;u<w;u++){var hv=keep;for(q=-r;q<=r;q++){var vv=v+q;if(vv<0||vv>=h)continue;if(!!t[vv*w+u]!==keep){hv=!keep;break;}}o[v*w+u]=hv?1:0;}
+    return o;}
+  var O=morph(morph(D,true),false);  /* Erosion, dann Dilatation */
+  var out=mk(cv.width,cv.height),og=out.getContext("2d");og.beginPath();
+  Q.forEach(function(p,j){var X=(p[0]+.5)/sc,Y=(p[1]+.5)/sc;j?og.lineTo(X,Y):og.moveTo(X,Y);});og.closePath();og.fillStyle="#000";og.fill();
+  var hole=mk(w,h),hg=hole.getContext("2d"),hd=hg.createImageData(w,h);for(i=0;i<N;i++)if(O[i])hd.data[i*4+3]=255;hg.putImageData(hd,0,0);
+  og.globalCompositeOperation="destination-out";og.imageSmoothingEnabled=true;og.drawImage(hole,0,0,cv.width,cv.height);og.globalCompositeOperation="source-over";
+  return out;
+}
 /* Erkannte Fläche übernehmen: Kanten am Foto verfeinern, bei Fassaden Fenster vormerken und gründlich suchen. */
 function addDetected(kind,c){
   var s=addSurface(kind,c.quad,{mb:c.mb});
   var fine=c.canvas;try{if(REF)fine=REF.refine(c.canvas,src);}catch(e){}
+  if(s.kind==="dach"){try{fine=straightRoof(fine);}catch(e){}}
   MASKS[s.id]=fine;try{s.maskUrl=fine.toDataURL("image/png");}catch(e){}
   if(s.kind==="fassade"){
     /* Vorläufig: ganz von Wand umschlossene Öffnungen. Die gründliche Suche läuft gleich danach im Hintergrund. */
@@ -536,7 +586,7 @@ function sizeInfo(s){
 }
 function randUi(s){
   $("ed-rand").hidden=s.kind!=="dach";if(s.kind!=="dach")return;
-  if(!s.rand)s.rand={style:"alle",rinne:true,color:null};var r=s.rand;
+  if(!s.rand)s.rand={style:"traufe",rinne:true,color:null};var r=s.rand;
   Array.prototype.forEach.call(document.querySelectorAll("#rand-style button"),function(b){b.setAttribute("aria-pressed",b.dataset.rand===r.style);});
   $("rand-opts").hidden=r.style==="aus";$("rand-rinne").checked=!!r.rinne;
   var rc=$("rand-colors"),l=rc.scrollLeft;rc.textContent="";
