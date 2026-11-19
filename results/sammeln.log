@@ -1,11 +1,3 @@
-  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
-  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
-  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
-  Suche 40: 674 Kandidaten
-  Suche 60: 1025 Kandidaten
-  Suche 80: 1397 Kandidaten
-  Suche 100: 1749 Kandidaten
-  Suche 120: 2052 Kandidaten
   Suche 140: 2467 Kandidaten
   Suche 160: 2865 Kandidaten
   Suche 180: 3179 Kandidaten
@@ -398,3 +390,11 @@
 == 2026-11-19 17:55:16 Ziel 900 Fotos
   Suche 0: 6 Kandidaten
   Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
+== 2026-11-19 18:37:05 Ziel 800 Fotos
+Bereits verpackt: 800 Fotos in 18 Paketen
+Kandidaten: 0
+FERTIG: 800 Fotos in 18 Paketen
+== 2026-11-19 18:37:07 Ziel 900 Fotos
+Bereits verpackt: 800 Fotos in 18 Paketen
+  Suche 0: 35 Kandidaten
+  Suche 20: 332 Kandidaten

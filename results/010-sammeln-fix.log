@@ -1,1 +1,8 @@
 Start 2026-11-19 18:37:02
+Code: 71ca028 Fotosammlung: nur fehlende Kandidaten suchen, bei Mapillary-Serverfehlern nicht lange warten
+Running as unit: mly-sammeln.service; invocation ID: 9e4cf75d4e2a46e782bb1785dc8cff42
+Sammlung neu gestartet (systemd mly-sammeln)
+active
+paket-017.zip
+paket-018.zip
+Exitcode 0
