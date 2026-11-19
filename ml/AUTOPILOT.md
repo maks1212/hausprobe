@@ -39,3 +39,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 | 2026-11-18 | App: Guided-Filter-Kanten (512 px) + Schattenregel | – | – | ja |
 | 2026-11-18 | App: Dachrand aus Blech (Traufe mit Rinne, Ortgang) entlang des echten Dachumrisses | – | – | ja |
 | 2026-11-19 | modell-flaechen-20261119-0247 (nur 192 Lehrer-Fotos, neue Pakete kamen erst danach) | .14/.71/.40/.37 | Vergleich unfair (v3 kannte Prüffotos) | nein |
+| 2026-11-19 | modell-flaechen-20261119-1217 (2419 Fotos, davon ~640 Lehrer) | .34/.66/.48/.30 | Vergleich unfair; Sichtprüfung: gleichauf, teils schwächer (Fenster) | nein |
