@@ -1,6 +1,3 @@
-  Suche fehlgeschlagen: HTTP Error 500: Internal Server Error
-  Suche 220: 3808 Kandidaten
-  Suche 240: 4092 Kandidaten
   Suche 260: 4326 Kandidaten
   Suche 280: 4449 Kandidaten
   Suche 300: 4656 Kandidaten
@@ -398,3 +395,6 @@ Bereits verpackt: 1000 Fotos in 22 Paketen
 == 2026-11-19 19:58:56 Ziel 1200 Fotos
 Bereits verpackt: 1100 Fotos in 24 Paketen
   Suche 0: 6 Kandidaten
+== 2026-11-19 20:24:00 Ziel 1300 Fotos
+Bereits verpackt: 1200 Fotos in 26 Paketen
+  Suche 0: 28 Kandidaten
