@@ -20,3 +20,4 @@ fertig: 192 Mapillary-Fotos, davon korrigiert 0
 == 2026-11-19 01:24:28 Merkmale berechnen und trainieren
 Training 1435 Prüfung 146
 Anteile {'sonstiges': 0.694, 'Dach': 0.034, 'Wand': 0.244, 'Fenster': 0.021, 'Tür': 0.007} Gewichte [0.22, 0.98, 0.37, 1.24, 2.19]
+Durchgang 1/30 Verlust 2.253 3 min
