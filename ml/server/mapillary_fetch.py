@@ -30,7 +30,9 @@ def api(params):
         try:
             with urllib.request.urlopen(req,timeout=60) as r:return json.load(r).get('data',[])
         except Exception as e:
-            print('  Suche fehlgeschlagen:',e,flush=True);time.sleep(3*(t+1))
+            print('  Suche fehlgeschlagen:',e,flush=True)
+            if getattr(e,'code',0)>=500 and t>=1:break   # Mapillary-Serverfehler bei dichten Zellen: nicht lange warten
+            time.sleep(3*(t+1))
     return []
 
 # Schon geprüfte Fotos (auch frühere Läufe) nicht noch einmal prüfen.
@@ -40,7 +42,7 @@ def candidates():
     # Zufällige Zellen von 0,009 × 0,009 Grad (unter der Grenze von 0,01 Quadratgrad) in den Gegenden absuchen.
     seen_seq={};out=[];names=list(REG)
     for rnd in range(4000):
-        if len(out)>=WANT*FACTOR:break
+        if len(out)>=NEED*FACTOR:break
         name=names[rnd%len(names)];x0,y0,x1,y1=REG[name]
         cx=random.uniform(x0,x1-.009);cy=random.uniform(y0,y1-.009)
         data=api({'bbox':f'{cx:.5f},{cy:.5f},{cx+.009:.5f},{cy+.009:.5f}','is_pano':'false','limit':200,
@@ -82,11 +84,6 @@ def write_zip(no,items):
               'prelabel':'hausprobe_flaechen','anteile':stat})
         z.writestr('manifest.json',json.dumps(man,ensure_ascii=False,indent=1))
     return path
-if os.environ.get('LOCAL_DIR'):
-    L=os.environ['LOCAL_DIR'];cands=[{'id':os.path.splitext(f)[0],'local':f'{L}/{f}','creator':{'username':'test'},'region':'lokal'} for f in sorted(os.listdir(L)) if f.endswith('.jpg')]
-else:
-    print('Suche Fotos in',len(REG),'Gegenden',flush=True);cands=candidates()
-print('Kandidaten:',len(cands),flush=True)
 # Schon verpackte Fotos überspringen (nach einem Abbruch geht es dort weiter, wo es aufgehört hat).
 done=set();npk=0
 for f in sorted(os.listdir(W+'/pakete')):
@@ -95,6 +92,12 @@ for f in sorted(os.listdir(W+'/pakete')):
         try:done|={it['id'] for it in json.loads(zipfile.ZipFile(W+'/pakete/'+f).read('manifest.json'))['items']}
         except Exception:pass
 total=len(done);print('Bereits verpackt:',total,'Fotos in',npk,'Paketen',flush=True)
+NEED=max(0,WANT-total)   # nur so viele neue Kandidaten suchen, wie für das Ziel noch fehlen
+if os.environ.get('LOCAL_DIR'):
+    L=os.environ['LOCAL_DIR'];cands=[{'id':os.path.splitext(f)[0],'local':f'{L}/{f}','creator':{'username':'test'},'region':'lokal'} for f in sorted(os.listdir(L)) if f.endswith('.jpg')]
+else:
+    print('Suche Fotos in',len(REG),'Gegenden',flush=True);cands=candidates()
+print('Kandidaten:',len(cands),flush=True)
 kept=[];t0=time.time()
 for k,d in enumerate(cands):
     if total>=WANT:break
