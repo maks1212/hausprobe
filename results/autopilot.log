@@ -101,3 +101,4 @@ Anteile {'sonstiges': 0.729, 'Dach': 0.026, 'Wand': 0.215, 'Fenster': 0.024, 'TÃ
 Durchgang 1/30 Verlust 2.058 5 min
 Durchgang 2/30 Verlust 1.511 9 min
 Durchgang 3/30 Verlust 1.332 14 min IoU {'Dach': 0.216, 'Wand': 0.526, 'Fenster': 0.377, 'TÃ¼r': 0.18} (bester Stand)
+Durchgang 4/30 Verlust 1.270 18 min
