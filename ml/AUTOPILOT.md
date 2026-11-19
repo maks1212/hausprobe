@@ -17,7 +17,9 @@ Der Nutzer will erst Bescheid bekommen, wenn die Erkennung gut ist (oder wenn et
 - Neuester Branch `modell-flaechen-*`, der jünger ist als der letzte Eintrag unten im Protokoll.
 - `bericht.txt`: Zeile „IoU nur Mapillary“ mit „IoU bisheriges Modell, nur Mapillary“ vergleichen (dieselben festen Prüffotos).
 - Sichtprüfung: altes und neues Modell auf den Testhäusern (Houses-Dataset, nur zum Testen) nebeneinander.
-- Übernehmen nur wenn besser: Modell nach `models/hausprobe_flaechen.onnx`, in `segment.js` die Versionsnummer in
+- Fair ist der Vergleich nur, wenn das bisherige Modell eine Trainingsliste hat (`models/hausprobe_flaechen.train.txt`).
+  Steht im Bericht „ACHTUNG … ohne Trainingsliste“, zählen die Zahlen des bisherigen Modells nicht (es kennt Prüffotos), dann entscheidet die Sichtprüfung.
+- Übernehmen nur wenn besser: Modell nach `models/hausprobe_flaechen.onnx` und `hausprobe_flaechen.train.txt` nach `models/`, in `segment.js` die Versionsnummer in
   `SURF="models/hausprobe_flaechen.onnx?v=N"` erhöhen, Eintrag unten ergänzen, auf `main` pushen (Vercel baut nur `main`).
 - Hängt etwas (Sammlung steht, Actions schlagen fehl, Server meldet sich nicht), den Nutzer benachrichtigen.
 
@@ -36,3 +38,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 | 2026-11-18 | modell-flaechen-20261118-1423 | .36/.68/.48/.20 | .34/.60/.23/.12 | ja (v3) |
 | 2026-11-18 | App: Guided-Filter-Kanten (512 px) + Schattenregel | – | – | ja |
 | 2026-11-18 | App: Dachrand aus Blech (Traufe mit Rinne, Ortgang) entlang des echten Dachumrisses | – | – | ja |
+| 2026-11-19 | modell-flaechen-20261119-0247 (nur 192 Lehrer-Fotos, neue Pakete kamen erst danach) | .14/.71/.40/.37 | Vergleich unfair (v3 kannte Prüffotos) | nein |

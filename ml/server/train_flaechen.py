@@ -95,9 +95,15 @@ if os.path.exists(M+'/hausprobe_flaechen_alt.onnx'):
         def eval(s):pass
         def train(s):pass
         def __call__(s,e):return torch.cat([torch.from_numpy(alt.run(None,{'image_embeddings':e[k:k+1].numpy()})[0]) for k in range(len(e))])
+    # Fair nur auf Prüffotos, die das bisherige Modell nicht im Training hatte (Liste liegt neben dem Modell).
+    tf=M+'/hausprobe_flaechen_alt.train.txt';seen=set(open(tf).read().split()) if os.path.exists(tf) else None
+    if seen is None:log.append('ACHTUNG: bisheriges Modell ohne Trainingsliste, es kann Prüffotos im Training gehabt haben. Vergleich nicht fair, nur Sichtprüfung zählt.')
     for name in ('COCO','Mapillary'):
-        sel=[i for i in va if quelle(i)==name]
-        if sel:r=iou(Alt(),sel);log.append(f'IoU bisheriges Modell, nur {name} ({len(sel)} Fotos): {r}');print(log[-1],flush=True)
+        sel=[i for i in va if quelle(i)==name and (seen is None or i not in seen)]
+        if sel:
+            log.append(f'IoU bisheriges Modell, nur {name} ({len(sel)} Fotos): {iou(Alt(),sel)}')
+            if seen is not None:log.append(f'IoU neues Modell auf denselben {len(sel)} Fotos: {iou(model,sel)}')
+for l in log[-6:]:print(l,flush=True)
 torch.onnx.export(Export(model),(torch.zeros(1,256,G,G),),OUT+'/hausprobe_flaechen.onnx',input_names=['image_embeddings'],output_names=['classes'],opset_version=17,dynamo=False)
 # Vorschau: 12 Prüffotos mit eingefärbten Klassen
 COL=np.array([[0,0,0],[224,72,58],[60,127,214],[242,194,48],[54,179,126]],np.uint8);tiles=[]
@@ -109,5 +115,6 @@ with torch.no_grad():
 g=Image.new('RGB',(320*4,240*3),'white')
 for k,t in enumerate(tiles):g.paste(t,((k%4)*320,(k//4)*240))
 g.save(OUT+'/vorschau.jpg',quality=85)
+open(OUT+'/hausprobe_flaechen.train.txt','w').write('\n'.join(sorted(set(tr)))+'\n')
 open(OUT+'/bericht.txt','w').write('\n'.join(log+[f'Endstand IoU {final}',f'Fotos Training {len(tr)} Prüfung {len(va)}',man['source']])+'\n')
 print('FERTIG',OUT+'/hausprobe_flaechen.onnx',final,flush=True)
