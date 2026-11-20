@@ -1,0 +1,71 @@
+2026-11-20 06:27:03
+Unit mly-sammeln.service could not be found.
+paket-001.zip 50 7670 KB
+paket-002.zip 13 2044 KB
+paket-003.zip 50 8547 KB
+paket-004.zip 29 5374 KB
+paket-005.zip 50 8483 KB
+paket-006.zip 8 1467 KB
+paket-007.zip 50 8938 KB
+paket-008.zip 50 9030 KB
+paket-009.zip 50 9010 KB
+paket-010.zip 50 8381 KB
+paket-011.zip 50 9355 KB
+paket-012.zip 50 10643 KB
+paket-013.zip 50 9072 KB
+paket-014.zip 50 9134 KB
+paket-015.zip 50 9846 KB
+paket-016.zip 50 8951 KB
+paket-017.zip 50 9013 KB
+paket-018.zip 50 10243 KB
+paket-019.zip 50 7915 KB
+paket-020.zip 50 8306 KB
+paket-021.zip 50 8252 KB
+paket-022.zip 50 7613 KB
+paket-023.zip 50 8574 KB
+paket-024.zip 50 7497 KB
+paket-025.zip 50 8253 KB
+paket-026.zip 50 8779 KB
+paket-027.zip 50 8475 KB
+paket-028.zip 50 8400 KB
+paket-029.zip 50 8341 KB
+paket-030.zip 50 7527 KB
+paket-031.zip 50 8358 KB
+paket-032.zip 50 8217 KB
+eindeutige Fotos 1500
+-rw-r--r-- 1 root root  8678566 2026-11-19_20:43:36 paket-027.zip
+-rw-r--r-- 1 root root  8602168 2026-11-19_20:49:05 paket-028.zip
+-rw-r--r-- 1 root root  8541650 2026-11-19_21:11:26 paket-029.zip
+-rw-r--r-- 1 root root  7708417 2026-11-19_21:18:08 paket-030.zip
+-rw-r--r-- 1 root root  8558879 2026-11-19_21:37:12 paket-031.zip
+-rw-r--r-- 1 root root  8414865 2026-11-19_21:43:26 paket-032.zip
+Nov 19 13:50:10 ubuntu bash[151739]: nothing to commit, working tree clean
+Nov 19 17:55:16 ubuntu bash[166679]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 18:37:02 ubuntu systemd[1]: Stopping mly-sammeln.service - [systemd-run] /usr/bin/bash /root/sammeln.sh...
+Nov 19 18:37:02 ubuntu systemd[1]: mly-sammeln.service: Deactivated successfully.
+Nov 19 18:37:02 ubuntu systemd[1]: Stopped mly-sammeln.service - [systemd-run] /usr/bin/bash /root/sammeln.sh.
+Nov 19 18:37:02 ubuntu systemd[1]: mly-sammeln.service: Consumed 21min 40.377s CPU time over 10h 46min 54.127s wall clock time, 1.2G memory peak, 71.3M memory swap peak.
+Nov 19 18:37:05 ubuntu systemd[1]: Started mly-sammeln.service - [systemd-run] /usr/bin/bash /root/sammeln.sh.
+Nov 19 18:37:07 ubuntu bash[169112]: On branch daten
+Nov 19 18:37:07 ubuntu bash[169112]: Your branch is ahead of 'origin/daten' by 1 commit.
+Nov 19 18:37:07 ubuntu bash[169112]:   (use "git push" to publish your local commits)
+Nov 19 18:37:07 ubuntu bash[169112]: nothing to commit, working tree clean
+Nov 19 19:00:34 ubuntu bash[170503]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 19:33:30 ubuntu bash[172561]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 19:58:56 ubuntu bash[174089]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 20:24:00 ubuntu bash[175609]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 20:49:08 ubuntu bash[177177]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 21:18:10 ubuntu bash[178916]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 21:43:28 ubuntu bash[180482]: fatal: could not read Username for 'https://github.com': No such device or address
+Nov 19 21:43:28 ubuntu systemd[1]: mly-sammeln.service: Deactivated successfully.
+Nov 19 21:43:28 ubuntu systemd[1]: mly-sammeln.service: Consumed 2h 25min 35.957s CPU time over 3h 6min 23.221s wall clock time, 1.3G memory peak, 149.1M memory swap peak.
+## daten...origin/daten [ahead 8]
+2026-11-19 21:43:28 +0000 Mapillary-Pakete bis 1500
+2026-11-19 21:18:10 +0000 Mapillary-Pakete bis 1400
+From https://github.com/Maks1212/hausprobe
+ * branch            daten      -> FETCH_HEAD
+Current branch daten is up to date.
+/dev/vda1        77G   16G   61G  21% /
+               total        used        free      shared  buff/cache   available
+Mem:            1839         408         548           3        1033        1431
+Exitcode 0
