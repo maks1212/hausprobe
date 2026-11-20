@@ -1,0 +1,6 @@
+To https://github.com/Maks1212/hausprobe.git
+   0e0aeb5..bf5f175  daten -> daten
+2026-11-19 21:43:28 +0000 Mapillary-Pakete bis 1500
+export HOME=/root
+. ~/hausprobe-training/venv/bin/activate; D=~/daten-branch; L=~/auftraege/results/sammeln.log
+Exitcode 0
