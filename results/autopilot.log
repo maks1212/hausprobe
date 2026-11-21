@@ -213,3 +213,27 @@ Durchgang 27/30 Verlust 0.612 207 min IoU {'Dach': 0.351, 'Wand': 0.631, 'Fenste
 Durchgang 28/30 Verlust 0.603 214 min
 Durchgang 29/30 Verlust 0.600 222 min
 Durchgang 30/30 Verlust 0.596 230 min IoU {'Dach': 0.355, 'Wand': 0.634, 'Fenster': 0.47, 'Tür': 0.223} (bester Stand)
+IoU nur COCO (108 Fotos): {'Dach': 0.367, 'Wand': 0.536, 'Fenster': 0.247, 'Tür': 0.171}
+IoU nur Mapillary (273 Fotos): {'Dach': 0.338, 'Wand': 0.676, 'Fenster': 0.523, 'Tür': 0.237}
+Durchgang 30/30 Verlust 0.596 230 min IoU {'Dach': 0.355, 'Wand': 0.634, 'Fenster': 0.47, 'Tür': 0.223} (bester Stand)
+IoU nur COCO (108 Fotos): {'Dach': 0.367, 'Wand': 0.536, 'Fenster': 0.247, 'Tür': 0.171}
+IoU nur Mapillary (273 Fotos): {'Dach': 0.338, 'Wand': 0.676, 'Fenster': 0.523, 'Tür': 0.237}
+ACHTUNG: bisheriges Modell ohne Trainingsliste, es kann Prüffotos im Training gehabt haben. Vergleich nicht fair, nur Sichtprüfung zählt.
+IoU bisheriges Modell, nur COCO (108 Fotos): {'Dach': 0.492, 'Wand': 0.61, 'Fenster': 0.441, 'Tür': 0.55}
+IoU bisheriges Modell, nur Mapillary (273 Fotos): {'Dach': 0.356, 'Wand': 0.643, 'Fenster': 0.432, 'Tür': 0.246}
+/root/hausprobe/ml/server/train_flaechen.py:107: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(Export(model),(torch.zeros(1,256,G,G),),OUT+'/hausprobe_flaechen.onnx',input_names=['image_embeddings'],output_names=['classes'],opset_version=17,dynamo=False)
+FERTIG /root/hausprobe-training/out/hausprobe_flaechen.onnx {'Dach': 0.355, 'Wand': 0.634, 'Fenster': 0.47, 'Tür': 0.223}
+== 2026-11-21 05:42:49 Ergebnis ins Repo hochladen
+Switched to a new branch 'modell-flaechen-20261121-0542'
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/maks1212/hausprobe.git        
+remote: 
+remote: Create a pull request for 'modell-flaechen-20261121-0542' on GitHub by visiting:        
+remote:      https://github.com/maks1212/hausprobe/pull/new/modell-flaechen-20261121-0542        
+remote: 
+To https://github.com/Maks1212/hausprobe.git
+ * [new branch]      modell-flaechen-20261121-0542 -> modell-flaechen-20261121-0542
+branch 'modell-flaechen-20261121-0542' set up to track 'origin/modell-flaechen-20261121-0542'.
+Hochgeladen auf Branch modell-flaechen-20261121-0542
+== 2026-11-21 05:42:52 FERTIG
