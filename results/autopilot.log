@@ -185,3 +185,4 @@ Training 4033 Prüfung 381
 Anteile {'sonstiges': 0.756, 'Dach': 0.021, 'Wand': 0.194, 'Fenster': 0.023, 'Tür': 0.006} Gewichte [0.19, 1.16, 0.38, 1.1, 2.17]
 Durchgang 1/30 Verlust 1.869 7 min
 Durchgang 2/30 Verlust 1.337 15 min
+Durchgang 3/30 Verlust 1.222 23 min IoU {'Dach': 0.276, 'Wand': 0.553, 'Fenster': 0.414, 'Tür': 0.156} (bester Stand)
