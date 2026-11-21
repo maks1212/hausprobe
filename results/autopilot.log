@@ -181,3 +181,5 @@ Merkmale 300/685  noch etwa 15 min
 Merkmale 400/685  noch etwa 11 min
 Merkmale 500/685  noch etwa 7 min
 Merkmale 600/685  noch etwa 3 min
+Training 4033 Prüfung 381
+Anteile {'sonstiges': 0.756, 'Dach': 0.021, 'Wand': 0.194, 'Fenster': 0.023, 'Tür': 0.006} Gewichte [0.19, 1.16, 0.38, 1.1, 2.17]
