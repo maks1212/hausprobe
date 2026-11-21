@@ -5,3 +5,5 @@ Code: e241e1d Flächenmodell 20261121-0542 übernommen (v4)
 6:  FACTOR=40 timeout 12h python3 ~/hausprobe/ml/server/mapillary_fetch.py ~/hausprobe/models ~/mapillary "$ziel" 2>&1 | grep --line-buffered -E "Kandidaten|Bereits|Paket|FERTIG|Fehler|behalten" >> $L
 Running as unit: mly-sammeln.service; invocation ID: 33b8c8135d8f4d5ebc2bb0c841bbabb4
 Sammlung gestartet
+active
+Exitcode 0
