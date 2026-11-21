@@ -200,3 +200,4 @@ Durchgang 14/30 Verlust 0.942 108 min
 Durchgang 15/30 Verlust 0.903 115 min IoU {'Dach': 0.347, 'Wand': 0.615, 'Fenster': 0.468, 'Tür': 0.225} (bester Stand)
 Durchgang 16/30 Verlust 0.873 123 min
 Durchgang 17/30 Verlust 0.865 130 min
+Durchgang 18/30 Verlust 0.823 138 min IoU {'Dach': 0.329, 'Wand': 0.63, 'Fenster': 0.456, 'Tür': 0.235}
