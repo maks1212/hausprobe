@@ -1,0 +1,39 @@
+Durchgang 1/30 Verlust 1.816 8 min
+Durchgang 2/30 Verlust 1.308 17 min
+Durchgang 3/30 Verlust 1.203 25 min IoU {'Dach': 0.282, 'Wand': 0.594, 'Fenster': 0.428, 'Tür': 0.161} (bester Stand)
+Durchgang 4/30 Verlust 1.159 34 min
+Durchgang 5/30 Verlust 1.127 42 min
+Durchgang 6/30 Verlust 1.090 50 min IoU {'Dach': 0.295, 'Wand': 0.599, 'Fenster': 0.401, 'Tür': 0.158} (bester Stand)
+Durchgang 7/30 Verlust 1.076 59 min
+Durchgang 8/30 Verlust 1.039 67 min
+Durchgang 9/30 Verlust 1.025 76 min IoU {'Dach': 0.307, 'Wand': 0.608, 'Fenster': 0.439, 'Tür': 0.193} (bester Stand)
+Durchgang 10/30 Verlust 1.000 85 min
+Durchgang 11/30 Verlust 0.968 93 min
+Durchgang 12/30 Verlust 0.939 101 min IoU {'Dach': 0.316, 'Wand': 0.604, 'Fenster': 0.432, 'Tür': 0.17}
+Durchgang 13/30 Verlust 0.923 110 min
+Durchgang 14/30 Verlust 0.903 118 min
+Durchgang 15/30 Verlust 0.869 127 min IoU {'Dach': 0.34, 'Wand': 0.618, 'Fenster': 0.428, 'Tür': 0.182} (bester Stand)
+Durchgang 16/30 Verlust 0.855 135 min
+Durchgang 17/30 Verlust 0.833 144 min
+Durchgang 18/30 Verlust 0.798 152 min IoU {'Dach': 0.262, 'Wand': 0.599, 'Fenster': 0.475, 'Tür': 0.196}
+Durchgang 19/30 Verlust 0.772 161 min
+Durchgang 20/30 Verlust 0.736 169 min
+Durchgang 21/30 Verlust 0.707 177 min IoU {'Dach': 0.348, 'Wand': 0.645, 'Fenster': 0.49, 'Tür': 0.219} (bester Stand)
+Durchgang 22/30 Verlust 0.677 186 min
+Durchgang 23/30 Verlust 0.654 194 min
+Durchgang 24/30 Verlust 0.634 203 min IoU {'Dach': 0.337, 'Wand': 0.644, 'Fenster': 0.481, 'Tür': 0.198}
+Durchgang 25/30 Verlust 0.613 212 min
+Durchgang 26/30 Verlust 0.596 220 min
+Durchgang 27/30 Verlust 0.588 228 min IoU {'Dach': 0.349, 'Wand': 0.65, 'Fenster': 0.486, 'Tür': 0.203}
+Durchgang 28/30 Verlust 0.577 237 min
+Durchgang 29/30 Verlust 0.574 246 min
+Durchgang 30/30 Verlust 0.572 254 min IoU {'Dach': 0.352, 'Wand': 0.65, 'Fenster': 0.486, 'Tür': 0.204}
+IoU nur COCO (108 Fotos): {'Dach': 0.36, 'Wand': 0.577, 'Fenster': 0.229, 'Tür': 0.15}
+IoU nur Mapillary (307 Fotos): {'Dach': 0.338, 'Wand': 0.672, 'Fenster': 0.532, 'Tür': 0.239}
+IoU bisheriges Modell, nur COCO (32 Fotos): {'Dach': 0.418, 'Wand': 0.546, 'Fenster': 0.196, 'Tür': 0.151}
+IoU neues Modell auf denselben 32 Fotos: {'Dach': 0.428, 'Wand': 0.53, 'Fenster': 0.208, 'Tür': 0.234}
+IoU bisheriges Modell, nur Mapillary (307 Fotos): {'Dach': 0.342, 'Wand': 0.675, 'Fenster': 0.517, 'Tür': 0.235}
+IoU neues Modell auf denselben 307 Fotos: {'Dach': 0.338, 'Wand': 0.672, 'Fenster': 0.532, 'Tür': 0.239}
+Endstand IoU {'Dach': 0.348, 'Wand': 0.645, 'Fenster': 0.49, 'Tür': 0.219}
+Fotos Training 4528 Prüfung 415
+COCO-Stuff 2017 (Caesar, Uijlings, Ferrari), annotations CC BY 4.0, github.com/nightrome/cocostuff | Mapillary (CC BY-SA), markiert mit Grounding DINO + SAM (Apache 2.0)
