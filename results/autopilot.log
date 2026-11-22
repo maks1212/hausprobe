@@ -258,3 +258,5 @@ fertig: 1492 Mapillary-Fotos, davon korrigiert 0
 == 2026-11-22 01:24:43 Merkmale berechnen und trainieren
 Merkmale 0/199  noch etwa 9 min
 Merkmale 100/199  noch etwa 4 min
+Training 4528 Prüfung 415
+Anteile {'sonstiges': 0.753, 'Dach': 0.02, 'Wand': 0.196, 'Fenster': 0.025, 'Tür': 0.006} Gewichte [0.2, 1.21, 0.38, 1.07, 2.14]
