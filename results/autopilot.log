@@ -370,3 +370,25 @@ Durchgang 29/30 Verlust 0.556 279 min
 Durchgang 30/30 Verlust 0.554 288 min IoU {'Dach': 0.396, 'Wand': 0.668, 'Fenster': 0.511, 'Tür': 0.232} (bester Stand)
 IoU nur COCO (108 Fotos): {'Dach': 0.399, 'Wand': 0.575, 'Fenster': 0.131, 'Tür': 0.148}
 IoU nur Mapillary (376 Fotos): {'Dach': 0.393, 'Wand': 0.697, 'Fenster': 0.545, 'Tür': 0.244}
+IoU nur COCO (108 Fotos): {'Dach': 0.399, 'Wand': 0.575, 'Fenster': 0.131, 'Tür': 0.148}
+IoU nur Mapillary (376 Fotos): {'Dach': 0.393, 'Wand': 0.697, 'Fenster': 0.545, 'Tür': 0.244}
+IoU bisheriges Modell, nur COCO (15 Fotos): {'Dach': 0.405, 'Wand': 0.638, 'Fenster': 0.134, 'Tür': 0.253}
+IoU neues Modell auf denselben 15 Fotos: {'Dach': 0.399, 'Wand': 0.598, 'Fenster': 0.122, 'Tür': 0.363}
+IoU bisheriges Modell, nur Mapillary (376 Fotos): {'Dach': 0.355, 'Wand': 0.69, 'Fenster': 0.534, 'Tür': 0.251}
+IoU neues Modell auf denselben 376 Fotos: {'Dach': 0.393, 'Wand': 0.697, 'Fenster': 0.545, 'Tür': 0.244}
+/root/hausprobe/ml/server/train_flaechen.py:107: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(Export(model),(torch.zeros(1,256,G,G),),OUT+'/hausprobe_flaechen.onnx',input_names=['image_embeddings'],output_names=['classes'],opset_version=17,dynamo=False)
+FERTIG /root/hausprobe-training/out/hausprobe_flaechen.onnx {'Dach': 0.396, 'Wand': 0.668, 'Fenster': 0.511, 'Tür': 0.232}
+== 2026-11-23 06:26:40 Ergebnis ins Repo hochladen
+Switched to a new branch 'modell-flaechen-20261123-0626'
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/maks1212/hausprobe.git        
+remote: 
+remote: Create a pull request for 'modell-flaechen-20261123-0626' on GitHub by visiting:        
+remote:      https://github.com/maks1212/hausprobe/pull/new/modell-flaechen-20261123-0626        
+remote: 
+To https://github.com/Maks1212/hausprobe.git
+ * [new branch]      modell-flaechen-20261123-0626 -> modell-flaechen-20261123-0626
+branch 'modell-flaechen-20261123-0626' set up to track 'origin/modell-flaechen-20261123-0626'.
+Hochgeladen auf Branch modell-flaechen-20261123-0626
+== 2026-11-23 06:26:42 FERTIG
