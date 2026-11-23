@@ -367,3 +367,6 @@ Durchgang 26/30 Verlust 0.580 250 min
 Durchgang 27/30 Verlust 0.569 260 min IoU {'Dach': 0.396, 'Wand': 0.669, 'Fenster': 0.508, 'Tür': 0.231} (bester Stand)
 Durchgang 28/30 Verlust 0.560 270 min
 Durchgang 29/30 Verlust 0.556 279 min
+Durchgang 30/30 Verlust 0.554 288 min IoU {'Dach': 0.396, 'Wand': 0.668, 'Fenster': 0.511, 'Tür': 0.232} (bester Stand)
+IoU nur COCO (108 Fotos): {'Dach': 0.399, 'Wand': 0.575, 'Fenster': 0.131, 'Tür': 0.148}
+IoU nur Mapillary (376 Fotos): {'Dach': 0.393, 'Wand': 0.697, 'Fenster': 0.545, 'Tür': 0.244}
