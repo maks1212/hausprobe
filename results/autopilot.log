@@ -362,3 +362,4 @@ Durchgang 21/30 Verlust 0.678 202 min IoU {'Dach': 0.376, 'Wand': 0.667, 'Fenste
 Durchgang 22/30 Verlust 0.659 212 min
 Durchgang 23/30 Verlust 0.633 221 min
 Durchgang 24/30 Verlust 0.612 231 min IoU {'Dach': 0.38, 'Wand': 0.665, 'Fenster': 0.506, 'Tür': 0.232}
+Durchgang 25/30 Verlust 0.592 241 min
