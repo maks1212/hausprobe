@@ -339,3 +339,4 @@ Merkmale 200/296  noch etwa 4 min
 Training 5209 Prüfung 484
 Anteile {'sonstiges': 0.751, 'Dach': 0.019, 'Wand': 0.197, 'Fenster': 0.027, 'Tür': 0.007} Gewichte [0.2, 1.25, 0.39, 1.05, 2.12]
 Durchgang 1/30 Verlust 1.748 9 min
+Durchgang 2/30 Verlust 1.259 19 min
