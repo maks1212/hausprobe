@@ -42,3 +42,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 | 2026-11-19 | modell-flaechen-20261119-1217 (2419 Fotos, davon ~640 Lehrer) | .34/.66/.48/.30 | Vergleich unfair; Sichtprüfung: gleichauf, teils schwächer (Fenster) | nein |
 | 2026-11-21 | modell-flaechen-20261121-0542 (4033 Fotos, ~1500 Mapillary) | .34/.68/.52/.24 | .36/.64/.43/.25 (unfair, v3 kannte Prüffotos); Sichtprüfung: deutlich weniger Fehlflächen auf Straße/Wiese, Fenster und Dach besser | ja (v4) |
 | 2026-11-22 | modell-flaechen-20261122-0547 (4528 Fotos) | .34/.67/.53/.24 | .34/.68/.52/.24 (fair); Sichtprüfung: gemischt – weniger Himmel als Dach, dafür Bäume als Wand | nein |
+| 2026-11-23 | modell-flaechen-20261123-0626 (5209 Fotos) | .39/.70/.55/.24 | .36/.69/.53/.25 (fair, mit Trainingsliste); Sichtprüfung: Dach deutlich sauberer und vollständiger, Wand/Fenster gleichauf | ja (v5) |
