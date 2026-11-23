@@ -336,3 +336,5 @@ fertig: 1788 Mapillary-Fotos, davon korrigiert 0
 Merkmale 0/296  noch etwa 13 min
 Merkmale 100/296  noch etwa 8 min
 Merkmale 200/296  noch etwa 4 min
+Training 5209 Prüfung 484
+Anteile {'sonstiges': 0.751, 'Dach': 0.019, 'Wand': 0.197, 'Fenster': 0.027, 'Tür': 0.007} Gewichte [0.2, 1.25, 0.39, 1.05, 2.12]
