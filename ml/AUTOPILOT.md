@@ -7,7 +7,7 @@ Der Nutzer will erst Bescheid bekommen, wenn die Erkennung gut ist (oder wenn et
 1. **Fotos sammeln** – Server, Auftrag 006 (`ml/server/mapillary_fetch.py`, Mapillary CC BY-SA): neue Pakete auf Branch `daten`, `pakete/paket-NNN.zip`.
 2. **Markieren** – GitHub Actions `lehrer.yml` prüft alle 6 h, ob unmarkierte Pakete da sind, und lässt sie von
    Grounding DINO + SAM (Apache 2.0) markieren → Branch `lehrer-ergebnis`, `ergebnis/<lauf>/lehrer-paket-NNN.zip`.
-   Kontingent: 2000 Action-Minuten pro Monat, etwa 1 Minute je Foto.
+   Repo ist seit 2026-11-26 öffentlich: Action-Minuten unbegrenzt, 6 Rechner parallel (etwa 1 Minute je Foto).
 3. **Trainieren** – Server, cron 01:23 (`ml/server/auto_train.sh`): bei mindestens 3 neuen Lehrer-Paketen
    Training mit `LEHRER=1` → Branch `modell-flaechen-<zeit>`, `ml/ergebnis/hausprobe_flaechen.onnx` + `bericht.txt`.
    Protokoll: Branch `server`, `results/autopilot.log`.
@@ -44,3 +44,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 | 2026-11-22 | modell-flaechen-20261122-0547 (4528 Fotos) | .34/.67/.53/.24 | .34/.68/.52/.24 (fair); Sichtprüfung: gemischt – weniger Himmel als Dach, dafür Bäume als Wand | nein |
 | 2026-11-23 | modell-flaechen-20261123-0626 (5209 Fotos) | .39/.70/.55/.24 | .36/.69/.53/.25 (fair, mit Trainingsliste); Sichtprüfung: Dach deutlich sauberer und vollständiger, Wand/Fenster gleichauf | ja (v5) |
 | 2026-11-26 | Ziel Fenster von 0,55 auf 0,65 angehoben (Nutzer: Fenster gut, aber nicht perfekt) | – | – | – |
+| 2026-11-26 | Repo öffentlich (Action-Minuten unbegrenzt), Lehrer 6 Rechner parallel, Server-Auftrag 014 sammelt bis 3000 Fotos | – | – | – |
