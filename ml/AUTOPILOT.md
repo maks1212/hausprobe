@@ -24,7 +24,7 @@ Der Nutzer will erst Bescheid bekommen, wenn die Erkennung gut ist (oder wenn et
 - Hängt etwas (Sammlung steht, Actions schlagen fehl, Server meldet sich nicht), den Nutzer benachrichtigen.
 
 ## Zielwerte (Mapillary-Prüffotos, gegen Lehrer-Markierung)
-Wand ≥ 0,75 · Dach ≥ 0,55 · Fenster ≥ 0,55 · Tür ≥ 0,35, und auf den Testhäusern sichtbar sauber.
+Wand ≥ 0,75 · Dach ≥ 0,55 · Fenster ≥ 0,65 · Tür ≥ 0,35, und auf den Testhäusern sichtbar sauber (Fenster: alle Fenster erfasst, gerade Kanten, keine verschmolzenen Nachbarfenster).
 Erst dann dem Nutzer melden: „Erkennung ist gut“.
 
 ## Regeln
@@ -43,3 +43,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 | 2026-11-21 | modell-flaechen-20261121-0542 (4033 Fotos, ~1500 Mapillary) | .34/.68/.52/.24 | .36/.64/.43/.25 (unfair, v3 kannte Prüffotos); Sichtprüfung: deutlich weniger Fehlflächen auf Straße/Wiese, Fenster und Dach besser | ja (v4) |
 | 2026-11-22 | modell-flaechen-20261122-0547 (4528 Fotos) | .34/.67/.53/.24 | .34/.68/.52/.24 (fair); Sichtprüfung: gemischt – weniger Himmel als Dach, dafür Bäume als Wand | nein |
 | 2026-11-23 | modell-flaechen-20261123-0626 (5209 Fotos) | .39/.70/.55/.24 | .36/.69/.53/.25 (fair, mit Trainingsliste); Sichtprüfung: Dach deutlich sauberer und vollständiger, Wand/Fenster gleichauf | ja (v5) |
+| 2026-11-26 | Ziel Fenster von 0,55 auf 0,65 angehoben (Nutzer: Fenster gut, aber nicht perfekt) | – | – | – |
