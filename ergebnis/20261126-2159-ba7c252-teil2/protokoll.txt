@@ -1,0 +1,50 @@
+total 346836
+drwxr-xr-x 2 runner runner     4096 Nov 26 21:45 .
+drwxr-xr-x 3 runner runner     4096 Nov 26 21:58 ..
+-rw-r--r-- 1 runner runner  7854129 Nov 26 21:45 paket-001.zip
+-rw-r--r-- 1 runner runner  2093915 Nov 26 21:45 paket-002.zip
+-rw-r--r-- 1 runner runner  8752695 Nov 26 21:45 paket-003.zip
+-rw-r--r-- 1 runner runner  5503466 Nov 26 21:45 paket-004.zip
+-rw-r--r-- 1 runner runner  8687537 Nov 26 21:45 paket-005.zip
+-rw-r--r-- 1 runner runner  1503158 Nov 26 21:45 paket-006.zip
+-rw-r--r-- 1 runner runner  9153358 Nov 26 21:45 paket-007.zip
+-rw-r--r-- 1 runner runner  9246963 Nov 26 21:45 paket-008.zip
+-rw-r--r-- 1 runner runner  9226568 Nov 26 21:45 paket-009.zip
+-rw-r--r-- 1 runner runner  8582962 Nov 26 21:45 paket-010.zip
+-rw-r--r-- 1 runner runner  9579903 Nov 26 21:45 paket-011.zip
+-rw-r--r-- 1 runner runner 10899065 Nov 26 21:45 paket-012.zip
+-rw-r--r-- 1 runner runner  9290323 Nov 26 21:45 paket-013.zip
+-rw-r--r-- 1 runner runner  9353833 Nov 26 21:45 paket-014.zip
+-rw-r--r-- 1 runner runner 10082385 Nov 26 21:45 paket-015.zip
+-rw-r--r-- 1 runner runner  9166190 Nov 26 21:45 paket-016.zip
+-rw-r--r-- 1 runner runner  9229476 Nov 26 21:45 paket-017.zip
+-rw-r--r-- 1 runner runner 10489695 Nov 26 21:45 paket-018.zip
+-rw-r--r-- 1 runner runner  8105534 Nov 26 21:45 paket-019.zip
+-rw-r--r-- 1 runner runner  8506051 Nov 26 21:45 paket-020.zip
+-rw-r--r-- 1 runner runner  8450365 Nov 26 21:45 paket-021.zip
+-rw-r--r-- 1 runner runner  7795716 Nov 26 21:45 paket-022.zip
+-rw-r--r-- 1 runner runner  8780223 Nov 26 21:45 paket-023.zip
+-rw-r--r-- 1 runner runner  7677299 Nov 26 21:45 paket-024.zip
+-rw-r--r-- 1 runner runner  8451498 Nov 26 21:45 paket-025.zip
+-rw-r--r-- 1 runner runner  8990091 Nov 26 21:45 paket-026.zip
+-rw-r--r-- 1 runner runner  8678566 Nov 26 21:45 paket-027.zip
+-rw-r--r-- 1 runner runner  8602168 Nov 26 21:45 paket-028.zip
+-rw-r--r-- 1 runner runner  8541650 Nov 26 21:45 paket-029.zip
+-rw-r--r-- 1 runner runner  7708417 Nov 26 21:45 paket-030.zip
+-rw-r--r-- 1 runner runner  8558879 Nov 26 21:45 paket-031.zip
+-rw-r--r-- 1 runner runner  8414865 Nov 26 21:45 paket-032.zip
+-rw-r--r-- 1 runner runner  7470850 Nov 26 21:45 paket-033.zip
+-rw-r--r-- 1 runner runner  7140959 Nov 26 21:45 paket-034.zip
+-rw-r--r-- 1 runner runner  7668528 Nov 26 21:45 paket-035.zip
+-rw-r--r-- 1 runner runner  7034848 Nov 26 21:45 paket-036.zip
+-rw-r--r-- 1 runner runner  6655581 Nov 26 21:45 paket-037.zip
+-rw-r--r-- 1 runner runner  8035000 Nov 26 21:45 paket-038.zip
+-rw-r--r-- 1 runner runner  7942728 Nov 26 21:45 paket-039.zip
+-rw-r--r-- 1 runner runner  7522618 Nov 26 21:45 paket-040.zip
+-rw-r--r-- 1 runner runner  7299185 Nov 26 21:45 paket-041.zip
+-rw-r--r-- 1 runner runner  7298891 Nov 26 21:45 paket-042.zip
+-rw-r--r-- 1 runner runner  7288380 Nov 26 21:45 paket-043.zip
+-rw-r--r-- 1 runner runner  7760022 Nov 26 21:45 paket-044.zip
+Modelle geladen in 2 s
+Pakete: []
+FERTIG 0 Fotos in 0.0 min
