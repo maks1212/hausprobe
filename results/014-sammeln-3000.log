@@ -1,0 +1,7 @@
+Start 2026-11-26 20:57:03
+inactive
+Code: ada03ce Lehrer: 6 Rechner parallel statt 3
+3:for ziel in 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000; do
+6:  FACTOR=40 timeout 12h python3 ~/hausprobe/ml/server/mapillary_fetch.py ~/hausprobe/models ~/mapillary "$ziel" 2>&1 | grep --line-buffered -E "Kandidaten|Bereits|Paket|FERTIG|Fehler|behalten" >> $L
+Running as unit: mly-sammeln.service; invocation ID: 5d82ebfbe50a4ca09e8783c42ca7f4ef
+Sammlung gestartet
