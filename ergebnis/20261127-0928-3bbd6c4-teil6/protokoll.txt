@@ -1,0 +1,130 @@
+total 552516
+drwxr-xr-x 2 runner runner     4096 Nov 27 08:59 .
+drwxr-xr-x 3 runner runner     4096 Nov 27 09:09 ..
+-rw-r--r-- 1 runner runner  7854129 Nov 27 08:59 paket-001.zip
+-rw-r--r-- 1 runner runner  2093915 Nov 27 08:59 paket-002.zip
+-rw-r--r-- 1 runner runner  8752695 Nov 27 08:59 paket-003.zip
+-rw-r--r-- 1 runner runner  5503466 Nov 27 08:59 paket-004.zip
+-rw-r--r-- 1 runner runner  8687537 Nov 27 08:59 paket-005.zip
+-rw-r--r-- 1 runner runner  1503158 Nov 27 08:59 paket-006.zip
+-rw-r--r-- 1 runner runner  9153358 Nov 27 08:59 paket-007.zip
+-rw-r--r-- 1 runner runner  9246963 Nov 27 08:59 paket-008.zip
+-rw-r--r-- 1 runner runner  9226568 Nov 27 08:59 paket-009.zip
+-rw-r--r-- 1 runner runner  8582962 Nov 27 08:59 paket-010.zip
+-rw-r--r-- 1 runner runner  9579903 Nov 27 08:59 paket-011.zip
+-rw-r--r-- 1 runner runner 10899065 Nov 27 08:59 paket-012.zip
+-rw-r--r-- 1 runner runner  9290323 Nov 27 08:59 paket-013.zip
+-rw-r--r-- 1 runner runner  9353833 Nov 27 08:59 paket-014.zip
+-rw-r--r-- 1 runner runner 10082385 Nov 27 08:59 paket-015.zip
+-rw-r--r-- 1 runner runner  9166190 Nov 27 08:59 paket-016.zip
+-rw-r--r-- 1 runner runner  9229476 Nov 27 08:59 paket-017.zip
+-rw-r--r-- 1 runner runner 10489695 Nov 27 08:59 paket-018.zip
+-rw-r--r-- 1 runner runner  8105534 Nov 27 08:59 paket-019.zip
+-rw-r--r-- 1 runner runner  8506051 Nov 27 08:59 paket-020.zip
+-rw-r--r-- 1 runner runner  8450365 Nov 27 08:59 paket-021.zip
+-rw-r--r-- 1 runner runner  7795716 Nov 27 08:59 paket-022.zip
+-rw-r--r-- 1 runner runner  8780223 Nov 27 08:59 paket-023.zip
+-rw-r--r-- 1 runner runner  7677299 Nov 27 08:59 paket-024.zip
+-rw-r--r-- 1 runner runner  8451498 Nov 27 08:59 paket-025.zip
+-rw-r--r-- 1 runner runner  8990091 Nov 27 08:59 paket-026.zip
+-rw-r--r-- 1 runner runner  8678566 Nov 27 08:59 paket-027.zip
+-rw-r--r-- 1 runner runner  8602168 Nov 27 08:59 paket-028.zip
+-rw-r--r-- 1 runner runner  8541650 Nov 27 08:59 paket-029.zip
+-rw-r--r-- 1 runner runner  7708417 Nov 27 08:59 paket-030.zip
+-rw-r--r-- 1 runner runner  8558879 Nov 27 08:59 paket-031.zip
+-rw-r--r-- 1 runner runner  8414865 Nov 27 08:59 paket-032.zip
+-rw-r--r-- 1 runner runner  7470850 Nov 27 08:59 paket-033.zip
+-rw-r--r-- 1 runner runner  7140959 Nov 27 08:59 paket-034.zip
+-rw-r--r-- 1 runner runner  7668528 Nov 27 08:59 paket-035.zip
+-rw-r--r-- 1 runner runner  7034848 Nov 27 08:59 paket-036.zip
+-rw-r--r-- 1 runner runner  6655581 Nov 27 08:59 paket-037.zip
+-rw-r--r-- 1 runner runner  8035000 Nov 27 08:59 paket-038.zip
+-rw-r--r-- 1 runner runner  7942728 Nov 27 08:59 paket-039.zip
+-rw-r--r-- 1 runner runner  7522618 Nov 27 08:59 paket-040.zip
+-rw-r--r-- 1 runner runner  7299185 Nov 27 08:59 paket-041.zip
+-rw-r--r-- 1 runner runner  7298891 Nov 27 08:59 paket-042.zip
+-rw-r--r-- 1 runner runner  7288380 Nov 27 08:59 paket-043.zip
+-rw-r--r-- 1 runner runner  7760022 Nov 27 08:59 paket-044.zip
+-rw-r--r-- 1 runner runner  7013785 Nov 27 08:59 paket-045.zip
+-rw-r--r-- 1 runner runner  7383511 Nov 27 08:59 paket-046.zip
+-rw-r--r-- 1 runner runner  7741300 Nov 27 08:59 paket-047.zip
+-rw-r--r-- 1 runner runner  7122137 Nov 27 08:59 paket-048.zip
+-rw-r--r-- 1 runner runner  7093829 Nov 27 08:59 paket-049.zip
+-rw-r--r-- 1 runner runner  7153268 Nov 27 08:59 paket-050.zip
+-rw-r--r-- 1 runner runner  7365043 Nov 27 08:59 paket-051.zip
+-rw-r--r-- 1 runner runner  6906140 Nov 27 08:59 paket-052.zip
+-rw-r--r-- 1 runner runner  7533132 Nov 27 08:59 paket-053.zip
+-rw-r--r-- 1 runner runner  7937696 Nov 27 08:59 paket-054.zip
+-rw-r--r-- 1 runner runner  7996550 Nov 27 08:59 paket-055.zip
+-rw-r--r-- 1 runner runner  8047570 Nov 27 08:59 paket-056.zip
+-rw-r--r-- 1 runner runner  7538702 Nov 27 08:59 paket-057.zip
+-rw-r--r-- 1 runner runner  7287725 Nov 27 08:59 paket-058.zip
+-rw-r--r-- 1 runner runner  7322470 Nov 27 08:59 paket-059.zip
+-rw-r--r-- 1 runner runner  7260524 Nov 27 08:59 paket-060.zip
+-rw-r--r-- 1 runner runner  7377570 Nov 27 08:59 paket-061.zip
+-rw-r--r-- 1 runner runner  7099209 Nov 27 08:59 paket-062.zip
+-rw-r--r-- 1 runner runner  7793313 Nov 27 08:59 paket-063.zip
+-rw-r--r-- 1 runner runner  7928928 Nov 27 08:59 paket-064.zip
+-rw-r--r-- 1 runner runner  7919930 Nov 27 08:59 paket-065.zip
+-rw-r--r-- 1 runner runner  7385739 Nov 27 08:59 paket-066.zip
+-rw-r--r-- 1 runner runner  6957287 Nov 27 08:59 paket-067.zip
+-rw-r--r-- 1 runner runner  8048547 Nov 27 08:59 paket-068.zip
+-rw-r--r-- 1 runner runner  7722777 Nov 27 08:59 paket-069.zip
+-rw-r--r-- 1 runner runner  7672980 Nov 27 08:59 paket-070.zip
+-rw-r--r-- 1 runner runner  7960396 Nov 27 08:59 paket-071.zip
+-rw-r--r-- 1 runner runner  7990574 Nov 27 08:59 paket-072.zip
+Modelle geladen in 2 s
+Pakete: ['paket-069.zip']
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/transformers/models/grounding_dino/processing_grounding_dino.py:93: FutureWarning: The key `labels` is will return integer ids in `GroundingDinoProcessor.post_process_grounded_object_detection` output since v4.51.0. Use `text_labels` instead to retrieve string object names.
+  warnings.warn(self.message, FutureWarning)
+1 mly146991820774358 18.0 s {'roof': 0.011, 'wall': 0.119, 'window': 0.019, 'door': 0.0}
+2 mly1199610363797937 21.6 s {'roof': 0.028, 'wall': 0.129, 'window': 0.031, 'door': 0.009}
+3 mly1105050617397136 21.6 s {'roof': 0.019, 'wall': 0.06, 'window': 0.005, 'door': 0.017}
+4 mly937359367031208 20.5 s {'roof': 0.0, 'wall': 0.134, 'window': 0.037, 'door': 0.0}
+5 mly573961913570975 7.8 s kein Haus
+6 mly1731208500398590 21.1 s {'roof': 0.0, 'wall': 0.181, 'window': 0.026, 'door': 0.0}
+7 mly4314113165317745 22.3 s {'roof': 0.016, 'wall': 0.437, 'window': 0.053, 'door': 0.004}
+8 mly1934968750328348 20.2 s {'roof': 0.0, 'wall': 0.074, 'window': 0.004, 'door': 0.0}
+9 mly313495170165146 23.3 s {'roof': 0.0, 'wall': 0.188, 'window': 0.036, 'door': 0.0}
+10 mly211257460479380 20.9 s {'roof': 0.017, 'wall': 0.21, 'window': 0.007, 'door': 0.0}
+11 mly4338059116484633 22.1 s {'roof': 0.0, 'wall': 0.139, 'window': 0.085, 'door': 0.0}
+12 mly1004802670667767 20.4 s {'roof': 0.141, 'wall': 0.02, 'window': 0.003, 'door': 0.0}
+13 mly272880707620527 21.9 s {'roof': 0.222, 'wall': 0.162, 'window': 0.039, 'door': 0.003}
+14 mly1414433275585278 21.3 s {'roof': 0.0, 'wall': 0.107, 'window': 0.023, 'door': 0.0}
+15 mly208968877511014 21.8 s {'roof': 0.008, 'wall': 0.216, 'window': 0.033, 'door': 0.019}
+16 mly582652818097024 23.5 s {'roof': 0.009, 'wall': 0.464, 'window': 0.091, 'door': 0.021}
+17 mly1678367253170591 23.3 s {'roof': 0.0, 'wall': 0.219, 'window': 0.097, 'door': 0.0}
+18 mly153666443296798 19.9 s {'roof': 0.0, 'wall': 0.308, 'window': 0.021, 'door': 0.0}
+19 mly5708100849207779 21.6 s {'roof': 0.004, 'wall': 0.105, 'window': 0.019, 'door': 0.0}
+20 mly161281739247692 22.7 s {'roof': 0.0, 'wall': 0.252, 'window': 0.04, 'door': 0.005}
+21 mly538550480866640 21.0 s {'roof': 0.0, 'wall': 0.357, 'window': 0.052, 'door': 0.0}
+22 mly147444004002854 23.8 s {'roof': 0.0, 'wall': 0.227, 'window': 0.043, 'door': 0.0}
+23 mly1543854946584084 24.8 s {'roof': 0.0, 'wall': 0.159, 'window': 0.041, 'door': 0.0}
+24 mly377055327020314 21.4 s {'roof': 0.037, 'wall': 0.356, 'window': 0.041, 'door': 0.002}
+25 mly710338928476472 22.8 s {'roof': 0.005, 'wall': 0.177, 'window': 0.014, 'door': 0.009}
+26 mly1800536264720623 19.1 s {'roof': 0.002, 'wall': 0.073, 'window': 0.017, 'door': 0.008}
+27 mly1414407795565432 20.6 s {'roof': 0.061, 'wall': 0.115, 'window': 0.034, 'door': 0.0}
+28 mly384689692867582 21.6 s {'roof': 0.0, 'wall': 0.296, 'window': 0.056, 'door': 0.011}
+29 mly1272971367540836 22.4 s {'roof': 0.009, 'wall': 0.218, 'window': 0.041, 'door': 0.005}
+30 mly1171916430718208 20.0 s {'roof': 0.0, 'wall': 0.212, 'window': 0.016, 'door': 0.013}
+31 mly1081755382889069 22.4 s {'roof': 0.0, 'wall': 0.418, 'window': 0.105, 'door': 0.034}
+32 mly490924858655713 23.6 s {'roof': 0.0, 'wall': 0.278, 'window': 0.062, 'door': 0.014}
+33 mly178159850866860 21.4 s {'roof': 0.0, 'wall': 0.277, 'window': 0.03, 'door': 0.0}
+34 mly305449211091839 25.4 s {'roof': 0.0, 'wall': 0.27, 'window': 0.092, 'door': 0.0}
+35 mly1050674430529857 21.2 s {'roof': 0.0, 'wall': 0.193, 'window': 0.026, 'door': 0.014}
+36 mly701546025410445 21.5 s {'roof': 0.002, 'wall': 0.285, 'window': 0.041, 'door': 0.0}
+37 mly915818362605232 20.7 s {'roof': 0.0, 'wall': 0.238, 'window': 0.019, 'door': 0.024}
+38 mly1503668240629926 20.5 s {'roof': 0.0, 'wall': 0.05, 'window': 0.055, 'door': 0.0}
+39 mly212817823729608 20.5 s {'roof': 0.011, 'wall': 0.137, 'window': 0.006, 'door': 0.0}
+40 mly8903461339761201 23.2 s {'roof': 0.01, 'wall': 0.183, 'window': 0.023, 'door': 0.0}
+41 mly163647925665957 21.6 s {'roof': 0.013, 'wall': 0.114, 'window': 0.036, 'door': 0.0}
+42 mly795621844430780 22.3 s {'roof': 0.0, 'wall': 0.272, 'window': 0.033, 'door': 0.0}
+43 mly767890647218899 20.1 s {'roof': 0.0, 'wall': 0.046, 'window': 0.006, 'door': 0.0}
+44 mly312102050299356 23.7 s {'roof': 0.0, 'wall': 0.195, 'window': 0.055, 'door': 0.0}
+45 mly707853011294565 21.2 s {'roof': 0.02, 'wall': 0.114, 'window': 0.012, 'door': 0.003}
+46 mly1565728577747857 21.7 s {'roof': 0.022, 'wall': 0.301, 'window': 0.087, 'door': 0.002}
+47 mly1296239645339150 23.1 s {'roof': 0.014, 'wall': 0.138, 'window': 0.019, 'door': 0.006}
+48 mly1138150566684655 21.3 s {'roof': 0.033, 'wall': 0.101, 'window': 0.048, 'door': 0.004}
+49 mly175607694425022 21.0 s {'roof': 0.012, 'wall': 0.012, 'window': 0.051, 'door': 0.0}
+50 mly167626098495578 21.9 s {'roof': 0.0, 'wall': 0.143, 'window': 0.032, 'door': 0.0}
+FERTIG 50 Fotos in 17.9 min
