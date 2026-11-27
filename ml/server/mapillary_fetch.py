@@ -17,7 +17,15 @@ REG=json.load(open(sys.argv[4])) if len(sys.argv)>4 else {
   'Wien Rand':[16.40,48.24,16.52,48.31],'St. Pölten':[15.58,48.17,15.67,48.22],'Klagenfurt':[14.25,46.60,14.36,46.65],
   'Rosenheim':[12.05,47.83,12.16,47.88],'Passau':[13.40,48.55,13.49,48.59],'Augsburg Umland':[10.82,48.31,10.95,48.40],
   'Freiburg Umland':[7.78,47.96,7.90,48.02],'Winterthur':[8.68,47.48,8.79,47.53],'St. Gallen':[9.33,47.40,9.43,47.44],
-  'Luzern Umland':[8.25,47.02,8.36,47.08]}
+  'Luzern Umland':[8.25,47.02,8.36,47.08],
+  # Erweiterung für 10.000 Fotos (2026-11-27)
+  'Regensburg Umland':[12.02,48.98,12.16,49.05],'Landshut':[12.10,48.51,12.20,48.56],'Ingolstadt':[11.36,48.73,11.48,48.79],
+  'Ulm Umland':[9.93,48.37,10.05,48.43],'Kempten':[10.27,47.70,10.35,47.75],'Würzburg Umland':[9.87,49.75,10.00,49.81],
+  'Nürnberg Rand':[10.98,49.40,11.12,49.47],'München Rand':[11.42,48.08,11.56,48.14],'Stuttgart Umland':[9.05,48.68,9.20,48.75],
+  'Konstanz':[9.12,47.65,9.20,47.70],'Bregenz Dornbirn':[9.70,47.39,9.78,47.50],'Feldkirch':[9.57,47.21,9.64,47.26],
+  'Villach':[13.80,46.59,13.89,46.64],'Wiener Neustadt':[16.20,47.79,16.28,47.84],'Krems':[15.57,48.39,15.65,48.43],
+  'Leoben':[15.06,47.36,15.13,47.40],'Bern Umland':[7.38,46.92,7.50,46.98],'Zürich Umland':[8.45,47.33,8.60,47.43],
+  'Aarau Olten':[7.88,47.34,8.06,47.40],'Basel Umland':[7.55,47.50,7.68,47.56]}
 TH=int(os.environ.get('THREADS',str(os.cpu_count() or 2)));random.seed(int(os.environ.get('SEED',str(int(time.time())))))
 FACTOR=int(os.environ.get('FACTOR','25'))   # so viele Kandidaten je gewünschtem Foto suchen (behalten wird etwa jedes 20.)
 UA='Hausprobe-Trainingsdaten/1.0'

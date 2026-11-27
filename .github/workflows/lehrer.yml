@@ -36,9 +36,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        teil: [0, 1, 2, 3, 4, 5]
+        teil: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     env:
-      TEILE: 6
+      TEILE: 12
       TEIL: ${{ matrix.teil }}
     steps:
       - uses: actions/checkout@v4
