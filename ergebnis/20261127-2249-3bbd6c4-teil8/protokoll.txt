@@ -1,0 +1,265 @@
+total 806368
+drwxr-xr-x 2 runner runner     4096 Nov 27 21:04 .
+drwxr-xr-x 3 runner runner     4096 Nov 27 21:45 ..
+-rw-r--r-- 1 runner runner  7854129 Nov 27 21:04 paket-001.zip
+-rw-r--r-- 1 runner runner  2093915 Nov 27 21:04 paket-002.zip
+-rw-r--r-- 1 runner runner  8752695 Nov 27 21:04 paket-003.zip
+-rw-r--r-- 1 runner runner  5503466 Nov 27 21:04 paket-004.zip
+-rw-r--r-- 1 runner runner  8687537 Nov 27 21:04 paket-005.zip
+-rw-r--r-- 1 runner runner  1503158 Nov 27 21:04 paket-006.zip
+-rw-r--r-- 1 runner runner  9153358 Nov 27 21:04 paket-007.zip
+-rw-r--r-- 1 runner runner  9246963 Nov 27 21:04 paket-008.zip
+-rw-r--r-- 1 runner runner  9226568 Nov 27 21:04 paket-009.zip
+-rw-r--r-- 1 runner runner  8582962 Nov 27 21:04 paket-010.zip
+-rw-r--r-- 1 runner runner  9579903 Nov 27 21:04 paket-011.zip
+-rw-r--r-- 1 runner runner 10899065 Nov 27 21:04 paket-012.zip
+-rw-r--r-- 1 runner runner  9290323 Nov 27 21:04 paket-013.zip
+-rw-r--r-- 1 runner runner  9353833 Nov 27 21:04 paket-014.zip
+-rw-r--r-- 1 runner runner 10082385 Nov 27 21:04 paket-015.zip
+-rw-r--r-- 1 runner runner  9166190 Nov 27 21:04 paket-016.zip
+-rw-r--r-- 1 runner runner  9229476 Nov 27 21:04 paket-017.zip
+-rw-r--r-- 1 runner runner 10489695 Nov 27 21:04 paket-018.zip
+-rw-r--r-- 1 runner runner  8105534 Nov 27 21:04 paket-019.zip
+-rw-r--r-- 1 runner runner  8506051 Nov 27 21:04 paket-020.zip
+-rw-r--r-- 1 runner runner  8450365 Nov 27 21:04 paket-021.zip
+-rw-r--r-- 1 runner runner  7795716 Nov 27 21:04 paket-022.zip
+-rw-r--r-- 1 runner runner  8780223 Nov 27 21:04 paket-023.zip
+-rw-r--r-- 1 runner runner  7677299 Nov 27 21:04 paket-024.zip
+-rw-r--r-- 1 runner runner  8451498 Nov 27 21:04 paket-025.zip
+-rw-r--r-- 1 runner runner  8990091 Nov 27 21:04 paket-026.zip
+-rw-r--r-- 1 runner runner  8678566 Nov 27 21:04 paket-027.zip
+-rw-r--r-- 1 runner runner  8602168 Nov 27 21:04 paket-028.zip
+-rw-r--r-- 1 runner runner  8541650 Nov 27 21:04 paket-029.zip
+-rw-r--r-- 1 runner runner  7708417 Nov 27 21:04 paket-030.zip
+-rw-r--r-- 1 runner runner  8558879 Nov 27 21:04 paket-031.zip
+-rw-r--r-- 1 runner runner  8414865 Nov 27 21:04 paket-032.zip
+-rw-r--r-- 1 runner runner  7470850 Nov 27 21:04 paket-033.zip
+-rw-r--r-- 1 runner runner  7140959 Nov 27 21:04 paket-034.zip
+-rw-r--r-- 1 runner runner  7668528 Nov 27 21:04 paket-035.zip
+-rw-r--r-- 1 runner runner  7034848 Nov 27 21:04 paket-036.zip
+-rw-r--r-- 1 runner runner  6655581 Nov 27 21:04 paket-037.zip
+-rw-r--r-- 1 runner runner  8035000 Nov 27 21:04 paket-038.zip
+-rw-r--r-- 1 runner runner  7942728 Nov 27 21:04 paket-039.zip
+-rw-r--r-- 1 runner runner  7522618 Nov 27 21:04 paket-040.zip
+-rw-r--r-- 1 runner runner  7299185 Nov 27 21:04 paket-041.zip
+-rw-r--r-- 1 runner runner  7298891 Nov 27 21:04 paket-042.zip
+-rw-r--r-- 1 runner runner  7288380 Nov 27 21:04 paket-043.zip
+-rw-r--r-- 1 runner runner  7760022 Nov 27 21:04 paket-044.zip
+-rw-r--r-- 1 runner runner  7013785 Nov 27 21:04 paket-045.zip
+-rw-r--r-- 1 runner runner  7383511 Nov 27 21:04 paket-046.zip
+-rw-r--r-- 1 runner runner  7741300 Nov 27 21:04 paket-047.zip
+-rw-r--r-- 1 runner runner  7122137 Nov 27 21:04 paket-048.zip
+-rw-r--r-- 1 runner runner  7093829 Nov 27 21:04 paket-049.zip
+-rw-r--r-- 1 runner runner  7153268 Nov 27 21:04 paket-050.zip
+-rw-r--r-- 1 runner runner  7365043 Nov 27 21:04 paket-051.zip
+-rw-r--r-- 1 runner runner  6906140 Nov 27 21:04 paket-052.zip
+-rw-r--r-- 1 runner runner  7533132 Nov 27 21:04 paket-053.zip
+-rw-r--r-- 1 runner runner  7937696 Nov 27 21:04 paket-054.zip
+-rw-r--r-- 1 runner runner  7996550 Nov 27 21:04 paket-055.zip
+-rw-r--r-- 1 runner runner  8047570 Nov 27 21:04 paket-056.zip
+-rw-r--r-- 1 runner runner  7538702 Nov 27 21:04 paket-057.zip
+-rw-r--r-- 1 runner runner  7287725 Nov 27 21:04 paket-058.zip
+-rw-r--r-- 1 runner runner  7322470 Nov 27 21:04 paket-059.zip
+-rw-r--r-- 1 runner runner  7260524 Nov 27 21:04 paket-060.zip
+-rw-r--r-- 1 runner runner  7377570 Nov 27 21:04 paket-061.zip
+-rw-r--r-- 1 runner runner  7099209 Nov 27 21:04 paket-062.zip
+-rw-r--r-- 1 runner runner  7793313 Nov 27 21:04 paket-063.zip
+-rw-r--r-- 1 runner runner  7928928 Nov 27 21:04 paket-064.zip
+-rw-r--r-- 1 runner runner  7919930 Nov 27 21:04 paket-065.zip
+-rw-r--r-- 1 runner runner  7385739 Nov 27 21:04 paket-066.zip
+-rw-r--r-- 1 runner runner  6957287 Nov 27 21:04 paket-067.zip
+-rw-r--r-- 1 runner runner  8048547 Nov 27 21:04 paket-068.zip
+-rw-r--r-- 1 runner runner  7722777 Nov 27 21:04 paket-069.zip
+-rw-r--r-- 1 runner runner  7672980 Nov 27 21:04 paket-070.zip
+-rw-r--r-- 1 runner runner  7960396 Nov 27 21:04 paket-071.zip
+-rw-r--r-- 1 runner runner  7990574 Nov 27 21:04 paket-072.zip
+-rw-r--r-- 1 runner runner  7218343 Nov 27 21:04 paket-073.zip
+-rw-r--r-- 1 runner runner  7013391 Nov 27 21:04 paket-074.zip
+-rw-r--r-- 1 runner runner  7739499 Nov 27 21:04 paket-075.zip
+-rw-r--r-- 1 runner runner  7579240 Nov 27 21:04 paket-076.zip
+-rw-r--r-- 1 runner runner  7457624 Nov 27 21:04 paket-077.zip
+-rw-r--r-- 1 runner runner  7988007 Nov 27 21:04 paket-078.zip
+-rw-r--r-- 1 runner runner  7673674 Nov 27 21:04 paket-079.zip
+-rw-r--r-- 1 runner runner  7579687 Nov 27 21:04 paket-080.zip
+-rw-r--r-- 1 runner runner  7393614 Nov 27 21:04 paket-081.zip
+-rw-r--r-- 1 runner runner  7404140 Nov 27 21:04 paket-082.zip
+-rw-r--r-- 1 runner runner  7431522 Nov 27 21:04 paket-083.zip
+-rw-r--r-- 1 runner runner  7955221 Nov 27 21:04 paket-084.zip
+-rw-r--r-- 1 runner runner  7311021 Nov 27 21:04 paket-085.zip
+-rw-r--r-- 1 runner runner  7311535 Nov 27 21:04 paket-086.zip
+-rw-r--r-- 1 runner runner  7368883 Nov 27 21:04 paket-087.zip
+-rw-r--r-- 1 runner runner  7163525 Nov 27 21:04 paket-088.zip
+-rw-r--r-- 1 runner runner  7064808 Nov 27 21:04 paket-089.zip
+-rw-r--r-- 1 runner runner  7086944 Nov 27 21:04 paket-090.zip
+-rw-r--r-- 1 runner runner  6793083 Nov 27 21:04 paket-091.zip
+-rw-r--r-- 1 runner runner  7783546 Nov 27 21:04 paket-092.zip
+-rw-r--r-- 1 runner runner  7081930 Nov 27 21:04 paket-093.zip
+-rw-r--r-- 1 runner runner  6522591 Nov 27 21:04 paket-094.zip
+-rw-r--r-- 1 runner runner  7093301 Nov 27 21:04 paket-095.zip
+-rw-r--r-- 1 runner runner  7941652 Nov 27 21:04 paket-096.zip
+-rw-r--r-- 1 runner runner  6876464 Nov 27 21:04 paket-097.zip
+-rw-r--r-- 1 runner runner  7683985 Nov 27 21:04 paket-098.zip
+-rw-r--r-- 1 runner runner  7615114 Nov 27 21:04 paket-099.zip
+-rw-r--r-- 1 runner runner  7890787 Nov 27 21:04 paket-100.zip
+-rw-r--r-- 1 runner runner  7733648 Nov 27 21:04 paket-101.zip
+-rw-r--r-- 1 runner runner  7882956 Nov 27 21:04 paket-102.zip
+-rw-r--r-- 1 runner runner  7423639 Nov 27 21:04 paket-103.zip
+-rw-r--r-- 1 runner runner  7164457 Nov 27 21:04 paket-104.zip
+-rw-r--r-- 1 runner runner  7443136 Nov 27 21:04 paket-105.zip
+-rw-r--r-- 1 runner runner  7908761 Nov 27 21:04 paket-106.zip
+-rw-r--r-- 1 runner runner  7289523 Nov 27 21:04 paket-107.zip
+Modelle geladen in 1 s
+Pakete: ['paket-081.zip', 'paket-093.zip', 'paket-105.zip']
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/transformers/models/grounding_dino/processing_grounding_dino.py:93: FutureWarning: The key `labels` is will return integer ids in `GroundingDinoProcessor.post_process_grounded_object_detection` output since v4.51.0. Use `text_labels` instead to retrieve string object names.
+  warnings.warn(self.message, FutureWarning)
+1 mly762589286089948 25.8 s {'roof': 0.009, 'wall': 0.156, 'window': 0.017, 'door': 0.0}
+2 mly4485720418415045 23.3 s {'roof': 0.003, 'wall': 0.293, 'window': 0.062, 'door': 0.036}
+3 mly847843350648056 26.4 s {'roof': 0.007, 'wall': 0.321, 'window': 0.075, 'door': 0.014}
+4 mly274561154101736 28.3 s {'roof': 0.02, 'wall': 0.321, 'window': 0.038, 'door': 0.022}
+5 mly325267705607454 23.9 s {'roof': 0.024, 'wall': 0.149, 'window': 0.007, 'door': 0.0}
+6 mly1999465530688421 25.3 s {'roof': 0.0, 'wall': 0.198, 'window': 0.024, 'door': 0.0}
+7 mly775672993087307 23.9 s {'roof': 0.007, 'wall': 0.123, 'window': 0.006, 'door': 0.0}
+8 mly1539397910726616 25.4 s {'roof': 0.004, 'wall': 0.07, 'window': 0.007, 'door': 0.0}
+9 mly1406603096462920 24.9 s {'roof': 0.0, 'wall': 0.158, 'window': 0.067, 'door': 0.0}
+10 mly487716238941609 23.9 s {'roof': 0.0, 'wall': 0.446, 'window': 0.032, 'door': 0.047}
+11 mly2807139216264556 24.3 s {'roof': 0.0, 'wall': 0.007, 'window': 0.006, 'door': 0.0}
+12 mly168419225559048 26.6 s {'roof': 0.008, 'wall': 0.169, 'window': 0.081, 'door': 0.0}
+13 mly474470847094070 24.0 s {'roof': 0.0, 'wall': 0.886, 'window': 0.001, 'door': 0.073}
+14 mly797202411217214 22.5 s {'roof': 0.0, 'wall': 0.266, 'window': 0.083, 'door': 0.029}
+15 mly1043133680599922 24.1 s {'roof': 0.022, 'wall': 0.289, 'window': 0.01, 'door': 0.059}
+16 mly494179021772573 22.3 s {'roof': 0.0, 'wall': 0.369, 'window': 0.024, 'door': 0.0}
+17 mly494189645060388 23.7 s {'roof': 0.058, 'wall': 0.108, 'window': 0.021, 'door': 0.027}
+18 mly1031043540794819 25.0 s {'roof': 0.011, 'wall': 0.17, 'window': 0.037, 'door': 0.002}
+19 mly1367396240689675 27.8 s {'roof': 0.0, 'wall': 0.342, 'window': 0.078, 'door': 0.011}
+20 mly1170206347716954 26.1 s {'roof': 0.001, 'wall': 0.227, 'window': 0.04, 'door': 0.01}
+21 mly1782074961967048 23.9 s {'roof': 0.007, 'wall': 0.258, 'window': 0.012, 'door': 0.033}
+22 mly768302958583151 22.5 s {'roof': 0.0, 'wall': 0.131, 'window': 0.042, 'door': 0.0}
+23 mly218461459650031 24.2 s {'roof': 0.017, 'wall': 0.107, 'window': 0.026, 'door': 0.0}
+24 mly1943709359584414 24.5 s {'roof': 0.0, 'wall': 0.357, 'window': 0.014, 'door': 0.01}
+25 mly1004316550104681 25.9 s {'roof': 0.01, 'wall': 0.325, 'window': 0.061, 'door': 0.023}
+26 mly502105357604430 23.8 s {'roof': 0.0, 'wall': 0.226, 'window': 0.025, 'door': 0.0}
+27 mly2934102890152024 27.0 s {'roof': 0.008, 'wall': 0.463, 'window': 0.052, 'door': 0.003}
+28 mly765238314141536 25.5 s {'roof': 0.021, 'wall': 0.575, 'window': 0.054, 'door': 0.013}
+29 mly776777853210566 29.6 s {'roof': 0.0, 'wall': 0.236, 'window': 0.056, 'door': 0.0}
+30 mly166892105348264 25.4 s {'roof': 0.003, 'wall': 0.289, 'window': 0.029, 'door': 0.01}
+31 mly459889748613037 22.3 s {'roof': 0.0, 'wall': 0.245, 'window': 0.003, 'door': 0.032}
+32 mly180215027329427 26.8 s {'roof': 0.0, 'wall': 0.104, 'window': 0.02, 'door': 0.0}
+33 mly294410142225183 25.1 s {'roof': 0.0, 'wall': 0.25, 'window': 0.037, 'door': 0.012}
+34 mly824104918506672 24.5 s {'roof': 0.031, 'wall': 0.258, 'window': 0.036, 'door': 0.0}
+35 mly1372824713098416 26.2 s {'roof': 0.019, 'wall': 0.264, 'window': 0.054, 'door': 0.011}
+36 mly294123265655655 26.4 s {'roof': 0.032, 'wall': 0.189, 'window': 0.023, 'door': 0.018}
+37 mly164556512338715 26.2 s {'roof': 0.022, 'wall': 0.134, 'window': 0.011, 'door': 0.003}
+38 mly453584849080499 25.4 s {'roof': 0.002, 'wall': 0.223, 'window': 0.005, 'door': 0.0}
+39 mly872903573330818 25.1 s {'roof': 0.009, 'wall': 0.365, 'window': 0.131, 'door': 0.035}
+40 mly1691052592226113 22.9 s {'roof': 0.031, 'wall': 0.309, 'window': 0.003, 'door': 0.0}
+41 mly305712017626719 26.0 s {'roof': 0.048, 'wall': 0.108, 'window': 0.013, 'door': 0.0}
+42 mly704205458415973 24.2 s {'roof': 0.018, 'wall': 0.214, 'window': 0.067, 'door': 0.002}
+43 mly372285874201681 25.0 s {'roof': 0.0, 'wall': 0.434, 'window': 0.05, 'door': 0.05}
+44 mly294251702251745 22.9 s {'roof': 0.009, 'wall': 0.097, 'window': 0.014, 'door': 0.0}
+45 mly298240115275995 24.4 s {'roof': 0.033, 'wall': 0.174, 'window': 0.012, 'door': 0.014}
+46 mly798886878426436 24.0 s {'roof': 0.0, 'wall': 0.178, 'window': 0.018, 'door': 0.0}
+47 mly730828267588187 24.2 s {'roof': 0.0, 'wall': 0.166, 'window': 0.05, 'door': 0.04}
+48 mly2143528363090038 24.2 s {'roof': 0.005, 'wall': 0.143, 'window': 0.053, 'door': 0.0}
+49 mly2292448231282027 25.7 s {'roof': 0.0, 'wall': 0.049, 'window': 0.013, 'door': 0.0}
+50 mly566250541006929 24.9 s {'roof': 0.0, 'wall': 0.188, 'window': 0.027, 'door': 0.0}
+51 mly1061615797748477 23.4 s {'roof': 0.0, 'wall': 0.294, 'window': 0.049, 'door': 0.0}
+52 mly731939274831311 24.4 s {'roof': 0.0, 'wall': 0.183, 'window': 0.056, 'door': 0.0}
+53 mly25214776541500755 26.7 s {'roof': 0.022, 'wall': 0.154, 'window': 0.009, 'door': 0.003}
+54 mly1823052448219090 25.1 s {'roof': 0.0, 'wall': 0.154, 'window': 0.067, 'door': 0.0}
+55 mly938851659024496 26.5 s {'roof': 0.003, 'wall': 0.102, 'window': 0.029, 'door': 0.007}
+56 mly627890522972734 26.1 s {'roof': 0.022, 'wall': 0.129, 'window': 0.025, 'door': 0.0}
+57 mly136084265888872 26.6 s {'roof': 0.014, 'wall': 0.272, 'window': 0.073, 'door': 0.0}
+58 mly485557212661285 26.0 s {'roof': 0.0, 'wall': 0.456, 'window': 0.054, 'door': 0.018}
+59 mly1180934802341943 26.0 s {'roof': 0.004, 'wall': 0.247, 'window': 0.04, 'door': 0.013}
+60 mly1128470964323492 28.6 s {'roof': 0.002, 'wall': 0.184, 'window': 0.045, 'door': 0.0}
+61 mly3893430004027610 27.1 s {'roof': 0.005, 'wall': 0.233, 'window': 0.047, 'door': 0.01}
+62 mly4067521619937070 25.7 s {'roof': 0.0, 'wall': 0.113, 'window': 0.039, 'door': 0.0}
+63 mly4476717959090825 26.4 s {'roof': 0.011, 'wall': 0.118, 'window': 0.021, 'door': 0.02}
+64 mly478776556667243 26.5 s {'roof': 0.0, 'wall': 0.398, 'window': 0.158, 'door': 0.007}
+65 mly3365399500448461 26.1 s {'roof': 0.043, 'wall': 0.152, 'window': 0.017, 'door': 0.0}
+66 mly473930143691727 24.9 s {'roof': 0.0, 'wall': 0.108, 'window': 0.018, 'door': 0.0}
+67 mly998633604002445 29.3 s {'roof': 0.0, 'wall': 0.43, 'window': 0.055, 'door': 0.016}
+68 mly4154588457896391 26.9 s {'roof': 0.018, 'wall': 0.53, 'window': 0.036, 'door': 0.008}
+69 mly1548257133161124 26.0 s {'roof': 0.005, 'wall': 0.171, 'window': 0.016, 'door': 0.0}
+70 mly247228980513420 24.8 s {'roof': 0.0, 'wall': 0.141, 'window': 0.026, 'door': 0.0}
+71 mly1102658147510949 25.2 s {'roof': 0.0, 'wall': 0.162, 'window': 0.027, 'door': 0.0}
+72 mly788362135925025 26.9 s {'roof': 0.025, 'wall': 0.128, 'window': 0.034, 'door': 0.003}
+73 mly472993410427401 27.1 s {'roof': 0.002, 'wall': 0.319, 'window': 0.076, 'door': 0.004}
+74 mly1888288984952787 25.7 s {'roof': 0.003, 'wall': 0.141, 'window': 0.024, 'door': 0.015}
+75 mly494098101635680 25.5 s {'roof': 0.0, 'wall': 0.272, 'window': 0.048, 'door': 0.029}
+76 mly1083617928827234 25.3 s {'roof': 0.025, 'wall': 0.399, 'window': 0.035, 'door': 0.0}
+77 mly1517742095801193 27.1 s {'roof': 0.077, 'wall': 0.202, 'window': 0.037, 'door': 0.0}
+78 mly212660463776162 28.0 s {'roof': 0.008, 'wall': 0.4, 'window': 0.085, 'door': 0.0}
+79 mly1104969571606008 24.6 s {'roof': 0.0, 'wall': 0.05, 'window': 0.084, 'door': 0.0}
+80 mly4230219213669150 24.7 s {'roof': 0.005, 'wall': 0.117, 'window': 0.009, 'door': 0.0}
+81 mly3555141868043775 25.7 s {'roof': 0.0, 'wall': 0.299, 'window': 0.04, 'door': 0.02}
+82 mly297167155452627 9.6 s kein Haus
+83 mly486449029228430 26.8 s {'roof': 0.0, 'wall': 0.376, 'window': 0.06, 'door': 0.009}
+84 mly586909584128340 26.0 s {'roof': 0.024, 'wall': 0.269, 'window': 0.051, 'door': 0.005}
+85 mly311892910423046 24.1 s {'roof': 0.03, 'wall': 0.074, 'window': 0.015, 'door': 0.0}
+86 mly988699553052703 23.6 s {'roof': 0.0, 'wall': 0.112, 'window': 0.008, 'door': 0.0}
+87 mly121352834015579 25.6 s {'roof': 0.006, 'wall': 0.219, 'window': 0.018, 'door': 0.005}
+88 mly465286634579842 8.5 s kein Haus
+89 mly747703509235437 27.6 s {'roof': 0.011, 'wall': 0.211, 'window': 0.034, 'door': 0.014}
+90 mly1920136585140543 24.8 s {'roof': 0.004, 'wall': 0.471, 'window': 0.076, 'door': 0.0}
+91 mly932130860912999 25.4 s {'roof': 0.014, 'wall': 0.183, 'window': 0.081, 'door': 0.036}
+92 mly559290975059142 25.9 s {'roof': 0.0, 'wall': 0.426, 'window': 0.021, 'door': 0.076}
+93 mly1911182735997505 24.5 s {'roof': 0.0, 'wall': 0.411, 'window': 0.044, 'door': 0.0}
+94 mly1398962847134709 23.9 s {'roof': 0.013, 'wall': 0.16, 'window': 0.005, 'door': 0.0}
+95 mly286515476456006 25.8 s {'roof': 0.038, 'wall': 0.26, 'window': 0.034, 'door': 0.004}
+96 mly261606918987895 25.8 s {'roof': 0.008, 'wall': 0.158, 'window': 0.017, 'door': 0.0}
+97 mly1098447540667216 25.1 s {'roof': 0.0, 'wall': 0.075, 'window': 0.008, 'door': 0.0}
+98 mly4013717002046676 26.0 s {'roof': 0.03, 'wall': 0.108, 'window': 0.025, 'door': 0.005}
+99 mly426715947056045 23.8 s {'roof': 0.0, 'wall': 0.02, 'window': 0.001, 'door': 0.0}
+100 mly613033003275433 24.3 s {'roof': 0.063, 'wall': 0.188, 'window': 0.005, 'door': 0.0}
+101 mly186239263893959 27.3 s {'roof': 0.086, 'wall': 0.138, 'window': 0.022, 'door': 0.0}
+102 mly163465805594064 25.6 s {'roof': 0.015, 'wall': 0.026, 'window': 0.012, 'door': 0.003}
+103 mly29117225044556253 21.5 s {'roof': 0.0, 'wall': 0.107, 'window': 0.03, 'door': 0.0}
+104 mly1004943923576846 8.7 s kein Haus
+105 mly2740199279626225 25.2 s {'roof': 0.0, 'wall': 0.143, 'window': 0.028, 'door': 0.0}
+106 mly1041101240635084 24.2 s {'roof': 0.011, 'wall': 0.202, 'window': 0.03, 'door': 0.0}
+107 mly208768174345383 24.3 s {'roof': 0.0, 'wall': 0.124, 'window': 0.006, 'door': 0.0}
+108 mly149080950554974 26.5 s {'roof': 0.032, 'wall': 0.232, 'window': 0.052, 'door': 0.006}
+109 mly1508076710189351 26.6 s {'roof': 0.0, 'wall': 0.218, 'window': 0.017, 'door': 0.012}
+110 mly1038615065050453 26.3 s {'roof': 0.036, 'wall': 0.165, 'window': 0.016, 'door': 0.004}
+111 mly2801238423525113 25.8 s {'roof': 0.019, 'wall': 0.162, 'window': 0.043, 'door': 0.0}
+112 mly136428875519728 23.4 s {'roof': 0.0, 'wall': 0.238, 'window': 0.0, 'door': 0.0}
+113 mly311224260395208 24.2 s {'roof': 0.0, 'wall': 0.264, 'window': 0.01, 'door': 0.0}
+114 mly616352406423916 25.0 s {'roof': 0.0, 'wall': 0.125, 'window': 0.007, 'door': 0.0}
+115 mly462352421699575 24.5 s {'roof': 0.004, 'wall': 0.278, 'window': 0.012, 'door': 0.0}
+116 mly2911941219094103 24.6 s {'roof': 0.029, 'wall': 0.153, 'window': 0.017, 'door': 0.02}
+117 mly189396889685497 26.1 s {'roof': 0.0, 'wall': 0.254, 'window': 0.03, 'door': 0.0}
+118 mly1997706573959680 25.4 s {'roof': 0.017, 'wall': 0.137, 'window': 0.012, 'door': 0.0}
+119 mly4505506889479134 26.6 s {'roof': 0.031, 'wall': 0.129, 'window': 0.031, 'door': 0.004}
+120 mly270378811908879 27.1 s {'roof': 0.021, 'wall': 0.24, 'window': 0.03, 'door': 0.003}
+121 mly2517283765358204 28.0 s {'roof': 0.0, 'wall': 0.158, 'window': 0.044, 'door': 0.002}
+122 mly195922419034774 26.4 s {'roof': 0.0, 'wall': 0.177, 'window': 0.058, 'door': 0.0}
+123 mly447583098220243 26.4 s {'roof': 0.0, 'wall': 0.123, 'window': 0.089, 'door': 0.005}
+124 mly3055750371329259 29.2 s {'roof': 0.0, 'wall': 0.345, 'window': 0.067, 'door': 0.0}
+125 mly1370730126659185 25.5 s {'roof': 0.0, 'wall': 0.193, 'window': 0.171, 'door': 0.051}
+126 mly535820440917472 25.1 s {'roof': 0.035, 'wall': 0.175, 'window': 0.016, 'door': 0.0}
+127 mly1305996614576779 22.0 s {'roof': 0.043, 'wall': 0.361, 'window': 0.035, 'door': 0.077}
+128 mly3989548057776623 25.8 s {'roof': 0.037, 'wall': 0.269, 'window': 0.039, 'door': 0.0}
+129 mly831815190763048 26.2 s {'roof': 0.078, 'wall': 0.292, 'window': 0.124, 'door': 0.011}
+130 mly976534503381849 25.5 s {'roof': 0.023, 'wall': 0.345, 'window': 0.038, 'door': 0.038}
+131 mly284489979985715 24.5 s {'roof': 0.065, 'wall': 0.006, 'window': 0.023, 'door': 0.021}
+132 mly268667638291013 29.3 s {'roof': 0.01, 'wall': 0.189, 'window': 0.014, 'door': 0.017}
+133 mly615348839860989 24.0 s {'roof': 0.078, 'wall': 0.151, 'window': 0.027, 'door': 0.01}
+134 mly532914557730109 26.1 s {'roof': 0.0, 'wall': 0.276, 'window': 0.038, 'door': 0.017}
+135 mly221656726018353 27.8 s {'roof': 0.002, 'wall': 0.148, 'window': 0.048, 'door': 0.0}
+136 mly1712036665670596 25.3 s {'roof': 0.0, 'wall': 0.343, 'window': 0.098, 'door': 0.036}
+137 mly3265459920284743 27.5 s {'roof': 0.012, 'wall': 0.413, 'window': 0.054, 'door': 0.0}
+138 mly1511646144334761 24.3 s {'roof': 0.015, 'wall': 0.146, 'window': 0.006, 'door': 0.0}
+139 mly4024563707608671 24.5 s {'roof': 0.039, 'wall': 0.224, 'window': 0.023, 'door': 0.014}
+140 mly1004167327942315 23.6 s {'roof': 0.039, 'wall': 0.229, 'window': 0.002, 'door': 0.0}
+141 mly460154485065399 24.8 s {'roof': 0.008, 'wall': 0.122, 'window': 0.066, 'door': 0.0}
+142 mly2018252918972280 26.0 s {'roof': 0.0, 'wall': 0.143, 'window': 0.018, 'door': 0.0}
+143 mly1483918955272885 26.3 s {'roof': 0.002, 'wall': 0.18, 'window': 0.043, 'door': 0.044}
+144 mly372654037338062 25.6 s {'roof': 0.009, 'wall': 0.147, 'window': 0.016, 'door': 0.0}
+145 mly365953696004069 24.3 s {'roof': 0.023, 'wall': 0.123, 'window': 0.026, 'door': 0.0}
+146 mly820619671886883 24.9 s {'roof': 0.0, 'wall': 0.57, 'window': 0.0, 'door': 0.069}
+147 mly472058570710813 26.8 s {'roof': 0.0, 'wall': 0.267, 'window': 0.041, 'door': 0.0}
+148 mly462926464785549 29.1 s {'roof': 0.02, 'wall': 0.239, 'window': 0.045, 'door': 0.005}
+149 mly1047609520410415 24.4 s {'roof': 0.0, 'wall': 0.137, 'window': 0.009, 'door': 0.0}
+150 mly2298292573665568 25.8 s {'roof': 0.004, 'wall': 0.175, 'window': 0.033, 'door': 0.004}
+FERTIG 150 Fotos in 62.8 min
