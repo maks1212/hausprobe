@@ -45,3 +45,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 | 2026-11-23 | modell-flaechen-20261123-0626 (5209 Fotos) | .39/.70/.55/.24 | .36/.69/.53/.25 (fair, mit Trainingsliste); Sichtprüfung: Dach deutlich sauberer und vollständiger, Wand/Fenster gleichauf | ja (v5) |
 | 2026-11-26 | Ziel Fenster von 0,55 auf 0,65 angehoben (Nutzer: Fenster gut, aber nicht perfekt) | – | – | – |
 | 2026-11-26 | Repo öffentlich (Action-Minuten unbegrenzt), Lehrer 6 Rechner parallel, Server-Auftrag 014 sammelt bis 3000 Fotos | – | – | – |
+| 2026-11-27 | Ziel 10.000 Fotos: 36 Gegenden, Server-Auftrag 015 (Schritte zu 250), Lehrer 12 Rechner parallel; danach entscheiden, ob mehr Fotos noch helfen | – | – | – |
