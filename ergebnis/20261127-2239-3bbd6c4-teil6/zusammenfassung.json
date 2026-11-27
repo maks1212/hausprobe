@@ -1,0 +1,20 @@
+{
+ "fotos": 150,
+ "pakete": [
+  {
+   "paket": "paket-079.zip",
+   "fotos": 48
+  },
+  {
+   "paket": "paket-091.zip",
+   "fotos": 47
+  },
+  {
+   "paket": "paket-103.zip",
+   "fotos": 48
+  }
+ ],
+ "minuten": 52.7,
+ "dino": "IDEA-Research/grounding-dino-base",
+ "sam": "facebook/sam-vit-large"
+}
