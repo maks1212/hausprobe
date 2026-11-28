@@ -1,0 +1,41 @@
+# Einmaliger Test: Erkennt der Lehrer den Dachvorsprung? Läuft nur bei Push auf den Branch "dachvorsprung-test".
+name: dachvorsprung-test
+on:
+  push:
+    branches: [dachvorsprung-test]
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fotos holen
+        run: |
+          mkdir -p bilder
+          git fetch -q --depth=1 origin "+refs/heads/daten:refs/remotes/origin/daten"
+          git show refs/remotes/origin/daten:pakete/paket-050.zip > p.zip; unzip -q -j p.zip 'images/*' -d m
+          ls m/*.jpg | head -14 | xargs -I{} cp {} bilder/
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/emanhamed/Houses-dataset.git h
+          (cd h && git sparse-checkout set --no-cone '/Houses Dataset/1_frontal.jpg' '/Houses Dataset/5_frontal.jpg' '/Houses Dataset/12_frontal.jpg' '/Houses Dataset/30_frontal.jpg' '/Houses Dataset/150_frontal.jpg' '/Houses Dataset/77_frontal.jpg')
+          for f in h/"Houses Dataset"/*.jpg; do cp "$f" "bilder/haus_$(basename "$f")"; done
+          ls bilder
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-gdino-base-sam-large-1
+      - name: Python-Pakete
+        run: |
+          pip install -q --index-url https://download.pytorch.org/whl/cpu torch==2.5.1
+          pip install -q transformers==4.57.1 pillow numpy
+      - name: Test
+        run: python ml/lehrer/test_vorsprung.py bilder test_vorsprung.jpg
+      - name: Ergebnis hochladen
+        run: |
+          git config user.name "Hausprobe Lehrer"; git config user.email "lehrer@hausprobe.local"
+          mkdir -p ml/lehrer/test && cp test_vorsprung.jpg ml/lehrer/test/
+          git add ml/lehrer/test && git commit -qm "Test Dachvorsprung: Ergebnis" && git push -q origin HEAD:dachvorsprung-test
