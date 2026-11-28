@@ -46,3 +46,4 @@ Erst dann dem Nutzer melden: „Erkennung ist gut“.
 | 2026-11-26 | Ziel Fenster von 0,55 auf 0,65 angehoben (Nutzer: Fenster gut, aber nicht perfekt) | – | – | – |
 | 2026-11-26 | Repo öffentlich (Action-Minuten unbegrenzt), Lehrer 6 Rechner parallel, Server-Auftrag 014 sammelt bis 3000 Fotos | – | – | – |
 | 2026-11-27 | Ziel 10.000 Fotos: 36 Gegenden, Server-Auftrag 015 (Schritte zu 250), Lehrer 12 Rechner parallel; danach entscheiden, ob mehr Fotos noch helfen | – | – | – |
+| 2026-11-28 | modell-flaechen-20261128-1544 (12850 Fotos, 108 Lehrer-Pakete) | .43/.71/.60/.33 | .40/.69/.56/.27 (fair, mit Trainingsliste); Sichtprüfung: weniger Bäume als Wand, Dächer vollständiger, Fenster gleichauf bis besser | ja (v6) |
