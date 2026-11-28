@@ -1,10 +1,3 @@
-Sammlung angehalten
-== 2026-11-19 01:23:05 Start, Arbeitsordner /root/hausprobe-training
-CPU-Kerne: 2   Arbeitsspeicher: 1 GB   frei auf Platte: 63 GB
-Auslagerung: 4095 MB
-== 2026-11-19 01:23:05 Python-Pakete
-== 2026-11-19 01:23:06 Daten laden und auswählen
-Fotos mit passender Lizenz: 32115
   geprüft 0 von 32115 Treffer 0
   geprüft 5000 von 32115 Treffer 161
   geprüft 10000 von 32115 Treffer 341
@@ -398,3 +391,10 @@ Lehrer-Pakete: 43 (beim letzten Training 43)
 Lehrer-Pakete: 43 (beim letzten Training 43)
 == 2026-11-27 01:23:01 Autopilot
 Lehrer-Pakete: 45 (beim letzten Training 43)
+== 2026-11-28 01:23:01 Autopilot
+Lehrer-Pakete: 108 (beim letzten Training 43)
+Sammlung angehalten
+== 2026-11-28 01:23:03 Start, Arbeitsordner /root/hausprobe-training
+CPU-Kerne: 2   Arbeitsspeicher: 1 GB   frei auf Platte: 53 GB
+Auslagerung: 4095 MB
+== 2026-11-28 01:23:03 Python-Pakete
